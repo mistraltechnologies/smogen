@@ -1,0 +1,31 @@
+Allow selection of superclass (configurable default?)
+  - already have an extends editbox. Make this a combo box with preselected options
+  for CompositePropertyMatcher, LoggingCompositePropertyMatcher, and any superclass of
+  the selected matched class appended with 'Matcher'? How to detect required class parameters?
+
+Validate that superclass exists and accepts the correct type parameters.
+
+Remove unnecessary qualified names from generated code.
+
+Add a readonly textbox to dialog stating what class the matcher is for.
+
+How do we handle collections/arrays?
+
+Validate that package name is legal in dialog.
+
+If class already exists, ask whether to merge or replace
+Merge with existing class - only non-existing methods/attributes are added.
+
+Store config data on per-module basis.
+
+Add configuration settings page.
+
+Use IDE-configured code generation settings (see IDE code style settings dialog)
+
+Allow selection of methods in dialog.
+
+Validate that same package.class does not exist in a different source root in the dialog.
+
+Consider using this method: PsiTreeUtil.getChildrenOfTypeAsList(sourceClass, SimpleProperty.class);
+
+

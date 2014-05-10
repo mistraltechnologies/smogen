@@ -1,0 +1,49 @@
+<idea-plugin version="2">
+  <id>com.mistraltech.smogen</id>
+  <name>SMOG Matcher Generator</name>
+  <version>1.0</version>
+  <vendor email="support@mistraltech.co.uk" url="http://www.mistraltech.co.uk">Mistral Technologies</vendor>
+
+  <description><![CDATA[
+      Generates a companion matcher class for a given class based on the SMOG library extension to Hamcrest.
+    ]]></description>
+
+  <change-notes><![CDATA[
+      First version.<br>
+    ]]>
+  </change-notes>
+
+  <!-- please see http://confluence.jetbrains.com/display/IDEADEV/Build+Number+Ranges for description -->
+  <idea-version since-build="131"/>
+
+  <depends>com.intellij.modules.java</depends>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <!-- Add your extensions here -->
+  </extensions>
+
+  <application-components>
+    <!-- Add your application components here -->
+  </application-components>
+
+  <project-components>
+    <!-- Add your project components here -->
+  </project-components>
+
+  <module-components>
+      <component>
+          <interface-class>com.mistraltech.smogen.plugin.GenerateMatcherPlugin</interface-class>
+          <implementation-class>com.mistraltech.smogen.plugin.GenerateMatcherPlugin</implementation-class>
+      </component>
+  </module-components>
+
+  <actions>
+    <!-- Add your actions here -->
+      <action id="Smogen.GenerateMatcher" class="com.mistraltech.smogen.plugin.GenerateMatcherAction" text="Generate Matcher"
+              description="Generate a SMOG matcher class">
+          <add-to-group group-id="CodeMenu" anchor="last"/>
+          <keyboard-shortcut keymap="$default" first-keystroke="shift ctrl G" second-keystroke="shift ctrl M"/>
+      </action>
+  </actions>
+
+</idea-plugin>
