@@ -1,15 +1,15 @@
 <idea-plugin version="2">
   <id>com.mistraltech.smogen</id>
   <name>SMOG Matcher Generator</name>
-  <version>1.0</version>
-  <vendor email="support@mistraltech.co.uk" url="http://www.mistraltech.co.uk">Mistral Technologies</vendor>
+  <version>0.1</version>
+  <vendor email="support@mistraltech.co.uk">Mistral Technologies</vendor>
 
   <description><![CDATA[
-      Generates a companion matcher class for a given class based on the SMOG library extension to Hamcrest.
+      Generates a companion matcher class for a selected Java class based on the SMOG library extension to Hamcrest.
     ]]></description>
 
   <change-notes><![CDATA[
-      First version.<br>
+      Early access version.<br>
     ]]>
   </change-notes>
 
