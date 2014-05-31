@@ -1,6 +1,5 @@
 package com.mistraltech.smogen.plugin;
 
-import com.intellij.ide.util.PackageUtil;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.module.Module;
@@ -8,7 +7,9 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.*;
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.ClassUtil;
 import com.mistraltech.smogen.generator.Generator;
 import com.mistraltech.smogen.generator.GeneratorProperties;
@@ -50,24 +51,23 @@ public class GenerateMatcherAction extends AnAction {
             return;
         }
 
+        // Note that module may be null if the selected class is in a library rather than the source tree
         final Module module = e.getData(LangDataKeys.MODULE);
-        if (module == null) {
-            Messages.showErrorDialog(project, "No module.", "Absent Data");
-            return;
-        }
 
         // Guess what we are going to call the target matcher class and what its package will be
         String preferredClassName = selectedClass.getName() + "Matcher";
         String preferredPackageName = ClassUtil.extractPackageName(selectedClass.getQualifiedName());
 
-        // Make sure the user has configured at least one source root to choose as the target location
-        PackageUtil.checkSourceRootsConfigured(module);
+        // Get the list of available source roots
+        List<VirtualFile> candidateSourceRoots = SourceRootUtils.getSourceRoots(project, JavaModuleSourceRootTypes.SOURCES, true);
+
+        if (candidateSourceRoots.isEmpty()) {
+            Messages.showErrorDialog(project, "No source roots have been configured. A source root is required as the target location for the generated class.", "No Source Root");
+            return;
+        }
 
         // Guess what the target source root might be
         VirtualFile preferredSourceRoot = getPreferredSourceRoot(project, module, selectedFile.getVirtualFile());
-
-        // Get the list of available source roots
-        List<VirtualFile> candidateSourceRoots = SourceRootUtils.getSourceRoots(project, JavaModuleSourceRootTypes.SOURCES, true);
 
         final GeneratorProperties generatorProperties = new GeneratorProperties()
                 .setClassName(preferredClassName)
@@ -77,34 +77,73 @@ public class GenerateMatcherAction extends AnAction {
         TargetSelectionDialog targetSelectionDialog = new TargetSelectionDialog(project, selectedClass, candidateSourceRoots, generatorProperties);
         targetSelectionDialog.show();
 
-        if (targetSelectionDialog.isOK())
-        {
+        if (targetSelectionDialog.isOK()) {
             new Generator(selectedClass, generatorProperties).generate();
         }
     }
 
+    /**
+     * Gets the most suitable source root from those available.
+     * <p/>
+     * Returns the first matching case:
+     * <ol>
+     * <li>The selected file belongs to a module, that module has test roots and the selected file belongs one of those test roots => that test root</li>
+     * <li>The selected file belongs to a module and that module has test roots => the first test root in the module</li>
+     * <li>The selected file belongs to a module, that module has source roots and the selected file belongs one of those source roots => that source root</li>
+     * <li>The selected file belongs to a module and that module has source roots = the first source root in the module</li>
+     * <li>The project has test roots => the first test root</li>
+     * <li>The project has source roots => the first source root</li>
+     * <li>Otherwise returns Null</li>
+     * </ol>
+     *
+     * @param project the project
+     * @param module optional current module - will be null if a library class is selected
+     * @param selectedFile the currently selected file
+     * @return the preferred source root if one exists; otherwise null
+     */
     @Nullable
-    private VirtualFile getPreferredSourceRoot(@NotNull Project project, @NotNull Module module, @Nullable VirtualFile selectedFile) {
-        List<VirtualFile> validModuleTestSourceRoots = SourceRootUtils.getSourceRoots(module, JavaSourceRootType.TEST_SOURCE, true);
+    private VirtualFile getPreferredSourceRoot(@NotNull Project project, @Nullable Module module, @Nullable VirtualFile selectedFile) {
 
-        if (validModuleTestSourceRoots.size() > 0) {
-            return validModuleTestSourceRoots.get(0);
-        }
+        VirtualFile preferredSourceRoot = null;
 
-        List<VirtualFile> validModuleSourceRoots = SourceRootUtils.getSourceRoots(module, JavaSourceRootType.SOURCE, true);
+        VirtualFile currentSourceRoot = selectedFile != null ?
+                ProjectRootManager.getInstance(project).getFileIndex().getSourceRootForFile(selectedFile) : null;
 
-        if (validModuleSourceRoots.size() > 0) {
-            VirtualFile currentSourceRoot = selectedFile != null ?
-                    ProjectRootManager.getInstance(project).getFileIndex().getSourceRootForFile(selectedFile) : null;
+        List<VirtualFile> candidateSourceRoots = null;
 
-            if (currentSourceRoot != null && validModuleSourceRoots.contains(currentSourceRoot)) {
-                return currentSourceRoot;
+        if (module != null) {
+            List<VirtualFile> validModuleTestSourceRoots = SourceRootUtils.getSourceRoots(module, JavaSourceRootType.TEST_SOURCE, true);
+            if (validModuleTestSourceRoots.size() > 0) {
+                candidateSourceRoots = validModuleTestSourceRoots;
             } else {
-                return validModuleTestSourceRoots.get(0);
+                List<VirtualFile> validModuleSourceRoots = SourceRootUtils.getSourceRoots(module, JavaSourceRootType.SOURCE, true);
+
+                if (validModuleSourceRoots.size() > 0) {
+                    candidateSourceRoots = validModuleSourceRoots;
+                }
+            }
+        } else {
+            List<VirtualFile> validProjectTestSourceRoots = SourceRootUtils.getSourceRoots(project, JavaSourceRootType.TEST_SOURCE, true);
+            if (validProjectTestSourceRoots.size() > 0) {
+                candidateSourceRoots = validProjectTestSourceRoots;
+            } else {
+                List<VirtualFile> validProjectSourceRoots = SourceRootUtils.getSourceRoots(project, JavaSourceRootType.SOURCE, true);
+
+                if (validProjectSourceRoots.size() > 0) {
+                    candidateSourceRoots = validProjectSourceRoots;
+                }
             }
         }
 
-        return null;
+        if (candidateSourceRoots != null) {
+            if (currentSourceRoot != null && candidateSourceRoots.contains(currentSourceRoot)) {
+                preferredSourceRoot = currentSourceRoot;
+            } else {
+                preferredSourceRoot = candidateSourceRoots.get(0);
+            }
+        }
+
+        return preferredSourceRoot;
     }
 
     @Nullable
