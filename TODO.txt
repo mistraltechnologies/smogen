@@ -5,7 +5,32 @@ Allow selection of superclass (configurable default?)
 
 Validate that superclass exists and accepts the correct type parameters.
 
-Remove unnecessary qualified names from generated code.
+Remove unnecessary qualified names from generated code. Convert FQNs to imports.
+
+Remove redundant imports.
+
+Add support for building matchers for generic classes.
+
+Review generated methods for matching collection properties (set/list/map). Is equalTo the correct
+matcher to use? Or should some collection matcher be used.
+Example set matcher:
+     public AssignmentDetailMatcher hasRelationships(final Set<AssignmentRelationship> relationships)
+     {
+         List<Matcher<? super AssignmentRelationship>> relationshipMatchers =
+            new ArrayList<Matcher<? super AssignmentRelationship>>();
+         for (AssignmentRelationship relationship : relationships) {
+             relationshipMatchers.add(equalTo(relationship));
+         }
+         return this.hasRelationships(new IsIterableContainingInAnyOrder<AssignmentRelationship>(relationshipMatchers));
+     }
+     public AssignmentDetailMatcher hasRelationships(Matcher<? super Set<AssignmentRelationship>> relationshipsMatcher)
+     {
+         this.relationshipsMatcher.setMatcher(relationshipsMatcher);
+         return this;
+     }
+
+Fix bug where org.hamcrest.beans.PropertyUtil tries to find a property with name like 'hRNumber' but can't
+because the property is reported by the introspector as HRNumber.
 
 Add a readonly textbox to dialog stating what class the matcher is for.
 
@@ -27,5 +52,18 @@ Allow selection of methods in dialog.
 Validate that same package.class does not exist in a different source root in the dialog.
 
 Consider using this method: PsiTreeUtil.getChildrenOfTypeAsList(sourceClass, SimpleProperty.class);
+
+Builder support
+
+Allow generation of a matcher that is contained in a project dependency (e.g. jar file)
+    - currently get "Absent Data" - "No Module" error
+
+Ensure that import exists for matched class if generating into a different package.
+
+Add tests
+
+What should matchers and abstract superclass matchers for classes with no properties look like?
+
+Can a matcher be used directly, as in: assertTrue(matcher.matches(x));
 
 
