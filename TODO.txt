@@ -64,6 +64,3 @@ Add tests
 
 What should matchers and abstract superclass matchers for classes with no properties look like?
 
-Can a matcher be used directly, as in: assertTrue(matcher.matches(x));
-
-
