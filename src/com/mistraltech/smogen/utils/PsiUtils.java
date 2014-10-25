@@ -14,28 +14,6 @@ import org.jetbrains.annotations.Nullable;
 public final class PsiUtils {
 
     /**
-     * Gets the visibility of an element from its modifier list owner.
-     *
-     * @param modifierListOwner the modifier list owner of the element
-     * @return the visibility of the element
-     */
-    @NotNull
-    public static Visibility getVisibility(@NotNull PsiModifierListOwner modifierListOwner) {
-        PsiModifierList modifiers = modifierListOwner.getModifierList();
-        if (modifiers == null) {
-            return Visibility.PACKAGE_PRIVATE;
-        } else if (modifiers.hasModifierProperty(PsiModifier.PRIVATE)) {
-            return Visibility.PRIVATE;
-        } else if (modifiers.hasModifierProperty(PsiModifier.PROTECTED)) {
-            return Visibility.PROTECTED;
-        } else if (modifiers.hasModifierProperty(PsiModifier.PUBLIC)) {
-            return Visibility.PUBLIC;
-        }
-
-        throw new IllegalStateException("Can't determine visibility");
-    }
-
-    /**
      * For a given element, determines the class element that is the the nearest
      * enclosing class element, excluding type parameters and anonymous inner classes.
      *

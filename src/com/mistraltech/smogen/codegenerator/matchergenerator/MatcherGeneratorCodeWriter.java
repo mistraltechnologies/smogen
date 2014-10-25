@@ -7,7 +7,6 @@ import com.mistraltech.smogen.codegenerator.CodeWriter;
 import com.mistraltech.smogen.property.Property;
 import com.mistraltech.smogen.property.PropertyLocator;
 import com.mistraltech.smogen.utils.GeneratorUtils;
-import com.mistraltech.smogen.utils.Visibility;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -30,7 +29,7 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
         assert targetPackage != null;
 
         boolean includeSuperClassProperties = generatorProperties.getSuperClassName() == null;
-        List<Property> sourceClassProperties = PropertyLocator.locateProperties(getSourceClass(), includeSuperClassProperties, Visibility.PUBLIC);
+        List<Property> sourceClassProperties = PropertyLocator.locateProperties(getSourceClass(), includeSuperClassProperties);
 
         StringBuilder documentText = new StringBuilder();
 
@@ -258,11 +257,11 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
     }
 
     private String matcherAttributeName(@NotNull Property property) {
-        return property.getName() + "Matcher";
+        return property.getFieldName() + "Matcher";
     }
 
     private String setterMethodName(@NotNull Property property) {
-        return " has" + property.getNameCapitalised();
+        return " has" + property.getCapitalisedName();
     }
 
     private PsiClass getSourceClass()

@@ -1,18 +1,17 @@
 package com.mistraltech.smogen.property;
 
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiPrimitiveType;
 import com.intellij.psi.PsiType;
+import com.intellij.psi.util.PropertyUtil;
 import com.mistraltech.smogen.utils.NameUtils;
 import org.jetbrains.annotations.NotNull;
 
 public class Property {
-    private static String[] ACCESSOR_PREFIXES = {"get", "is"};
-
     private final PsiMethod accessorMethod;
     private final PsiType returnType;
     private String name;
-    private String nameCapitalised;
 
     /**
      * Construct a property from its accessor method.
@@ -24,12 +23,11 @@ public class Property {
 
         this.returnType = accessorMethod.getReturnType();
         this.accessorMethod = accessorMethod;
-        this.name = NameUtils.removeNamePrefix(accessorMethod.getName(), ACCESSOR_PREFIXES);
-        this.nameCapitalised = NameUtils.removePrefix(accessorMethod.getName(), ACCESSOR_PREFIXES);
+        this.name = PropertyUtil.getPropertyName(accessorMethod);
     }
 
     /**
-     * Gets the name of the property with the initial letter in lower case.
+     * Gets the name of the property.
      *
      * @return the property name
      */
@@ -39,14 +37,27 @@ public class Property {
     }
 
     /**
+     * Gets a name that can be used for a field that represents the property.
+     * This is the same as the property name, unless the property name begins
+     * with a capital letter (the result of the property name starting with initials),
+     * in which case the first letter is converted to lower case.
+     *
+     * @return the property name
+     */
+    @NotNull
+    public String getFieldName() {
+        return NameUtils.deCapitalise(name);
+    }
+
+    /**
      * Gets the name of the property, with initial letter capitalised (provided it was a capital letter
      * in the accessor method name).
      *
      * @return the property name
      */
     @NotNull
-    public String getNameCapitalised() {
-        return nameCapitalised;
+    public String getCapitalisedName() {
+        return StringUtil.capitalize(name);
     }
 
     /**
@@ -81,32 +92,5 @@ public class Property {
         } else {
             return returnType.getCanonicalText();
         }
-    }
-
-    /**
-     * Determines whether a given method is a property accessor, based on return type, parameters and name.
-     *
-     * @param method the method to test
-     * @return true if the method is a property accessor; false otherwise
-     */
-    public static boolean isAccessor(@NotNull PsiMethod method) {
-        return !returnsVoid(method) && !takesParameters(method) && hasAccessorNamePrefix(method);
-    }
-
-    private static boolean hasAccessorNamePrefix(@NotNull PsiMethod method) {
-        for (String prefix : ACCESSOR_PREFIXES) {
-            if (method.getName().startsWith(prefix)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private static boolean takesParameters(@NotNull PsiMethod method) {
-        return method.getParameterList().getParametersCount() > 0;
-    }
-
-    private static boolean returnsVoid(@NotNull PsiMethod method) {
-        return PsiPrimitiveType.VOID.equals(method.getReturnType());
     }
 }

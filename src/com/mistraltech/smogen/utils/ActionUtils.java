@@ -20,12 +20,12 @@ public class ActionUtils {
         }, "", "");
     }
 
-    public static void runActionLater(final Runnable generateMatcherClassAction) {
+    public static void runActionLater(final Runnable action) {
         final Application application = ApplicationManager.getApplication();
         application.invokeLater(new Runnable() {
             @Override
             public void run() {
-                application.runWriteAction(generateMatcherClassAction);
+                application.runWriteAction(action);
             }
         });
     }

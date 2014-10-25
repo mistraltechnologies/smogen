@@ -1,6 +1,10 @@
 package com.mistraltech.smogen.plugin;
 
-import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.CommonDataKeys;
+import com.intellij.openapi.actionSystem.LangDataKeys;
+import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
@@ -12,7 +16,6 @@ import com.mistraltech.smogen.codegenerator.Generator;
 import com.mistraltech.smogen.codegenerator.matchergenerator.MatcherGeneratorProperties;
 import com.mistraltech.smogen.utils.PsiUtils;
 import com.mistraltech.smogen.utils.SourceRootUtils;
-import org.jetbrains.jps.model.java.JavaModuleSourceRootTypes;
 
 import java.util.List;
 

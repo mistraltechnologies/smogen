@@ -2,20 +2,23 @@ package com.mistraltech.smogen.utils;
 
 import org.jetbrains.annotations.NotNull;
 
+import static java.lang.Character.toLowerCase;
+
 public final class NameUtils {
 
     /**
-     * Strip off any of a list of prefixes and return the result with the first letter in lower case. Only the
-     * first matching prefix is removed. It may be that no prefix is stripped if none of the prefixes matches.
+     * Convert the first character of the name to lowercase.
      *
-     * @param name the input name
-     * @param prefixes list of prefixes to strip off
-     * @return the resulting name
+     * @param name name to be converted
+     * @return the name with the first character in lowercase
      */
     @NotNull
-    public static String removeNamePrefix(@NotNull String name, String... prefixes) {
-        String capsName = removePrefix(name, prefixes);
-        return String.valueOf(Character.toLowerCase(capsName.charAt(0))) + capsName.substring(1);
+    public static String deCapitalise(@NotNull String name) {
+        if (name.isEmpty() || Character.isLowerCase(name.charAt(0))) {
+            return name;
+        }
+
+        return String.valueOf(toLowerCase(name.charAt(0))) + (name.length() > 1 ? name.substring(1) : "");
     }
 
     /**
@@ -35,18 +38,6 @@ public final class NameUtils {
         }
 
         return name;
-    }
-
-    /**
-     * Capitalises the first letter of the input name and then prepends the prefix.
-     *
-     * @param name the input name
-     * @param prefix the prefix to prepend
-     * @return the resulting name
-     */
-    @NotNull
-    public static String addNamePrefix(@NotNull String name, @NotNull String prefix) {
-        return prefix + Character.toUpperCase(name.charAt(0)) + name.substring(1);
     }
 
     /**
