@@ -5,26 +5,26 @@ import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiClass;
-import com.mistraltech.smogen.generator.GeneratorProperties;
+import com.mistraltech.smogen.codegenerator.matchergenerator.MatcherGeneratorProperties;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.util.List;
 
-public class TargetSelectionDialog extends DialogWrapper implements SelectTargetClassPanelDataSource {
-    private static final String RECENTS_KEY = "TargetSelectionDialog.RecentsKey";
+public class MatcherGeneratorOptionsDialog extends DialogWrapper implements MatcherGeneratorOptionsPanelDataSource {
+    private static final String RECENTS_KEY = "MatcherGeneratorOptionsDialog.RecentsKey";
 
     private final Project project;
     private final PsiClass matchedClass;
-    private final SelectTargetClassPanel selectTargetClassPanel;
+    private final MatcherGeneratorOptionsPanel matcherGeneratorOptionsPanel;
     private final List<VirtualFile> candidateSourceRoots;
-    private final GeneratorProperties generatorProperties;
+    private final MatcherGeneratorProperties generatorProperties;
 
-    public TargetSelectionDialog(@NotNull Project project,
-                                 @NotNull PsiClass matchedClass,
-                                 @NotNull List<VirtualFile> candidateSourceRoots,
-                                 @NotNull GeneratorProperties generatorProperties) {
+    public MatcherGeneratorOptionsDialog(@NotNull Project project,
+                                         @NotNull PsiClass matchedClass,
+                                         @NotNull List<VirtualFile> candidateSourceRoots,
+                                         @NotNull MatcherGeneratorProperties generatorProperties) {
         super(project);
 
         this.generatorProperties = generatorProperties;
@@ -35,7 +35,7 @@ public class TargetSelectionDialog extends DialogWrapper implements SelectTarget
         this.matchedClass = matchedClass;
         this.candidateSourceRoots = candidateSourceRoots;
 
-        this.selectTargetClassPanel = new SelectTargetClassPanel(this);
+        this.matcherGeneratorOptionsPanel = new MatcherGeneratorOptionsPanel(this);
 
         init();
     }
@@ -44,21 +44,21 @@ public class TargetSelectionDialog extends DialogWrapper implements SelectTarget
     protected void doOKAction() {
         super.doOKAction();
 
-        final VirtualFile sourceRoot = selectTargetClassPanel.getSelectedSourceRoot();
+        final VirtualFile sourceRoot = matcherGeneratorOptionsPanel.getSelectedSourceRoot();
 
-        generatorProperties.setClassName(selectTargetClassPanel.getSelectedClassName())
-                .setFactoryMethodPrefix(selectTargetClassPanel.isAn() ? "an" : "a")
-                .setExtensible(selectTargetClassPanel.isMakeExtensible())
-                .setConcreteSubclassName(selectTargetClassPanel.getConcreteSubclassName())
-                .setSuperClassName(selectTargetClassPanel.getSuperClassName())
-                .setPackageName(selectTargetClassPanel.getSelectedPackageName())
+        generatorProperties.setClassName(matcherGeneratorOptionsPanel.getSelectedClassName())
+                .setFactoryMethodPrefix(matcherGeneratorOptionsPanel.isAn() ? "an" : "a")
+                .setExtensible(matcherGeneratorOptionsPanel.isMakeExtensible())
+                .setConcreteSubclassName(matcherGeneratorOptionsPanel.getConcreteSubclassName())
+                .setSuperClassName(matcherGeneratorOptionsPanel.getSuperClassName())
+                .setPackageName(matcherGeneratorOptionsPanel.getSelectedPackageName())
                 .setSourceRoot(sourceRoot);
     }
 
     @Nullable
     @Override
     protected ValidationInfo doValidate() {
-        ValidationInfo validationInfo = selectTargetClassPanel.doValidate();
+        ValidationInfo validationInfo = matcherGeneratorOptionsPanel.doValidate();
 
         if (validationInfo != null) {
             return validationInfo;
@@ -69,7 +69,7 @@ public class TargetSelectionDialog extends DialogWrapper implements SelectTarget
 
     @Nullable
     protected JComponent createCenterPanel() {
-        return selectTargetClassPanel.getRoot();
+        return matcherGeneratorOptionsPanel.getRoot();
     }
 
     @NotNull

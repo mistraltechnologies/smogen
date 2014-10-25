@@ -1,7 +1,9 @@
-package com.mistraltech.smogen.generator;
+package com.mistraltech.smogen.codegenerator.matchergenerator;
 
-import com.intellij.openapi.editor.Document;
-import com.intellij.psi.*;
+import com.intellij.psi.JavaDirectoryService;
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiPackage;
+import com.mistraltech.smogen.codegenerator.CodeWriter;
 import com.mistraltech.smogen.property.Property;
 import com.mistraltech.smogen.property.PropertyLocator;
 import com.mistraltech.smogen.utils.GeneratorUtils;
@@ -10,53 +12,25 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-class GenerateFileContentRunnable implements Runnable {
-    private final GeneratorProperties generatorProperties;
-    private final PsiClass sourceClass;
-    private final PsiDocumentManager documentManager;
-    private final PsiFile existingFile;
-    private final PsiDirectory parentDirectory;
-    private final String fileName;
-    private PsiFile targetFile;
+public class MatcherGeneratorCodeWriter implements CodeWriter {
+    private MatcherGeneratorProperties generatorProperties;
 
-    public GenerateFileContentRunnable(final GeneratorProperties generatorProperties, final PsiClass sourceClass,
-                                       final PsiFile existingFile, final PsiDirectory parentDirectory) {
-        this.generatorProperties = generatorProperties;
-        this.sourceClass = sourceClass;
-        this.documentManager = PsiDocumentManager.getInstance(parentDirectory.getProject());
-        this.existingFile = existingFile;
-        this.parentDirectory = parentDirectory;
-        this.fileName = generatorProperties.getClassName() + ".java";
+    public MatcherGeneratorCodeWriter(MatcherGeneratorProperties matcherGeneratorProperties) {
+        this.generatorProperties = matcherGeneratorProperties;
     }
 
     @Override
-    public void run() {
-        targetFile = existingFile != null ? existingFile : parentDirectory.createFile(fileName);
-
-        Document document = documentManager.getDocument(targetFile);
-        assert document != null;
-
-        PsiPackage targetPackage = JavaDirectoryService.getInstance().getPackage(parentDirectory);
-        assert targetPackage != null;
-
-        document.setText(generateDocumentContent(targetPackage));
-
-        documentManager.commitDocument(document);
-    }
-
-    /**
-     * Gets the file containing the newly generated matcher class.
-     *
-     * @return the matcher class file
-     */
-    public PsiFile getTargetFile() {
-        return targetFile;
+    public String writeCode() {
+        return generateDocumentContent();
     }
 
     @NotNull
-    private String generateDocumentContent(@NotNull PsiPackage targetPackage) {
+    private String generateDocumentContent() {
+        PsiPackage targetPackage = JavaDirectoryService.getInstance().getPackage(generatorProperties.getParentDirectory());
+        assert targetPackage != null;
+
         boolean includeSuperClassProperties = generatorProperties.getSuperClassName() == null;
-        List<Property> sourceClassProperties = PropertyLocator.locateProperties(sourceClass, includeSuperClassProperties, Visibility.PUBLIC);
+        List<Property> sourceClassProperties = PropertyLocator.locateProperties(getSourceClass(), includeSuperClassProperties, Visibility.PUBLIC);
 
         StringBuilder documentText = new StringBuilder();
 
@@ -97,7 +71,7 @@ class GenerateFileContentRunnable implements Runnable {
                 .append(generatorProperties.isExtensible() ? "abstract " : "final ")
                 .append("class ")
                 .append(generatorProperties.getClassName())
-                .append(generatorProperties.isExtensible() ? "<R, T extends " + sourceClass.getName() + ">" : "")
+                .append(generatorProperties.isExtensible() ? "<R, T extends " + getSourceClassName() + ">" : "")
                 .append(" extends ");
 
         if (generatorProperties.getSuperClassName() != null) {
@@ -105,12 +79,12 @@ class GenerateFileContentRunnable implements Runnable {
                     .append("<")
                     .append(generatorProperties.isExtensible() ? "R" : generatorProperties.getClassName())
                     .append(", ")
-                    .append(generatorProperties.isExtensible() ? "T" : sourceClass.getName())
+                    .append(generatorProperties.isExtensible() ? "T" : getSourceClassName())
                     .append("> {\n");
         } else {
             documentText.append("CompositePropertyMatcher<")
-                .append(generatorProperties.isExtensible() ? "T" : sourceClass.getName())
-                .append("> {\n");
+                    .append(generatorProperties.isExtensible() ? "T" : getSourceClassName())
+                    .append("> {\n");
         }
 
     }
@@ -136,7 +110,7 @@ class GenerateFileContentRunnable implements Runnable {
                 .append(generatorProperties.isExtensible() ? "protected " : "private ")
                 .append(generatorProperties.getClassName())
                 .append("(final String matchedObjectDescription, final ")
-                .append(sourceClass.getName())
+                .append(getSourceClassName())
                 .append(" template) {\n")
                 .append("super(matchedObjectDescription")
                 .append(generatorProperties.getSuperClassName() != null ? ", template" : "")
@@ -167,12 +141,12 @@ class GenerateFileContentRunnable implements Runnable {
                     .append("<")
                     .append(innerClassName)
                     .append(", ")
-                    .append(sourceClass.getName())
+                    .append(getSourceClassName())
                     .append("> {\n")
                     .append("public ")
                     .append(innerClassName)
                     .append("(final String matchedObjectDescription, final ")
-                    .append(sourceClass.getName())
+                    .append(getSourceClassName())
                     .append(" template) {\n")
                     .append("super(matchedObjectDescription, template);\n")
                     .append("}\n")
@@ -190,12 +164,12 @@ class GenerateFileContentRunnable implements Runnable {
                     .append(targetClassName)
                     .append(" ")
                     .append(generatorProperties.getFactoryMethodPrefix())
-                    .append(sourceClass.getName())
+                    .append(getSourceClassName())
                     .append("That()\n")
                     .append("{\n")
                     .append("return ")
                     .append(generatorProperties.getFactoryMethodPrefix())
-                    .append(sourceClass.getName())
+                    .append(getSourceClassName())
                     .append("Like(null);\n")
                     .append("}\n");
         }
@@ -211,9 +185,9 @@ class GenerateFileContentRunnable implements Runnable {
                     .append(targetClassName)
                     .append(" ")
                     .append(generatorProperties.getFactoryMethodPrefix())
-                    .append(sourceClass.getName())
+                    .append(getSourceClassName())
                     .append("Like(final ")
-                    .append(sourceClass.getName())
+                    .append(getSourceClassName())
                     .append(" template)\n")
                     .append("{\n")
                     .append("return new ")
@@ -221,7 +195,7 @@ class GenerateFileContentRunnable implements Runnable {
                     .append("(\"")
                     .append(generatorProperties.getFactoryMethodPrefix())
                     .append(" ")
-                    .append(sourceClass.getName())
+                    .append(getSourceClassName())
                     .append("\", template);\n")
                     .append("}\n");
         }
@@ -289,5 +263,15 @@ class GenerateFileContentRunnable implements Runnable {
 
     private String setterMethodName(@NotNull Property property) {
         return " has" + property.getNameCapitalised();
+    }
+
+    private PsiClass getSourceClass()
+    {
+        return generatorProperties.getSourceClass();
+    }
+    
+    private String getSourceClassName()
+    {
+        return getSourceClass().getName();
     }
 }

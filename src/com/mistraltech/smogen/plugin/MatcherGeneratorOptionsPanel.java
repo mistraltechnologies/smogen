@@ -25,10 +25,10 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-public class SelectTargetClassPanel {
+public class MatcherGeneratorOptionsPanel {
     private static final int PANEL_WIDTH_CHARS = 60;
 
-    private final SelectTargetClassPanelDataSource dataSource;
+    private final MatcherGeneratorOptionsPanelDataSource dataSource;
 
     private JPanel rootPanel;
     private JTextField classNameTextField;
@@ -43,7 +43,7 @@ public class SelectTargetClassPanel {
     private JCheckBox extendsCheckBox;
     private ReferenceEditorWithBrowseButton superClassChooser;
 
-    public SelectTargetClassPanel(@NotNull SelectTargetClassPanelDataSource dataSource) {
+    public MatcherGeneratorOptionsPanel(@NotNull MatcherGeneratorOptionsPanelDataSource dataSource) {
         this.dataSource = dataSource;
 
         initialiseClassNameField();

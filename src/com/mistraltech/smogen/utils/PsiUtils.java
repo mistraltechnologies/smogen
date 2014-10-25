@@ -1,5 +1,6 @@
 package com.mistraltech.smogen.utils;
 
+import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.editor.Editor;
@@ -145,5 +146,31 @@ public final class PsiUtils {
      */
     public static boolean isAbstract(PsiClass psiClass) {
         return psiClass.hasModifierProperty(PsiModifier.ABSTRACT);
+    }
+
+    @Nullable
+    public static PsiClass getSelectedClass(@NotNull AnActionEvent e) {
+        final PsiFile file = e.getData(CommonDataKeys.PSI_FILE);
+        assert file != null;
+
+        final Project project = e.getData(CommonDataKeys.PROJECT);
+        assert project != null;
+
+        final DataContext dataContext = e.getDataContext();
+        final Editor editor = e.getData(CommonDataKeys.EDITOR);
+
+        return getSelectedClass(file, project, dataContext, editor);
+    }
+
+    @Nullable
+    private static PsiClass getSelectedClass(@NotNull PsiFile file, @NotNull Project project, DataContext dataContext, Editor editor) {
+        final PsiElement psiElement = getCurrentElement(dataContext, project, editor);
+
+        PsiClass selectedClass = (psiElement != null) ? findClassFromElement(psiElement) : null;
+
+        if (selectedClass == null) {
+            selectedClass = getClassFromFile(file);
+        }
+        return selectedClass;
     }
 }

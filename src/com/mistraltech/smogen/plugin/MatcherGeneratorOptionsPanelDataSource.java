@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-public interface SelectTargetClassPanelDataSource {
+public interface MatcherGeneratorOptionsPanelDataSource {
     @NotNull
     Project getProject();
 

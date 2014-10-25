@@ -1,0 +1,122 @@
+package com.mistraltech.smogen.codegenerator;
+
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.editor.Document;
+import com.intellij.openapi.ui.Messages;
+import com.intellij.psi.PsiDirectory;
+import com.intellij.psi.PsiDocumentManager;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiManager;
+import com.intellij.psi.codeStyle.CodeStyleManager;
+import org.jetbrains.annotations.NotNull;
+
+import static com.mistraltech.smogen.utils.ActionUtils.runAction;
+import static com.mistraltech.smogen.utils.ActionUtils.runActionAsCommand;
+import static com.mistraltech.smogen.utils.PsiUtils.createMissingDirectoriesForPackage;
+import static com.mistraltech.smogen.utils.PsiUtils.findDirectoryForPackage;
+
+public class Generator {
+
+    private final GeneratorProperties generatorProperties;
+
+    public Generator(@NotNull final GeneratorProperties generatorProperties) {
+        this.generatorProperties = generatorProperties;
+    }
+
+    public void generate() {
+        final PsiDirectory parentDirectory = findOrCreateParentDirectory();
+        generatorProperties.setParentDirectory(parentDirectory);
+
+        final PsiFile existingFile = parentDirectory.findFile(generatorProperties.getFileName());
+        if (existingFile != null && !shouldOverwriteFile(existingFile)) {
+            return;
+        }
+
+        final PsiFile generatedFile = generateFile();
+
+        reformat(generatedFile);
+    }
+
+    private PsiFile generateFile() {
+        FileContentGeneratorRunnable fileContentGeneratorRunnable = new FileContentGeneratorRunnable(generatorProperties);
+
+        runAction(fileContentGeneratorRunnable);
+
+        return fileContentGeneratorRunnable.getTargetFile();
+    }
+
+    private void reformat(PsiFile targetFile) {
+        runActionAsCommand(new ReformatRunnable(targetFile), generatorProperties.getProject());
+    }
+
+    private boolean shouldOverwriteFile(PsiFile existingFile) {
+        String msg = "File " + existingFile.getVirtualFile().getPresentableUrl() + " already exists. Overwrite?";
+        return Messages.showYesNoDialog(generatorProperties.getProject(), msg, "File Already Exists",
+                "Overwrite", "Cancel", Messages.getWarningIcon()) == Messages.YES;
+    }
+
+    @NotNull
+    private PsiDirectory findOrCreateParentDirectory() {
+        final PsiDirectory baseDir = PsiManager.getInstance(generatorProperties.getProject()).findDirectory(generatorProperties.getSourceRoot());
+        assert (baseDir != null);
+
+        // Ensure that the directory for the target package exists
+        ApplicationManager.getApplication().runWriteAction(new Runnable() {
+            public void run() {
+                createMissingDirectoriesForPackage(baseDir, generatorProperties.getPackageName());
+            }
+        });
+
+        PsiDirectory directory = findDirectoryForPackage(baseDir, generatorProperties.getPackageName());
+        assert (directory != null);
+
+        return directory;
+    }
+
+    static class ReformatRunnable implements Runnable {
+        private final PsiFile targetFile;
+
+        public ReformatRunnable(PsiFile targetFile) {
+            this.targetFile = targetFile;
+        }
+
+        @Override
+        public void run() {
+            CodeStyleManager.getInstance(targetFile.getProject()).reformat(targetFile);
+        }
+    }
+
+    static class FileContentGeneratorRunnable implements Runnable {
+        private final GeneratorProperties generatorProperties;
+        private PsiFile targetFile;
+
+        public FileContentGeneratorRunnable(final GeneratorProperties generatorProperties) {
+            this.generatorProperties = generatorProperties;
+        }
+
+        @Override
+        public void run() {
+            final PsiDirectory parentDirectory = generatorProperties.getParentDirectory();
+            final String targetFileName = generatorProperties.getFileName();
+            final PsiFile existingFile = parentDirectory.findFile(targetFileName);
+            targetFile = existingFile != null ? existingFile : parentDirectory.createFile(targetFileName);
+
+            PsiDocumentManager documentManager = PsiDocumentManager.getInstance(parentDirectory.getProject());
+            Document document = documentManager.getDocument(targetFile);
+            assert document != null;
+
+            document.setText(generatorProperties.getCodeWriter().writeCode());
+
+            documentManager.commitDocument(document);
+        }
+
+        /**
+         * Gets the file containing the newly generated matcher class.
+         *
+         * @return the matcher class file
+         */
+        public PsiFile getTargetFile() {
+            return targetFile;
+        }
+    }
+}
