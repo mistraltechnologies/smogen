@@ -53,7 +53,7 @@ public class GenerateMatcherAction extends AnAction {
         String preferredPackageName = ClassUtil.extractPackageName(selectedClass.getQualifiedName());
 
         // Get the list of available source roots
-        List<VirtualFile> candidateSourceRoots = SourceRootUtils.getSourceRoots(project);
+        List<VirtualFile> candidateSourceRoots = SourceRootUtils.getSourceAndTestSourceRoots(project);
 
         if (candidateSourceRoots.isEmpty()) {
             Messages.showErrorDialog(project, "No source roots have been configured. A source root is required as the target location for the generated class.", "No Source Root");

@@ -16,16 +16,22 @@ import org.jetbrains.jps.model.java.JavaSourceRootType;
 import org.jetbrains.jps.model.module.JpsModuleSourceRootType;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 public final class SourceRootUtils {
     @NotNull
-    private static Set<? extends JpsModuleSourceRootType<?>> toRootTypeSet(@NotNull JpsModuleSourceRootType<?> rootType) {
-        HashSet<JpsModuleSourceRootType<?>> rootTypes = new HashSet<JpsModuleSourceRootType<?>>();
-        rootTypes.add(rootType);
-        return rootTypes;
+    private static Set<? extends JpsModuleSourceRootType<?>> toRootTypeSet(@NotNull JpsModuleSourceRootType<?>... rootTypes) {
+        HashSet<JpsModuleSourceRootType<?>> rootTypesSet = new HashSet<JpsModuleSourceRootType<?>>();
+        Collections.addAll(rootTypesSet, rootTypes);
+        return rootTypesSet;
+    }
+
+    @NotNull
+    public static List<VirtualFile> getSourceAndTestSourceRoots(@NotNull Project project) {
+        return getSourceRoots(project, toRootTypeSet(JavaSourceRootType.SOURCE, JavaSourceRootType.TEST_SOURCE), true);
     }
 
     @NotNull
@@ -39,11 +45,6 @@ public final class SourceRootUtils {
     }
 
     @NotNull
-    public static List<VirtualFile> getSourceRoots(@NotNull Project project, @NotNull JpsModuleSourceRootType<?> rootType, boolean excludeGeneratedRoots) {
-        return getSourceRoots(project, toRootTypeSet(rootType), excludeGeneratedRoots);
-    }
-
-    @NotNull
     public static List<VirtualFile> getSourceRoots(@NotNull Project project, @NotNull Set<? extends JpsModuleSourceRootType<?>> rootTypes, boolean excludeGeneratedRoots) {
         List<VirtualFile> roots = new ArrayList<VirtualFile>();
         for (Module module : ModuleManager.getInstance(project).getModules()) {
@@ -53,8 +54,13 @@ public final class SourceRootUtils {
     }
 
     @NotNull
-    public static List<VirtualFile> getSourceRoots(@NotNull Module module, @NotNull JpsModuleSourceRootType<?> rootType, boolean excludeGeneratedRoots) {
-        return getSourceRoots(module, toRootTypeSet(rootType), excludeGeneratedRoots);
+    public static List<VirtualFile> getSourceRoots(@NotNull Module module) {
+        return getSourceRoots(module, toRootTypeSet(JavaSourceRootType.SOURCE), true);
+    }
+
+    @NotNull
+    public static List<VirtualFile> getTestSourceRoots(@NotNull Module module) {
+        return getSourceRoots(module, toRootTypeSet(JavaSourceRootType.TEST_SOURCE), true);
     }
 
     @NotNull
@@ -107,22 +113,22 @@ public final class SourceRootUtils {
         List<VirtualFile> candidateSourceRoots = null;
 
         if (module != null) {
-            List<VirtualFile> validModuleTestSourceRoots = getSourceRoots(module, JavaSourceRootType.TEST_SOURCE, true);
+            List<VirtualFile> validModuleTestSourceRoots = getTestSourceRoots(module);
             if (validModuleTestSourceRoots.size() > 0) {
                 candidateSourceRoots = validModuleTestSourceRoots;
             } else {
-                List<VirtualFile> validModuleSourceRoots = getSourceRoots(module, JavaSourceRootType.SOURCE, true);
+                List<VirtualFile> validModuleSourceRoots = getSourceRoots(module);
 
                 if (validModuleSourceRoots.size() > 0) {
                     candidateSourceRoots = validModuleSourceRoots;
                 }
             }
         } else {
-            List<VirtualFile> validProjectTestSourceRoots = getSourceRoots(project, JavaSourceRootType.TEST_SOURCE, true);
+            List<VirtualFile> validProjectTestSourceRoots = getTestSourceRoots(project);
             if (validProjectTestSourceRoots.size() > 0) {
                 candidateSourceRoots = validProjectTestSourceRoots;
             } else {
-                List<VirtualFile> validProjectSourceRoots = getSourceRoots(project, JavaSourceRootType.SOURCE, true);
+                List<VirtualFile> validProjectSourceRoots = getSourceRoots(project);
 
                 if (validProjectSourceRoots.size() > 0) {
                     candidateSourceRoots = validProjectSourceRoots;
