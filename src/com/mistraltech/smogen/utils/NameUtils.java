@@ -75,4 +75,11 @@ public final class NameUtils {
         int idx = packageName.indexOf('.');
         return idx >= 0 ? packageName.substring(idx + 1) : "";
     }
+
+    @NotNull
+    public static String getUnqualifiedName(@NotNull String fqn)
+    {
+        int idx = fqn.lastIndexOf('.');
+        return idx >= 0 ? fqn.substring(idx + 1) : fqn;
+    }
 }

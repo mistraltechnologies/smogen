@@ -4,12 +4,30 @@ import com.intellij.psi.JavaDirectoryService;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiPackage;
 import com.mistraltech.smogen.codegenerator.CodeWriter;
+import com.mistraltech.smogen.codegenerator.javabuilder.BlockStatementBuilder;
+import com.mistraltech.smogen.codegenerator.javabuilder.JavaClassBuilder;
+import com.mistraltech.smogen.codegenerator.javabuilder.JavaDocumentBuilder;
+import com.mistraltech.smogen.codegenerator.javabuilder.MethodBuilder;
+import com.mistraltech.smogen.codegenerator.javabuilder.MethodCallBuilder;
+import com.mistraltech.smogen.codegenerator.javabuilder.TypeParameterBuilder;
+import com.mistraltech.smogen.codegenerator.javabuilder.VariableBuilder;
 import com.mistraltech.smogen.property.Property;
 import com.mistraltech.smogen.property.PropertyLocator;
-import com.mistraltech.smogen.utils.GeneratorUtils;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import static com.mistraltech.smogen.codegenerator.javabuilder.BlockStatementBuilder.aBlockStatement;
+import static com.mistraltech.smogen.codegenerator.javabuilder.ExpressionStatementBuilder.anExpressionStatement;
+import static com.mistraltech.smogen.codegenerator.javabuilder.JavaClassBuilder.aJavaClass;
+import static com.mistraltech.smogen.codegenerator.javabuilder.JavaDocumentBuilder.aJavaDocument;
+import static com.mistraltech.smogen.codegenerator.javabuilder.MethodCallBuilder.aMethodCall;
+import static com.mistraltech.smogen.codegenerator.javabuilder.NewInstanceBuilder.aNewInstance;
+import static com.mistraltech.smogen.codegenerator.javabuilder.ParameterBuilder.aParameter;
+import static com.mistraltech.smogen.codegenerator.javabuilder.TypeBuilder.aType;
+import static com.mistraltech.smogen.codegenerator.javabuilder.TypeParameterBuilder.aTypeParameter;
+import static com.mistraltech.smogen.codegenerator.javabuilder.VariableBuilder.aVariable;
 
 public class MatcherGeneratorCodeWriter implements CodeWriter {
     private MatcherGeneratorProperties generatorProperties;
@@ -28,105 +46,153 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
         PsiPackage targetPackage = JavaDirectoryService.getInstance().getPackage(generatorProperties.getParentDirectory());
         assert targetPackage != null;
 
+        JavaDocumentBuilder document = aJavaDocument()
+                .setPackageName(targetPackage.getQualifiedName())
+                .addClass(generateMatcherClass());
+
+        return document.build();
+    }
+
+    private JavaClassBuilder generateMatcherClass() {
         boolean includeSuperClassProperties = generatorProperties.getSuperClassName() == null;
         List<Property> sourceClassProperties = PropertyLocator.locateProperties(getSourceClass(), includeSuperClassProperties);
 
-        StringBuilder documentText = new StringBuilder();
+        JavaClassBuilder clazz = generateClassSignature();
+        clazz.withVariables(generateMatcherVariables(sourceClassProperties))
+                .withMethod(generateConstructor(sourceClassProperties));
 
-        generatePackageStatement(documentText, targetPackage);
-        generateImports(documentText);
-        generateClassSignature(documentText);
-        generateMatcherVariables(documentText, sourceClassProperties);
-        generateConstructor(documentText, sourceClassProperties);
-        generateInnerClass(documentText);
-        generateStaticFactoryMethod(documentText);
-        generateLikeStaticFactoryMethod(documentText);
-        generateSelfMethod(documentText);
-        generateMatcherSetters(documentText, sourceClassProperties);
+        return clazz;
+//
+//        StringBuilder documentText = new StringBuilder();
+//        generateClassSignature(documentText);
+//        generateMatcherVariables(documentText, sourceClassProperties);
+//        generateConstructor(documentText, sourceClassProperties);
 
-        documentText.append("}\n");
-        return documentText.toString();
+//        generateInnerClass(documentText);
+//        generateStaticFactoryMethod(documentText);
+//        generateLikeStaticFactoryMethod(documentText);
+//        generateSelfMethod(documentText);
+//        generateMatcherSetters(documentText, sourceClassProperties);
+//        documentText.append("}\n");
+//
+//        document.setClassBody(documentText);
+
+//    private void generateDefaultImports(JavaDocumentBuilder document) {
+//        if (generatorProperties.getSuperClassName() == null) {
+//            document.addImport("com.mistraltech.smog.core.CompositePropertyMatcher");
+//        }
+//
+//        document.addImport("com.mistraltech.smog.core.ReflectingPropertyMatcher");
+//        document.addImport("com.mistraltech.smog.core.PropertyMatcher");
+//        document.addImport("org.hamcrest.Matcher");
+//        document.addStaticImport("org.hamcrest.CoreMatchers.equalTo");
+//    }
+
+
     }
 
-    private void generatePackageStatement(@NotNull StringBuilder documentText, @NotNull PsiPackage targetPackage) {
-        GeneratorUtils.addPackageStatement(documentText, targetPackage.getQualifiedName());
-    }
+    private JavaClassBuilder generateClassSignature() {
+        JavaClassBuilder clazz = aJavaClass()
+                .withAccessModifier("public")
+                .withAbstractFlag(generatorProperties.isExtensible())
+                .withFinalFlag(!generatorProperties.isExtensible())
+                .withName(generatorProperties.getClassName());
 
-    private void generateImports(StringBuilder documentText) {
-        if (generatorProperties.getSuperClassName() == null) {
-            GeneratorUtils.addImport(documentText, "com.mistraltech.smog.core.CompositePropertyMatcher");
+        if (generatorProperties.isExtensible()) {
+            final TypeParameterBuilder typeParameterR = aTypeParameter().withName("R");
+            final TypeParameterBuilder typeParameterT = aTypeParameter().withName("T")
+                    .withExtends(getSourceClassName());
+
+            clazz.withTypeParameter(typeParameterR)
+                    .withTypeParameter(typeParameterT);
+
+            if (generatorProperties.getSuperClassName() != null) {
+                clazz.withSuperclass(aType()
+                        .withName(generatorProperties.getSuperClassName())
+                        .withTypeBinding(typeParameterR)
+                        .withTypeBinding(typeParameterT));
+            } else {
+                clazz.withSuperclass(aType()
+                        .withName("com.mistraltech.smog.core.CompositePropertyMatcher")
+                        .withTypeBinding(typeParameterT));
+            }
+        } else {
+            if (generatorProperties.getSuperClassName() != null) {
+                clazz.withSuperclass(aType()
+                        .withName(generatorProperties.getSuperClassName())
+                        .withTypeBinding(generatorProperties.getClassName())
+                        .withTypeBinding(getSourceClassName()));
+            } else {
+                clazz.withSuperclass(aType()
+                        .withName("com.mistraltech.smog.core.CompositePropertyMatcher")
+                        .withTypeBinding(getSourceClassName()));
+            }
         }
 
-        GeneratorUtils.addImport(documentText, "com.mistraltech.smog.core.ReflectingPropertyMatcher");
-        GeneratorUtils.addImport(documentText, "com.mistraltech.smog.core.PropertyMatcher");
-        GeneratorUtils.addImport(documentText, "org.hamcrest.Matcher");
-        GeneratorUtils.addStaticImport(documentText, "org.hamcrest.CoreMatchers.equalTo");
-        documentText.append("\n");
+        return clazz;
     }
 
-    private void generateClassSignature(@NotNull StringBuilder documentText) {
-        documentText
-                .append("public ")
-                .append(generatorProperties.isExtensible() ? "abstract " : "final ")
-                .append("class ")
-                .append(generatorProperties.getClassName())
-                .append(generatorProperties.isExtensible() ? "<R, T extends " + getSourceClassName() + ">" : "")
-                .append(" extends ");
+    private List<VariableBuilder> generateMatcherVariables(@NotNull List<Property> properties) {
+        List<VariableBuilder> variables = new ArrayList<VariableBuilder>();
+
+        for (Property property : properties) {
+            variables.add(generateMatcherVariable(property));
+        }
+
+        return variables;
+    }
+
+    private VariableBuilder generateMatcherVariable(@NotNull Property property) {
+        return aVariable()
+                .withAccessModifier("private")
+                .withFinalFlag(true)
+                .withType(aType().withName("com.mistraltech.smog.core.PropertyMatcher").withTypeBinding(property.getBoxedType()))
+                .withName(matcherAttributeName(property))
+                .withInitialiser(aNewInstance()
+                        .withType(aType()
+                                .withName("com.mistraltech.smog.core.ReflectingPropertyMatcher")
+                                .withTypeBinding(property.getBoxedType()))
+                        .withParameter("\"" + property.getName() + "\"")
+                        .withParameter("this"));
+    }
+
+    private MethodBuilder generateConstructor(@NotNull List<Property> sourceClassProperties) {
+        MethodCallBuilder superMethodCall = aMethodCall()
+                .withName("super")
+                .withParameter("matchedObjectDescription");
 
         if (generatorProperties.getSuperClassName() != null) {
-            documentText.append(generatorProperties.getSuperClassName())
-                    .append("<")
-                    .append(generatorProperties.isExtensible() ? "R" : generatorProperties.getClassName())
-                    .append(", ")
-                    .append(generatorProperties.isExtensible() ? "T" : getSourceClassName())
-                    .append("> {\n");
-        } else {
-            documentText.append("CompositePropertyMatcher<")
-                    .append(generatorProperties.isExtensible() ? "T" : getSourceClassName())
-                    .append("> {\n");
+            superMethodCall.withParameter("template");
         }
 
-    }
-
-    private void generateMatcherVariables(@NotNull StringBuilder documentText, @NotNull List<Property> properties) {
-        for (Property property : properties) {
-            generateMatcherVariable(documentText, property);
-        }
-        documentText.append("\n");
-    }
-
-    private void generateMatcherVariable(@NotNull StringBuilder documentText, @NotNull Property property) {
-        documentText
-                .append(String.format("private PropertyMatcher<%s> %s = new ReflectingPropertyMatcher<%s>(\"%s\", this);\n",
-                        property.getBoxedType(),
-                        matcherAttributeName(property),
-                        property.getBoxedType(),
-                        property.getName()));
-    }
-
-    private void generateConstructor(@NotNull StringBuilder documentText, @NotNull List<Property> sourceClassProperties) {
-        documentText
-                .append(generatorProperties.isExtensible() ? "protected " : "private ")
-                .append(generatorProperties.getClassName())
-                .append("(final String matchedObjectDescription, final ")
-                .append(getSourceClassName())
-                .append(" template) {\n")
-                .append("super(matchedObjectDescription")
-                .append(generatorProperties.getSuperClassName() != null ? ", template" : "")
-                .append(");\n")
-                .append("if (template != null) {");
+        BlockStatementBuilder setFromTemplate = aBlockStatement()
+                .withHeader("if (template != null)");
 
         for (Property property : sourceClassProperties) {
-            documentText
-                    .append(setterMethodName(property))
-                    .append("(template.")
-                    .append(property.getAccessorName()).append("()")
-                    .append(");\n");
+            setFromTemplate.withStatement(aMethodCall()
+                    .withName(setterMethodName(property))
+                    .withParameter(aMethodCall()
+                            .withObject("template")
+                            .withName(property.getAccessorName())));
         }
 
-        documentText
-                .append("}\n")
-                .append("}\n");
+        return MethodBuilder.aMethod()
+                .withAccessModifier(generatorProperties.isExtensible() ? "protected" : "private")
+                .withName(generatorProperties.getClassName())
+                .withParameter(aParameter()
+                        .withFinalFlag(true)
+                        .withType(aType()
+                                .withName("java.lang.String"))
+                        .withName("matchedObjectDescription"))
+                .withParameter(aParameter()
+                        .withFinalFlag(true)
+                        .withType(aType()
+                                .withName(getSourceClassName()))
+                        .withName("template"))
+                .withStatement(anExpressionStatement()
+                        .withExpression(superMethodCall))
+                .withStatement(setFromTemplate);
+
     }
 
     private void generateInnerClass(@NotNull StringBuilder documentText) {
@@ -264,13 +330,11 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
         return " has" + property.getCapitalisedName();
     }
 
-    private PsiClass getSourceClass()
-    {
+    private PsiClass getSourceClass() {
         return generatorProperties.getSourceClass();
     }
-    
-    private String getSourceClassName()
-    {
-        return getSourceClass().getName();
+
+    private String getSourceClassName() {
+        return getSourceClass().getQualifiedName();
     }
 }

@@ -1,5 +1,9 @@
 package com.mistraltech.smogen.codegenerator;
 
+import com.intellij.codeInsight.actions.AbstractLayoutCodeProcessor;
+import com.intellij.codeInsight.actions.OptimizeImportsProcessor;
+import com.intellij.codeInsight.actions.RearrangeCodeProcessor;
+import com.intellij.codeInsight.actions.ReformatCodeProcessor;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.ui.Messages;
@@ -7,11 +11,9 @@ import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
-import com.intellij.psi.codeStyle.CodeStyleManager;
 import org.jetbrains.annotations.NotNull;
 
 import static com.mistraltech.smogen.utils.ActionUtils.runAction;
-import static com.mistraltech.smogen.utils.ActionUtils.runActionAsCommand;
 import static com.mistraltech.smogen.utils.PsiUtils.createMissingDirectoriesForPackage;
 import static com.mistraltech.smogen.utils.PsiUtils.findDirectoryForPackage;
 
@@ -46,7 +48,10 @@ public class Generator {
     }
 
     private void reformat(PsiFile targetFile) {
-        runActionAsCommand(new ReformatRunnable(targetFile), generatorProperties.getProject());
+        AbstractLayoutCodeProcessor processor = new ReformatCodeProcessor(targetFile.getProject(), targetFile, null, false);
+        processor = new OptimizeImportsProcessor(processor);
+        processor = new RearrangeCodeProcessor(processor, null);
+        processor.run();
     }
 
     private boolean shouldOverwriteFile(PsiFile existingFile) {
@@ -71,19 +76,6 @@ public class Generator {
         assert (directory != null);
 
         return directory;
-    }
-
-    static class ReformatRunnable implements Runnable {
-        private final PsiFile targetFile;
-
-        public ReformatRunnable(PsiFile targetFile) {
-            this.targetFile = targetFile;
-        }
-
-        @Override
-        public void run() {
-            CodeStyleManager.getInstance(targetFile.getProject()).reformat(targetFile);
-        }
     }
 
     static class FileContentGeneratorRunnable implements Runnable {
