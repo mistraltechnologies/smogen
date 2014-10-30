@@ -23,20 +23,20 @@ public class ParameterBuilder extends AbstractBuilder<ParameterBuilder> {
     }
 
     public ParameterBuilder withType(TypeBuilder type) {
-        addNestedBuilder(type);
         this.type = type;
         return this;
     }
 
     @Override
-    public String build() {
+    public String build(JavaBuilderContext context) {
         StringBuilder sb = new StringBuilder();
 
         if (finalFlag) {
             sb.append("final ");
         }
 
-        sb.append(type.build())
+        // TODO type can be primitive - should not be normalized
+        sb.append(type.build(context))
                 .append(" ")
                 .append(parameterName);
 

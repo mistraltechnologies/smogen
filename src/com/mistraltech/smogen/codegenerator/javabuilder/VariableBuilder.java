@@ -36,45 +36,38 @@ public class VariableBuilder extends AbstractBuilder<VariableBuilder> {
         return this;
     }
 
-    public VariableBuilder withType(TypeBuilder type)
-    {
-        addNestedBuilder(type);
+    public VariableBuilder withType(TypeBuilder type) {
         this.type = type;
         return this;
     }
 
     public VariableBuilder withInitialiser(ExpressionTermBuilder expression) {
-        addNestedBuilder(expression);
         this.initialiser = expression;
         return this;
     }
 
     @Override
-    public String build() {
+    public String build(JavaBuilderContext context) {
         StringBuilder sb = new StringBuilder();
 
-        if (accessModifier != null)
-        {
+        if (accessModifier != null) {
             sb.append(accessModifier).append(" ");
         }
 
-        if (staticFlag)
-        {
+        if (staticFlag) {
             sb.append("static ");
         }
 
-        if (finalFlag)
-        {
+        if (finalFlag) {
             sb.append("final ");
         }
 
-        sb.append(type.build());
+        sb.append(type.build(context))
+                .append(variableName);
 
-        sb.append(variableName);
-
-        if (initialiser != null)
-        {
-            sb.append(" = ").append(initialiser.build());
+        if (initialiser != null) {
+            sb.append(" = ")
+                    .append(initialiser.build(context));
         }
 
         sb.append(";\n");

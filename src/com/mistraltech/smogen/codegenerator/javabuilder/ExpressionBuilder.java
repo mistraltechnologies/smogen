@@ -11,8 +11,7 @@ public class ExpressionBuilder extends ExpressionTermBuilder<ExpressionBuilder> 
     private ExpressionBuilder() {
     }
 
-    public static ExpressionBuilder anExpression()
-    {
+    public static ExpressionBuilder anExpression() {
         return new ExpressionBuilder();
     }
 
@@ -23,21 +22,20 @@ public class ExpressionBuilder extends ExpressionTermBuilder<ExpressionBuilder> 
 
     public ExpressionBuilder withText(ExpressionTextBuilder text) {
         terms.add(text);
-        addNestedBuilder(text);
         return this;
     }
 
-//    public ExpressionBuilder withType(TypeBuilder type) {
-//        terms.add(type);
-//        addNestedBuilder(type);
-//        return this;
-//    }
+    public ExpressionBuilder withTerm(ExpressionTermBuilder term) {
+        terms.add(term);
+        return this;
+    }
+
 
     @Override
-    public String build() {
+    public String build(JavaBuilderContext context) {
         StringBuilder sb = new StringBuilder();
 
-        sb.append(buildList("", terms, "", ""));
+        sb.append(buildList(context, "", terms, "", ""));
 
         return sb.toString();
     }

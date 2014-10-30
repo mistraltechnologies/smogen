@@ -12,7 +12,7 @@ public class ExpressionTextBuilder extends ExpressionTermBuilder<ExpressionTextB
     }
 
     @Override
-    public String build() {
+    public String build(JavaBuilderContext context) {
         return text;
     }
 }

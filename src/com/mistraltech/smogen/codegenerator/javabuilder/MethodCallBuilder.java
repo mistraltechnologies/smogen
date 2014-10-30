@@ -12,25 +12,20 @@ public class MethodCallBuilder extends ExpressionTermBuilder<MethodCallBuilder> 
     private MethodCallBuilder() {
     }
 
-    public static MethodCallBuilder aMethodCall()
-    {
+    public static MethodCallBuilder aMethodCall() {
         return new MethodCallBuilder();
     }
 
-    public MethodCallBuilder withName(String name)
-    {
+    public MethodCallBuilder withName(String name) {
         this.name = name;
         return this;
     }
 
-    public MethodCallBuilder withParameter(String parameter)
-    {
+    public MethodCallBuilder withParameter(String parameter) {
         return withParameter(anExpression().withText(parameter));
     }
 
-    public MethodCallBuilder withParameter(ExpressionTermBuilder expression)
-    {
-        addNestedBuilder(expression);
+    public MethodCallBuilder withParameter(ExpressionTermBuilder expression) {
         parameters.add(expression);
         return this;
     }
@@ -41,15 +36,14 @@ public class MethodCallBuilder extends ExpressionTermBuilder<MethodCallBuilder> 
     }
 
     @Override
-    public String build() {
+    public String build(JavaBuilderContext context) {
         StringBuilder sb = new StringBuilder();
 
-        if (targetObject != null)
-        {
+        if (targetObject != null) {
             sb.append(targetObject).append(".");
         }
 
-        sb.append(name).append(BuilderUtils.buildMandatoryList("(", parameters, ")", ", "));
+        sb.append(name).append(BuilderUtils.buildMandatoryList(context, "(", parameters, ")", ", "));
 
         return sb.toString();
     }

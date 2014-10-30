@@ -3,6 +3,7 @@ package com.mistraltech.smogen.codegenerator.javabuilder;
 import java.util.ArrayList;
 
 import static com.mistraltech.smogen.codegenerator.javabuilder.BuilderUtils.buildList;
+import static com.mistraltech.smogen.codegenerator.javabuilder.BuilderUtils.buildMandatoryList;
 
 public class MethodBuilder extends AbstractBuilder<MethodBuilder> {
 
@@ -14,6 +15,7 @@ public class MethodBuilder extends AbstractBuilder<MethodBuilder> {
     private TypeBuilder returnType;
     private ArrayList<ParameterBuilder> parameters = new ArrayList<ParameterBuilder>();
     private ArrayList<StatementBuilder> statements = new ArrayList<StatementBuilder>();
+    private ArrayList<AnnotationBuilder> annotations = new ArrayList<AnnotationBuilder>();
 
     private MethodBuilder() {
     }
@@ -54,26 +56,30 @@ public class MethodBuilder extends AbstractBuilder<MethodBuilder> {
     }
 
     public MethodBuilder withReturnType(TypeBuilder type) {
-        addNestedBuilder(type);
         this.returnType = type;
         return this;
     }
 
     public MethodBuilder withParameter(ParameterBuilder parameter) {
-        addNestedBuilder(parameter);
         parameters.add(parameter);
         return this;
     }
 
     public MethodBuilder withStatement(StatementBuilder statement) {
-        addNestedBuilder(statement);
         statements.add(statement);
         return this;
     }
 
+    public MethodBuilder withAnnotation(AnnotationBuilder annotation) {
+        annotations.add(annotation);
+        return this;
+    }
+
     @Override
-    public String build() {
+    public String build(JavaBuilderContext context) {
         StringBuilder sb = new StringBuilder();
+
+        sb.append(buildList(context, "", annotations, "\n", "\n"));
 
         if (accessModifier != null) {
             sb.append(accessModifier).append(" ");
@@ -88,14 +94,14 @@ public class MethodBuilder extends AbstractBuilder<MethodBuilder> {
         }
 
         if (returnType != null) {
-            sb.append(returnType.build()).append(" ");
+            sb.append(returnType.build(context)).append(" ");
         }
 
         sb.append(methodName);
 
-        sb.append(buildList("(", parameters, ")", ", ")).append(" {\n");
+        sb.append(buildMandatoryList(context, "(", parameters, ")", ", ")).append(" {\n");
 
-        sb.append(buildList("", statements, "", ""));
+        sb.append(buildList(context, "", statements, "", ""));
 
         sb.append("}\n");
 

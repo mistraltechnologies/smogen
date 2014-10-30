@@ -1,13 +1,11 @@
 package com.mistraltech.smogen.codegenerator.javabuilder;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
-public class JavaDocumentBuilder extends AbstractBuilder<JavaDocumentBuilder> {
+public class JavaDocumentBuilder {
     private String packageName;
-    private List<JavaClassBuilder> classBuilderList = new ArrayList<JavaClassBuilder>();
+    private List<AbstractClassBuilder> classBuilderList = new ArrayList<AbstractClassBuilder>();
 
     private JavaDocumentBuilder() {
     }
@@ -16,39 +14,41 @@ public class JavaDocumentBuilder extends AbstractBuilder<JavaDocumentBuilder> {
         return new JavaDocumentBuilder();
     }
 
-    public JavaDocumentBuilder setPackageName(String packageName)
-    {
+    public JavaDocumentBuilder setPackageName(String packageName) {
         assert this.packageName == null;
 
         this.packageName = packageName;
         return this;
     }
 
-    public JavaDocumentBuilder addClass(JavaClassBuilder classBuilder) {
+    public JavaDocumentBuilder addClass(AbstractClassBuilder classBuilder) {
         this.classBuilderList.add(classBuilder);
-        addNestedBuilder(classBuilder);
         return this;
     }
 
     public String build() {
+        JavaBuilderContextImpl context = new JavaBuilderContextImpl();
+        StringBuilder sbBody = new StringBuilder();
+
+        for (AbstractClassBuilder classBuilder : classBuilderList) {
+            sbBody.append(classBuilder.build(context));
+        }
+
         StringBuilder sb = new StringBuilder();
 
-        if (packageName != null)
-        {
+        if (packageName != null) {
             sb.append(String.format("package %s;\n", packageName));
         }
 
-        for (String importPath : getClassReferences()) {
+        for (String importPath : context.getClassReferences()) {
             sb.append(String.format("import %s;\n", importPath));
         }
 
-        for (String importPath : getClassMemberReferences()) {
+        for (String importPath : context.getClassMemberReferences()) {
             sb.append(String.format("import static %s;\n", importPath));
         }
 
-        for (JavaClassBuilder classBuilder : classBuilderList) {
-            sb.append(classBuilder.build());
-        }
+        sb.append(sbBody);
 
         return sb.toString();
     }

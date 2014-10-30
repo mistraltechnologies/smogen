@@ -16,29 +16,25 @@ public class BlockStatementBuilder extends StatementBuilder<BlockStatementBuilde
         return new BlockStatementBuilder();
     }
 
-    public BlockStatementBuilder withHeader(String text)
-    {
+    public BlockStatementBuilder withHeader(String text) {
         this.headerText = text;
         return this;
     }
 
-    public BlockStatementBuilder withStatement(StatementBuilder statement)
-    {
+    public BlockStatementBuilder withStatement(StatementBuilder statement) {
         statements.add(statement);
-        addNestedBuilder(statement);
         return this;
     }
 
-    public BlockStatementBuilder withStatement(ExpressionTermBuilder expression)
-    {
+    public BlockStatementBuilder withStatement(ExpressionTermBuilder expression) {
         return withStatement(ExpressionStatementBuilder.anExpressionStatement().withExpression(expression));
     }
 
     @Override
-    public String build() {
+    public String build(JavaBuilderContext context) {
         StringBuilder sb = new StringBuilder();
 
-        sb.append(headerText).append("{\n").append(buildList("", statements, "", "")).append("}\n");
+        sb.append(headerText).append("{\n").append(buildList(context, "", statements, "", "")).append("}\n");
 
         return sb.toString();
     }

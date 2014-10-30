@@ -1,5 +1,7 @@
 package com.mistraltech.smogen.codegenerator.javabuilder;
 
+import static com.mistraltech.smogen.codegenerator.javabuilder.TypeBuilder.aType;
+
 public class TypeParameterBuilder extends AbstractBuilder<TypeParameterBuilder> implements TypeParameter {
     private String name;
     private String extendsClass;
@@ -7,8 +9,7 @@ public class TypeParameterBuilder extends AbstractBuilder<TypeParameterBuilder> 
     private TypeParameterBuilder() {
     }
 
-    public static TypeParameterBuilder aTypeParameter()
-    {
+    public static TypeParameterBuilder aTypeParameter() {
         return new TypeParameterBuilder();
     }
 
@@ -18,7 +19,7 @@ public class TypeParameterBuilder extends AbstractBuilder<TypeParameterBuilder> 
     }
 
     public TypeParameterBuilder withExtends(String classFQN) {
-        this.extendsClass = getClassReference(classFQN);
+        this.extendsClass = classFQN;
         return this;
     }
 
@@ -26,17 +27,22 @@ public class TypeParameterBuilder extends AbstractBuilder<TypeParameterBuilder> 
         return name;
     }
 
-    public String build()
-    {
+    public String build(JavaBuilderContext context) {
         StringBuilder sb = new StringBuilder();
 
-        sb.append(name);
-        if (extendsClass != null)
-        {
-            sb.append(" extends ").append(extendsClass);
+        if (extendsClass != null) {
+            sb.append(name)
+                    .append(" extends ")
+                    .append(context.normaliseClassReference(extendsClass));
+        } else {
+            sb.append(context.normaliseClassReference(name));
         }
 
         return sb.toString();
+    }
+
+    public TypeBuilder getType() {
+        return aType().withName(getName());
     }
 }
 

@@ -12,34 +12,29 @@ public class NewInstanceBuilder extends ExpressionTermBuilder<NewInstanceBuilder
     private NewInstanceBuilder() {
     }
 
-    public static NewInstanceBuilder aNewInstance()
-    {
+    public static NewInstanceBuilder aNewInstance() {
         return new NewInstanceBuilder();
     }
 
     public NewInstanceBuilder withType(TypeBuilder type) {
         this.type = type;
-        addNestedBuilder(type);
         return this;
     }
 
-    public NewInstanceBuilder withParameter(String parameter)
-    {
+    public NewInstanceBuilder withParameter(String parameter) {
         return withParameter(anExpression().withText(parameter));
     }
 
-    public NewInstanceBuilder withParameter(ExpressionBuilder expression)
-    {
-        addNestedBuilder(expression);
+    public NewInstanceBuilder withParameter(ExpressionBuilder expression) {
         parameters.add(expression);
         return this;
     }
 
     @Override
-    public String build() {
+    public String build(JavaBuilderContext context) {
         StringBuilder sb = new StringBuilder();
 
-        sb.append("new ").append(type.build()).append(buildMandatoryList("(", parameters, ")", ", "));
+        sb.append("new ").append(type.build(context)).append(buildMandatoryList(context, "(", parameters, ")", ", "));
 
         return sb.toString();
     }

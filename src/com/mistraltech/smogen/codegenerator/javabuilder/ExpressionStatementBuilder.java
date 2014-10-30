@@ -10,16 +10,15 @@ public class ExpressionStatementBuilder extends StatementBuilder<ExpressionState
 
     public ExpressionStatementBuilder withExpression(ExpressionTermBuilder expression) {
         this.expression = expression;
-        addNestedBuilder(expression);
         return self();
     }
 
     @Override
-    public String build() {
+    public String build(JavaBuilderContext context) {
         StringBuilder sb = new StringBuilder();
 
         if (expression != null) {
-            sb.append(expression.build())
+            sb.append(expression.build(context))
                     .append(";\n");
         }
 
