@@ -36,7 +36,7 @@ public class JavaDocumentBuilder {
 
         StringBuilder sb = new StringBuilder();
 
-        if (packageName != null) {
+        if (packageName != null && !packageName.isEmpty()) {
             sb.append(String.format("package %s;\n", packageName));
         }
 

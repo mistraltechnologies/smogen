@@ -174,18 +174,7 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
             superMethodCall.withParameter("template");
         }
 
-        BlockStatementBuilder setFromTemplate = aBlockStatement()
-                .withHeader("if (template != null)");
-
-        for (Property property : sourceClassProperties) {
-            setFromTemplate.withStatement(aMethodCall()
-                    .withName(setterMethodName(property))
-                    .withParameter(aMethodCall()
-                            .withObject("template")
-                            .withName(property.getAccessorName())));
-        }
-
-        return aMethod()
+        final MethodBuilder constructor = aMethod()
                 .withAccessModifier(generatorProperties.isExtensible() ? "protected" : "private")
                 .withName(generatorProperties.getClassName())
                 .withParameter(aParameter()
@@ -199,9 +188,24 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
                                 .withName(getSourceClassFQName()))
                         .withName("template"))
                 .withStatement(anExpressionStatement()
-                        .withExpression(superMethodCall))
-                .withStatement(setFromTemplate);
+                        .withExpression(superMethodCall));
 
+        if (sourceClassProperties.size() > 0) {
+            BlockStatementBuilder setFromTemplate = aBlockStatement()
+                    .withHeader("if (template != null)");
+
+            for (Property property : sourceClassProperties) {
+                setFromTemplate.withStatement(aMethodCall()
+                        .withName(setterMethodName(property))
+                        .withParameter(aMethodCall()
+                                .withObject("template")
+                                .withName(property.getAccessorName())));
+            }
+
+            constructor.withStatement(setFromTemplate);
+        }
+
+        return constructor;
     }
 
     private NestedClassBuilder generateNestedClass() {
