@@ -25,4 +25,7 @@ public class GeneratorTest extends AbstractGeneratorTest {
         doTest("non_default_package", generatorProperties().setPackageName("com.acme"));
     }
 
+    public void testPropertyNames() {
+        doTest("property_names", generatorProperties());
+    }
 }
