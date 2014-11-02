@@ -35,7 +35,6 @@ public class ParameterBuilder extends AbstractBuilder<ParameterBuilder> {
             sb.append("final ");
         }
 
-        // TODO type can be primitive - should not be normalized
         sb.append(type.build(context))
                 .append(" ")
                 .append(parameterName);

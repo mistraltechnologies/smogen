@@ -19,7 +19,7 @@ public abstract class AbstractGeneratorTest extends LightCodeInsightFixtureTestC
         return new File("").getAbsolutePath().replace(File.separatorChar, '/') + "/testData";
     }
 
-    protected void doTest(String inputFilePath, String generatedFilePath, MatcherGeneratorProperties generatorProperties) {
+    protected void doTest(String inputFilePath, String expectedGeneratedFilePath, MatcherGeneratorProperties generatorProperties) {
         List<VirtualFile> sourceRoots = SourceRootUtils.getSourceAndTestSourceRoots(getProject());
 
         final PsiFile sourceFile = myFixture.configureByFile(inputFilePath);
@@ -30,7 +30,8 @@ public abstract class AbstractGeneratorTest extends LightCodeInsightFixtureTestC
 
         new Generator(generatorProperties).generate();
 
-        myFixture.checkResultByFile("WidgetMatcher.java", generatedFilePath, false);
+        final String generatedFile = generatorProperties.getPackageName().replace('.','/') + "/" + generatorProperties.getClassName() + ".java";
+        myFixture.checkResultByFile(generatedFile, expectedGeneratedFilePath, false);
     }
 
     protected MatcherGeneratorProperties generatorProperties() {

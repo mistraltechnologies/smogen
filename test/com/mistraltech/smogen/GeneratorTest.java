@@ -13,4 +13,8 @@ public class GeneratorTest extends AbstractGeneratorTest {
   public void testBasicExtensibleMatcher() {
     doTest("basic_extensible", generatorProperties().setExtensible(true));
   }
+
+  public void testGenerateIntoNonDefaultPackage() {
+    doTest("non_default_package", generatorProperties().setPackageName("com.acme"));
+  }
 }
