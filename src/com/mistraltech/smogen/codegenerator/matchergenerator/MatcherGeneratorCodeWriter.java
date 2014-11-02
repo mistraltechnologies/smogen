@@ -11,7 +11,6 @@ import com.mistraltech.smogen.codegenerator.javabuilder.JavaDocumentBuilder;
 import com.mistraltech.smogen.codegenerator.javabuilder.MethodBuilder;
 import com.mistraltech.smogen.codegenerator.javabuilder.MethodCallBuilder;
 import com.mistraltech.smogen.codegenerator.javabuilder.NestedClassBuilder;
-import com.mistraltech.smogen.codegenerator.javabuilder.StaticMethodCallBuilder;
 import com.mistraltech.smogen.codegenerator.javabuilder.TypeBuilder;
 import com.mistraltech.smogen.codegenerator.javabuilder.TypeParameterBuilder;
 import com.mistraltech.smogen.codegenerator.javabuilder.VariableBuilder;
@@ -72,7 +71,12 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
                 .withAccessModifier("public")
                 .withAbstractFlag(generatorProperties.isExtensible())
                 .withFinalFlag(!generatorProperties.isExtensible())
-                .withName(generatorProperties.getClassName());
+                .withName(generatorProperties.getClassName())
+                .withAnnotation(anAnnotation()
+                        .withType(aType()
+                                .withName("com.mistraltech.smog.core.annotation.Matches"))
+                        .withParameter(anExpression()
+                                .withText(getSourceClassFQName() + ".class")));
 
         if (generatorProperties.isExtensible()) {
             typeParameterR = aTypeParameter().withName("R");
@@ -278,7 +282,8 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
     private MethodBuilder generateSelfMethod(TypeBuilder typeParameterR) {
         return aMethod()
                 .withAnnotation(anAnnotation()
-                        .withName("SuppressWarnings")
+                        .withType(aType()
+                                .withName("java.lang.SuppressWarnings"))
                         .withParameter(expressionText("\"unchecked\"")))
                 .withReturnType(typeParameterR)
                 .withName("self")

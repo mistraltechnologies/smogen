@@ -1,10 +1,12 @@
 import com.mistraltech.smog.core.CompositePropertyMatcher;
 import com.mistraltech.smog.core.PropertyMatcher;
 import com.mistraltech.smog.core.ReflectingPropertyMatcher;
+import com.mistraltech.smog.core.annotation.Matches;
 import org.hamcrest.Matcher;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 
+@Matches(Widget.class)
 public final class WidgetMatcher extends CompositePropertyMatcher<Widget> {
     private final PropertyMatcher<String> propMatcher = new ReflectingPropertyMatcher<String>("prop", this);
 

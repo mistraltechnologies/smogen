@@ -16,6 +16,7 @@ public abstract class AbstractClassBuilder<T extends AbstractClassBuilder<T>> ex
     private ArrayList<VariableBuilder> variables = new ArrayList<VariableBuilder>();
     private ArrayList<MethodBuilder> methods = new ArrayList<MethodBuilder>();
     private ArrayList<NestedClassBuilder> nestedClasses = new ArrayList<NestedClassBuilder>();
+    private List<AnnotationBuilder> annotations = new ArrayList<AnnotationBuilder>();
 
     protected AbstractClassBuilder() {
     }
@@ -79,6 +80,11 @@ public abstract class AbstractClassBuilder<T extends AbstractClassBuilder<T>> ex
         return self();
     }
 
+    public T withAnnotation(AnnotationBuilder annotation) {
+        annotations.add(annotation);
+        return self();
+    }
+
     protected String getAccessModifier() {
         return accessModifier;
     }
@@ -94,6 +100,8 @@ public abstract class AbstractClassBuilder<T extends AbstractClassBuilder<T>> ex
     @Override
     public String build(JavaBuilderContext context) {
         StringBuilder sb = new StringBuilder();
+
+        sb.append(buildList(context, "", annotations, "", ""));
 
         writeModifiers(sb);
 

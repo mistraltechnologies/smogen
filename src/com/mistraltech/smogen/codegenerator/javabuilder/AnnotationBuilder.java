@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import static com.mistraltech.smogen.codegenerator.javabuilder.BuilderUtils.buildList;
 
 public class AnnotationBuilder extends AbstractBuilder<AnnotationBuilder> {
-    private String name;
+    private TypeBuilder type;
     private ArrayList<ExpressionTermBuilder<?>> parameters = new ArrayList<ExpressionTermBuilder<?>>();
 
     private AnnotationBuilder() {
@@ -15,8 +15,8 @@ public class AnnotationBuilder extends AbstractBuilder<AnnotationBuilder> {
         return new AnnotationBuilder();
     }
 
-    public AnnotationBuilder withName(String name) {
-        this.name = name;
+    public AnnotationBuilder withType(TypeBuilder type) {
+        this.type = type;
         return this;
     }
 
@@ -30,9 +30,9 @@ public class AnnotationBuilder extends AbstractBuilder<AnnotationBuilder> {
         StringBuilder sb = new StringBuilder();
 
         sb.append("@")
-                .append(name)
+                .append(type.build(context))
                 .append(buildList(context, "(", parameters, ")", ", "))
-                .append(";\n");
+                .append("\n");
 
         return sb.toString();
     }
