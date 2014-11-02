@@ -77,16 +77,19 @@ public final class NameUtils {
     }
 
     @NotNull
-    public static String getUnqualifiedName(@NotNull String fqn)
-    {
+    public static String getUnqualifiedName(@NotNull String fqn) {
         int idx = fqn.lastIndexOf('.');
         return idx >= 0 ? fqn.substring(idx + 1) : fqn;
     }
 
     @NotNull
-    public static String dropUnqualifiedName(@NotNull String fqn)
-    {
+    public static String dropUnqualifiedName(@NotNull String fqn) {
         int idx = fqn.lastIndexOf('.');
         return idx > 0 ? fqn.substring(0, idx - 1) : "";
+    }
+
+    @NotNull
+    public static String createFQN(@NotNull String path, @NotNull String name) {
+        return path.isEmpty() ? name : path + "." + name;
     }
 }

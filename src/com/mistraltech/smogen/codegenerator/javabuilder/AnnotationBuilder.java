@@ -31,8 +31,7 @@ public class AnnotationBuilder extends AbstractBuilder<AnnotationBuilder> {
 
         sb.append("@")
                 .append(type.build(context))
-                .append(buildList(context, "(", parameters, ")", ", "))
-                .append("\n");
+                .append(buildList(context, "(", parameters, ")", ", "));
 
         return sb.toString();
     }

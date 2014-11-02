@@ -79,7 +79,7 @@ public class MethodBuilder extends AbstractBuilder<MethodBuilder> {
     public String build(JavaBuilderContext context) {
         StringBuilder sb = new StringBuilder();
 
-        sb.append(buildList(context, "", annotations, "\n", "\n"));
+        sb.append(buildList(context, "", annotations, "\n", ""));
 
         if (accessModifier != null) {
             sb.append(accessModifier).append(" ");

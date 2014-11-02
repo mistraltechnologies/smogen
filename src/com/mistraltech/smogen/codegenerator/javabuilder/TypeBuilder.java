@@ -6,7 +6,7 @@ import java.util.List;
 import static com.mistraltech.smogen.codegenerator.javabuilder.TypeParameterBuilder.aTypeParameter;
 
 public class TypeBuilder extends AbstractBuilder<TypeBuilder> {
-    private List<TypeParameter> typeBindings = new ArrayList<TypeParameter>();
+    private List<TypeParameterBuilder> typeBindings = new ArrayList<TypeParameterBuilder>();
     private String typeFQN;
 
     private TypeBuilder() {
@@ -25,7 +25,11 @@ public class TypeBuilder extends AbstractBuilder<TypeBuilder> {
         return withTypeBinding(aTypeParameter().withName(classFQN));
     }
 
-    public TypeBuilder withTypeBinding(TypeParameter typeParameter) {
+    public TypeBuilder withTypeBinding(TypeBuilder type) {
+        return withTypeBinding(aTypeParameter().withType(type));
+    }
+
+    public TypeBuilder withTypeBinding(TypeParameterBuilder typeParameter) {
         this.typeBindings.add(typeParameter);
         return this;
     }

@@ -7,11 +7,11 @@ import org.hamcrest.Matcher;
 import static org.hamcrest.CoreMatchers.equalTo;
 
 @Matches(Widget.class)
-public final class WidgetMatcher extends CompositePropertyMatcher<Widget> {
+public class WidgetMatcher<R extends WidgetMatcher<R>, T extends Widget> extends CompositePropertyMatcher<T> {
     private static final String MATCHED_OBJECT_DESCRIPTION = "a Widget";
     private final PropertyMatcher<String> propMatcher = new ReflectingPropertyMatcher<String>("prop", this);
 
-    private WidgetMatcher(final String matchedObjectDescription, final Widget template) {
+    protected WidgetMatcher(final String matchedObjectDescription, final T template) {
         super(matchedObjectDescription);
         if (template != null) {
             hasProp(template.getProp());
@@ -22,16 +22,21 @@ public final class WidgetMatcher extends CompositePropertyMatcher<Widget> {
         return new WidgetMatcher(MATCHED_OBJECT_DESCRIPTION, null);
     }
 
-    public static WidgetMatcher aWidgetLike(final Widget template) {
+    public static WidgetMatcher aWidgetLike(final T template) {
         return new WidgetMatcher(MATCHED_OBJECT_DESCRIPTION, template);
     }
 
-    public WidgetMatcher hasProp(final String prop) {
+    @SuppressWarnings("unchecked")
+    private R self() {
+        return (R) this;
+    }
+
+    public R hasProp(final String prop) {
         return hasProp(equalTo(prop));
     }
 
-    public WidgetMatcher hasProp(final Matcher<String> propMatcher) {
+    public R hasProp(final Matcher<String> propMatcher) {
         this.propMatcher.setMatcher(propMatcher);
-        return this;
+        return self();
     }
 }

@@ -63,6 +63,7 @@ public class VariableBuilder extends AbstractBuilder<VariableBuilder> {
         }
 
         sb.append(type.build(context))
+                .append(" ")
                 .append(variableName);
 
         if (initialiser != null) {

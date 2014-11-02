@@ -9,4 +9,8 @@ public class GeneratorTest extends AbstractGeneratorTest {
   public void testSimpleProperty() {
     doTest("simple_property", generatorProperties());
   }
+
+  public void testBasicExtensibleMatcher() {
+    doTest("basic_extensible", generatorProperties().setExtensible(true));
+  }
 }

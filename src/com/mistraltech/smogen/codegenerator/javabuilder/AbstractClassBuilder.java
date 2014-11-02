@@ -11,7 +11,7 @@ public abstract class AbstractClassBuilder<T extends AbstractClassBuilder<T>> ex
     private boolean finalFlag;
     private String className;
     private TypeBuilder superclass;
-    private List<TypeParameterBuilder> typeParameters = new ArrayList<TypeParameterBuilder>();
+    private List<TypeParameterDeclBuilder> typeParameters = new ArrayList<TypeParameterDeclBuilder>();
     private ArrayList<TypeBuilder> interfaces = new ArrayList<TypeBuilder>();
     private ArrayList<VariableBuilder> variables = new ArrayList<VariableBuilder>();
     private ArrayList<MethodBuilder> methods = new ArrayList<MethodBuilder>();
@@ -27,14 +27,14 @@ public abstract class AbstractClassBuilder<T extends AbstractClassBuilder<T>> ex
     }
 
     public T withAbstractFlag(boolean abstractFlag) {
-        assert !finalFlag;
+        assert !(finalFlag && abstractFlag);
 
         this.abstractFlag = abstractFlag;
         return self();
     }
 
     public T withFinalFlag(boolean finalFlag) {
-        assert !abstractFlag;
+        assert !(finalFlag && abstractFlag);
 
         this.finalFlag = finalFlag;
         return self();
@@ -45,28 +45,33 @@ public abstract class AbstractClassBuilder<T extends AbstractClassBuilder<T>> ex
         return self();
     }
 
-    public T withTypeParameter(TypeParameterBuilder param) {
+    public T withTypeParameter(TypeParameterDeclBuilder param) {
         this.typeParameters.add(param);
         return self();
     }
 
-    public T withSuperclass(TypeBuilder typeBuilder) {
-        this.superclass = typeBuilder;
+    public T withSuperclass(TypeBuilder type) {
+        this.superclass = type;
         return self();
     }
 
-    public T withImplementedInterface(TypeBuilder typeBuilder) {
-        this.interfaces.add(typeBuilder);
+    public T withImplementedInterface(TypeBuilder type) {
+        this.interfaces.add(type);
         return self();
     }
 
-    public T withVariables(List<VariableBuilder> variableBuilders) {
-        this.variables.addAll(variableBuilders);
+    public T withVariables(List<VariableBuilder> variables) {
+        this.variables.addAll(variables);
         return self();
     }
 
-    public T withMethods(List<MethodBuilder> methodBuilders) {
-        this.methods.addAll(methodBuilders);
+    public T withVariable(VariableBuilder variable) {
+        this.variables.add(variable);
+        return self();
+    }
+
+    public T withMethods(List<MethodBuilder> methods) {
+        this.methods.addAll(methods);
         return self();
     }
 
@@ -101,7 +106,7 @@ public abstract class AbstractClassBuilder<T extends AbstractClassBuilder<T>> ex
     public String build(JavaBuilderContext context) {
         StringBuilder sb = new StringBuilder();
 
-        sb.append(buildList(context, "", annotations, "", ""));
+        sb.append(buildList(context, "", annotations, "\n", ""));
 
         writeModifiers(sb);
 
