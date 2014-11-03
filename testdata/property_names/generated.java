@@ -34,7 +34,7 @@ public final class WidgetMatcher extends CompositePropertyMatcher<Widget> {
         return has_prop(equalTo(_prop));
     }
 
-    public WidgetMatcher has_prop(final Matcher<String> _propMatcher) {
+    public WidgetMatcher has_prop(final Matcher<? super String> _propMatcher) {
         this._propMatcher.setMatcher(_propMatcher);
         return this;
     }
@@ -43,7 +43,7 @@ public final class WidgetMatcher extends CompositePropertyMatcher<Widget> {
         return hasURL(org.hamcrest.CoreMatchers.equalTo(uRL));
     }
 
-    public WidgetMatcher hasURL(final Matcher<String> uRLMatcher) {
+    public WidgetMatcher hasURL(final Matcher<? super String> uRLMatcher) {
         this.uRLMatcher.setMatcher(uRLMatcher);
         return this;
     }
@@ -52,7 +52,7 @@ public final class WidgetMatcher extends CompositePropertyMatcher<Widget> {
         return hasI(org.hamcrest.CoreMatchers.equalTo(i));
     }
 
-    public WidgetMatcher hasI(final Matcher<String> iMatcher) {
+    public WidgetMatcher hasI(final Matcher<? super String> iMatcher) {
         this.iMatcher.setMatcher(iMatcher);
         return this;
     }

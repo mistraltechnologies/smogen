@@ -3,6 +3,8 @@ package com.mistraltech.smogen.codegenerator.javabuilder;
 public class TypeParameterBuilder extends AbstractBuilder<TypeParameterBuilder> {
     private String name;
     private TypeBuilder type;
+    private boolean subTypes;
+    private boolean superTypes;
 
     private TypeParameterBuilder() {
     }
@@ -23,13 +25,34 @@ public class TypeParameterBuilder extends AbstractBuilder<TypeParameterBuilder> 
         return this;
     }
 
+    public TypeParameterBuilder withSubTypes(boolean subTypes) {
+        assert !(superTypes && subTypes);
+        this.subTypes = subTypes;
+        return this;
+    }
+
+    public TypeParameterBuilder withSuperTypes(boolean superTypes) {
+        assert !(superTypes && subTypes);
+        this.superTypes = superTypes;
+        return this;
+    }
 
     @Override
     public String build(JavaBuilderContext context) {
-        if (name != null) {
-            return name;
-        } else {
-            return type.build(context);
+        StringBuilder sb = new StringBuilder();
+
+        if (subTypes) {
+            sb.append("? extends ");
+        } else if (superTypes) {
+            sb.append("? super ");
         }
+
+        if (name != null) {
+            sb.append(name);
+        } else {
+            sb.append(type.build(context));
+        }
+
+        return sb.toString();
     }
 }

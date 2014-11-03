@@ -35,7 +35,7 @@ public class WidgetMatcher<R extends WidgetMatcher<R>, T extends Widget> extends
         return hasProp(equalTo(prop));
     }
 
-    public R hasProp(final Matcher<String> propMatcher) {
+    public R hasProp(final Matcher<? super String> propMatcher) {
         this.propMatcher.setMatcher(propMatcher);
         return self();
     }

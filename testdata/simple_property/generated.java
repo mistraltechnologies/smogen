@@ -30,7 +30,7 @@ public final class WidgetMatcher extends CompositePropertyMatcher<Widget> {
         return hasProp(equalTo(prop));
     }
 
-    public WidgetMatcher hasProp(final Matcher<String> propMatcher) {
+    public WidgetMatcher hasProp(final Matcher<? super String> propMatcher) {
         this.propMatcher.setMatcher(propMatcher);
         return this;
     }
