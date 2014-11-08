@@ -1,7 +1,5 @@
 package com.mistraltech.smogen;
 
-import com.mistraltech.smogen.utils.PsiUtils;
-
 public class GeneratorTest extends AbstractGeneratorTest {
 
     public void testMinimalClass() {
@@ -27,5 +25,13 @@ public class GeneratorTest extends AbstractGeneratorTest {
 
     public void testPropertyNames() {
         doTest("property_names", generatorProperties());
+    }
+
+    public void testPropertyTypes() {
+        doTest("property_types", generatorProperties());
+    }
+
+    public void testGetterThrowsException() {
+        doTest("getter_throws", generatorProperties());
     }
 }

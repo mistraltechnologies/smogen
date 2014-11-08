@@ -85,7 +85,13 @@ public final class NameUtils {
     @NotNull
     public static String dropUnqualifiedName(@NotNull String fqn) {
         int idx = fqn.lastIndexOf('.');
-        return idx > 0 ? fqn.substring(0, idx - 1) : "";
+        return idx > 0 ? fqn.substring(0, idx) : "";
+    }
+
+    @NotNull
+    public static String dropParams(@NotNull String fqn) {
+        int idx = fqn.indexOf('<');
+        return idx >= 0 ? fqn.substring(0, idx) : fqn;
     }
 
     @NotNull

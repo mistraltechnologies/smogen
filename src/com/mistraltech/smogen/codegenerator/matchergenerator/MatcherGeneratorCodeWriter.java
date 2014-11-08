@@ -4,6 +4,7 @@ import com.intellij.psi.JavaDirectoryService;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiPackage;
 import com.mistraltech.smogen.codegenerator.CodeWriter;
+import com.mistraltech.smogen.codegenerator.PsiTypeConverter;
 import com.mistraltech.smogen.codegenerator.javabuilder.AbstractClassBuilder;
 import com.mistraltech.smogen.codegenerator.javabuilder.BlockStatementBuilder;
 import com.mistraltech.smogen.codegenerator.javabuilder.ExpressionBuilder;
@@ -177,14 +178,23 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
                 .withFinalFlag(true)
                 .withType(aType()
                         .withName("com.mistraltech.smog.core.PropertyMatcher")
-                        .withTypeBinding(property.getBoxedType()))
+                        .withTypeBinding(getPropertyType(property, true)))
                 .withName(matcherAttributeName(property))
                 .withInitialiser(aNewInstance()
                         .withType(aType()
                                 .withName("com.mistraltech.smog.core.ReflectingPropertyMatcher")
-                                .withTypeBinding(property.getBoxedType()))
+                                .withTypeBinding(getPropertyType(property, true)))
                         .withParameter("\"" + property.getName() + "\"")
                         .withParameter("this"));
+    }
+
+    private TypeBuilder getPropertyType(@NotNull Property property, boolean boxed)
+    {
+        PsiTypeConverter typeConverter = new PsiTypeConverter(boxed);
+
+        property.accept(typeConverter);
+
+        return typeConverter.getTypeBuilder();
     }
 
     private MethodBuilder generateConstructor(@NotNull List<Property> sourceClassProperties, TypeBuilder matchedType) {
@@ -321,7 +331,7 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
                 .withName(setterMethodName(property))
                 .withParameter(aParameter()
                         .withFinalFlag(true)
-                        .withType(aType().withName(property.getType()))
+                        .withType(getPropertyType(property, false))
                         .withName(property.getFieldName()))
                 .withStatement(aReturnStatement()
                         .withExpression(aMethodCall()
@@ -345,7 +355,7 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
                         .withType(aType()
                                 .withName("org.hamcrest.Matcher")
                                 .withTypeBinding(aTypeParameter()
-                                        .withName(property.getBoxedType())
+                                        .withType(getPropertyType(property, true))
                                         .withSuperTypes(true)))
                         .withName(matcherAttributeName(property)))
                 .withStatement(anExpressionStatement()
@@ -356,27 +366,6 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
                 .withStatement(aReturnStatement()
                         .withExpression(returnExpression)));
         return methods;
-
-
-//        documentText
-//                .append("public ")
-//                .append(generatorProperties.isExtensible() ? "R" : generatorProperties.getClassName())
-//                .append(" ")
-//                .append(setterMethodName(property))
-//                .append("(Matcher<? super ")
-//                .append(property.getBoxedType())
-//                .append("> ")
-//                .append(matcherAttributeName(property))
-//                .append(") {\n")
-//                .append("this.")
-//                .append(matcherAttributeName(property))
-//                .append(".setMatcher(")
-//                .append(matcherAttributeName(property))
-//                .append(");\n")
-//                .append("return ")
-//                .append(generatorProperties.isExtensible() ? "self()" : "this")
-//                .append(";\n")
-//                .append("}\n");
     }
 
     private String matcherAttributeName(@NotNull Property property) {

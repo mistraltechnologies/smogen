@@ -1,8 +1,12 @@
 package com.mistraltech.smogen.codegenerator.javabuilder;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.mistraltech.smogen.codegenerator.javabuilder.TypeBuilder.aType;
+
 public class TypeParameterBuilder extends AbstractBuilder<TypeParameterBuilder> {
-    private String name;
-    private TypeBuilder type;
+    private List<TypeBuilder> types = new ArrayList<TypeBuilder>();
     private boolean subTypes;
     private boolean superTypes;
 
@@ -14,14 +18,11 @@ public class TypeParameterBuilder extends AbstractBuilder<TypeParameterBuilder> 
     }
 
     public TypeParameterBuilder withName(String name) {
-        assert type == null;
-        this.name = name;
-        return this;
+        return withType(aType().withName(name));
     }
 
     public TypeParameterBuilder withType(TypeBuilder type) {
-        assert this.type == null;
-        this.type = type;
+        types.add(type);
         return this;
     }
 
@@ -45,13 +46,28 @@ public class TypeParameterBuilder extends AbstractBuilder<TypeParameterBuilder> 
             sb.append("? extends ");
         } else if (superTypes) {
             sb.append("? super ");
+        } else if (types.isEmpty()) {
+            sb.append("?");
         }
 
-        if (name != null) {
-            sb.append(name);
-        } else {
-            sb.append(type.build(context));
+        sb.append(BuilderUtils.buildList(context, "", types, "", " & "));
+
+        return sb.toString();
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+
+        if (subTypes) {
+            sb.append("? extends ");
+        } else if (superTypes) {
+            sb.append("? super ");
+        } else if (types.isEmpty()) {
+            sb.append("?");
         }
+
+        sb.append(BuilderUtils.buildList("", types, "", " & "));
 
         return sb.toString();
     }

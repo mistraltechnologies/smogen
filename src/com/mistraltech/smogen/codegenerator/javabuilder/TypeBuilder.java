@@ -8,6 +8,7 @@ import static com.mistraltech.smogen.codegenerator.javabuilder.TypeParameterBuil
 public class TypeBuilder extends AbstractBuilder<TypeBuilder> {
     private List<TypeParameterBuilder> typeBindings = new ArrayList<TypeParameterBuilder>();
     private String typeFQN;
+    private int arrayDimensions;
 
     private TypeBuilder() {
     }
@@ -22,7 +23,7 @@ public class TypeBuilder extends AbstractBuilder<TypeBuilder> {
     }
 
     public TypeBuilder withTypeBinding(String classFQN) {
-        return withTypeBinding(aTypeParameter().withName(classFQN));
+        return withTypeBinding(aType().withName(classFQN));
     }
 
     public TypeBuilder withTypeBinding(TypeBuilder type) {
@@ -31,6 +32,11 @@ public class TypeBuilder extends AbstractBuilder<TypeBuilder> {
 
     public TypeBuilder withTypeBinding(TypeParameterBuilder typeParameter) {
         this.typeBindings.add(typeParameter);
+        return this;
+    }
+
+    public TypeBuilder withArrayDimensions(int arrayDimensions) {
+        this.arrayDimensions = arrayDimensions;
         return this;
     }
 
@@ -44,6 +50,24 @@ public class TypeBuilder extends AbstractBuilder<TypeBuilder> {
 
         sb.append(context.normaliseClassReference(typeFQN))
                 .append(BuilderUtils.buildList(context, "<", typeBindings, ">", ", "));
+
+        for (int i = 0; i < arrayDimensions; i++) {
+            sb.append("[]");
+        }
+
+        return sb.toString();
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(typeFQN)
+                .append(BuilderUtils.buildList("<", typeBindings, ">", ", "));
+
+        for (int i = 0; i < arrayDimensions; i++) {
+            sb.append("[]");
+        }
 
         return sb.toString();
     }

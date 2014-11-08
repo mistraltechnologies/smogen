@@ -12,7 +12,6 @@ import com.mistraltech.smogen.utils.PsiUtils;
 import com.mistraltech.smogen.utils.SourceRootUtils;
 
 import java.io.File;
-import java.util.List;
 
 public abstract class AbstractGeneratorTest extends LightCodeInsightFixtureTestCase {
     @Override

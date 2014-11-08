@@ -32,6 +32,10 @@ public final class BuilderUtils {
         return buildList(context, openBrace, elements, closeBrace, separator, false);
     }
 
+    public static String buildList(String openBrace, List<?> elements, String closeBrace, String separator) {
+        return buildList(null, openBrace, elements, closeBrace, separator, false);
+    }
+
     private static String asString(Object o, JavaBuilderContext context) {
         return (o instanceof Builder) ? ((Builder) o).build(context) : o.toString();
     }

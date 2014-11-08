@@ -4,9 +4,11 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiPrimitiveType;
 import com.intellij.psi.PsiType;
+import com.intellij.psi.PsiTypeVisitor;
 import com.intellij.psi.util.PropertyUtil;
 import com.mistraltech.smogen.utils.NameUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class Property {
     private final PsiMethod accessorMethod;
@@ -78,6 +80,16 @@ public class Property {
     @NotNull
     public String getType() {
         return returnType.getCanonicalText();
+    }
+
+    /**
+     * Gets the name of the property type (the return type of the accessor method).
+     *
+     * @return the name of the property type
+     */
+    @Nullable
+    public Object accept(PsiTypeVisitor<Object> visitor) {
+        return returnType.accept(visitor);
     }
 
     /**
