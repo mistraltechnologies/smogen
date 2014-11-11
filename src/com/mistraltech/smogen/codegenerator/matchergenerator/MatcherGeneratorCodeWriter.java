@@ -12,6 +12,7 @@ import com.mistraltech.smogen.codegenerator.javabuilder.JavaDocumentBuilder;
 import com.mistraltech.smogen.codegenerator.javabuilder.MethodBuilder;
 import com.mistraltech.smogen.codegenerator.javabuilder.MethodCallBuilder;
 import com.mistraltech.smogen.codegenerator.javabuilder.NestedClassBuilder;
+import com.mistraltech.smogen.codegenerator.javabuilder.StaticMethodCallBuilder;
 import com.mistraltech.smogen.codegenerator.javabuilder.TypeBuilder;
 import com.mistraltech.smogen.codegenerator.javabuilder.TypeParameterDeclBuilder;
 import com.mistraltech.smogen.codegenerator.javabuilder.VariableBuilder;
@@ -188,8 +189,7 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
                         .withParameter("this"));
     }
 
-    private TypeBuilder getPropertyType(@NotNull Property property, boolean boxed)
-    {
+    private TypeBuilder getPropertyType(@NotNull Property property, boolean boxed) {
         PsiTypeConverter typeConverter = new PsiTypeConverter(boxed);
 
         property.accept(typeConverter);
@@ -325,6 +325,18 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
     private List<MethodBuilder> generateMatcherSetters(@NotNull Property property, TypeBuilder returnType) {
         List<MethodBuilder> methods = new ArrayList<MethodBuilder>();
 
+        final StaticMethodCallBuilder equalToCall = aStaticMethodCall()
+                .withType(aType()
+                        .withName("org.hamcrest.CoreMatchers"))
+                .withName("equalTo")
+                .withParameter(property.getFieldName());
+
+        final TypeBuilder boxedPropertyType = getPropertyType(property, true);
+
+        if (boxedPropertyType.containsWildcard()) {
+            equalToCall.withTypeBinding(boxedPropertyType);
+        }
+
         methods.add(aMethod()
                 .withAccessModifier("public")
                 .withReturnType(returnType)
@@ -335,12 +347,8 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
                         .withName(property.getFieldName()))
                 .withStatement(aReturnStatement()
                         .withExpression(aMethodCall()
-                                .withName(setterMethodName(property))
-                                .withParameter(aStaticMethodCall()
-                                        .withType(aType()
-                                                .withName("org.hamcrest.CoreMatchers"))
-                                        .withName("equalTo")
-                                        .withParameter(property.getFieldName())))));
+                                        .withName(setterMethodName(property))
+                                        .withParameter(equalToCall))));
 
         ExpressionBuilder returnExpression = generatorProperties.isExtensible()
                 ? anExpression().withTerm(aMethodCall().withName("self"))
@@ -355,7 +363,7 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
                         .withType(aType()
                                 .withName("org.hamcrest.Matcher")
                                 .withTypeBinding(aTypeParameter()
-                                        .withType(getPropertyType(property, true))
+                                        .withType(boxedPropertyType)
                                         .withSuperTypes(true)))
                         .withName(matcherAttributeName(property)))
                 .withStatement(anExpressionStatement()

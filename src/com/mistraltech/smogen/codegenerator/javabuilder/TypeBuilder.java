@@ -44,6 +44,16 @@ public class TypeBuilder extends AbstractBuilder<TypeBuilder> {
         return typeFQN;
     }
 
+    public boolean containsWildcard() {
+        for (TypeParameterBuilder typeBinding : typeBindings) {
+            if (typeBinding.containsWildcard()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     @Override
     public String build(JavaBuilderContext context) {
         StringBuilder sb = new StringBuilder();

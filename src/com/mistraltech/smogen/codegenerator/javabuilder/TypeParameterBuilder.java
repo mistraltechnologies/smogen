@@ -38,6 +38,10 @@ public class TypeParameterBuilder extends AbstractBuilder<TypeParameterBuilder> 
         return this;
     }
 
+    public boolean containsWildcard() {
+        return superTypes || subTypes || types.isEmpty();
+    }
+
     @Override
     public String build(JavaBuilderContext context) {
         StringBuilder sb = new StringBuilder();

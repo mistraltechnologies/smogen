@@ -40,7 +40,7 @@ public final class WidgetMatcher extends CompositePropertyMatcher<Widget> {
     }
 
     public WidgetMatcher hasURL(final String uRL) {
-        return hasURL(org.hamcrest.CoreMatchers.equalTo(uRL));
+        return hasURL(equalTo(uRL));
     }
 
     public WidgetMatcher hasURL(final Matcher<? super String> uRLMatcher) {
@@ -49,7 +49,7 @@ public final class WidgetMatcher extends CompositePropertyMatcher<Widget> {
     }
 
     public WidgetMatcher hasI(final String i) {
-        return hasI(org.hamcrest.CoreMatchers.equalTo(i));
+        return hasI(equalTo(i));
     }
 
     public WidgetMatcher hasI(final Matcher<? super String> iMatcher) {

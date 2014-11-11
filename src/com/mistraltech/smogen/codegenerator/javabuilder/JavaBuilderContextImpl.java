@@ -40,14 +40,17 @@ public class JavaBuilderContextImpl implements JavaBuilderContext {
     @Override
     public String normaliseClassMemberReference(String memberFQN, String typeParams) {
         String unqualifiedName = getUnqualifiedName(memberFQN);
+        boolean hasTypeParams = typeParams != null && !typeParams.isEmpty();
 
-        if (typeParams == null && !classMemberReferences.containsKey(unqualifiedName)) {
-            classMemberReferences.put(unqualifiedName, memberFQN);
-            return unqualifiedName;
-        }
+        if (!hasTypeParams) {
+            if (!classMemberReferences.containsKey(unqualifiedName)) {
+                classMemberReferences.put(unqualifiedName, memberFQN);
+                return unqualifiedName;
+            }
 
-        if (typeParams == null && classMemberReferences.get(unqualifiedName).equals(memberFQN)) {
-            return classMemberReferences.get(unqualifiedName);
+            if (classMemberReferences.get(unqualifiedName).equals(memberFQN)) {
+                return unqualifiedName;
+            }
         }
 
         String classFQN = dropUnqualifiedName(memberFQN);
