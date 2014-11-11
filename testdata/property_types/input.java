@@ -1,8 +1,8 @@
 public class Widget {
     private boolean primitive;
-    private Widget simpleObject;
-    private Pair<? extends Pair<? extends Widget, ? super Widget>, ?> nestedGenerics;
-    private Pair<Widget, ?>[] arrayOfGeneric;
+    private Widget recursiveType;
+    private Final finalType;
+    private Pair<? extends Widget, ? super Widget> generics;
     private int[][] multiDimensionalArray;
 
     public Widget() {
@@ -12,16 +12,16 @@ public class Widget {
         return primitive;
     }
 
-    public Widget getSimpleObject() {
-        return simpleObject;
+    public Widget getRecursiveType() {
+        return recursiveType;
     }
 
-    public Pair<? extends Pair<? extends Widget, ? super Widget>, ?> getNestedGenerics() {
-        return nestedGenerics;
+    public Widget getFinalType() {
+        return recursiveType;
     }
 
-    public Pair<Widget, ?>[] getArrayOfGeneric() {
-        return arrayOfGeneric;
+    public Pair<? extends Widget, ? super Widget> getGenerics() {
+        return generics;
     }
 
     public int[][] getMultiDimensionalArray() {
@@ -29,5 +29,8 @@ public class Widget {
     }
 
     public class Pair<U, V> {
+    }
+
+    public final class Final {
     }
 }
