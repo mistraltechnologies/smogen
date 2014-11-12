@@ -7,7 +7,7 @@ import org.hamcrest.Matcher;
 import static org.hamcrest.CoreMatchers.equalTo;
 
 @Matches(Widget.class)
-public class WidgetMatcher<R extends WidgetMatcher<R>, T extends Widget> extends CompositePropertyMatcher<T> {
+public class WidgetMatcher<R extends WidgetMatcher<R, T>, T extends Widget> extends CompositePropertyMatcher<T> {
     private static final String MATCHED_OBJECT_DESCRIPTION = "a Widget";
     private final PropertyMatcher<String> propMatcher = new ReflectingPropertyMatcher<String>("prop", this);
 
@@ -18,12 +18,12 @@ public class WidgetMatcher<R extends WidgetMatcher<R>, T extends Widget> extends
         }
     }
 
-    public static WidgetMatcher aWidgetThat() {
-        return new WidgetMatcher(MATCHED_OBJECT_DESCRIPTION, null);
+    public static WidgetMatcherType aWidgetThat() {
+        return new WidgetMatcherType(MATCHED_OBJECT_DESCRIPTION, null);
     }
 
-    public static WidgetMatcher aWidgetLike(final T template) {
-        return new WidgetMatcher(MATCHED_OBJECT_DESCRIPTION, template);
+    public static WidgetMatcherType aWidgetLike(final Widget template) {
+        return new WidgetMatcherType(MATCHED_OBJECT_DESCRIPTION, template);
     }
 
     @SuppressWarnings("unchecked")
@@ -38,5 +38,11 @@ public class WidgetMatcher<R extends WidgetMatcher<R>, T extends Widget> extends
     public R hasProp(final Matcher<? super String> propMatcher) {
         this.propMatcher.setMatcher(propMatcher);
         return self();
+    }
+
+    public static class WidgetMatcherType extends WidgetMatcher<WidgetMatcherType, Widget> {
+        protected WidgetMatcherType(final String matchedObjectDescription, final Widget template) {
+            super(matchedObjectDescription, template);
+        }
     }
 }

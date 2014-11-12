@@ -90,7 +90,9 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
                     .withExtends(aType()
                             .withName(generatedClassFQN)
                             .withTypeBinding(aTypeParameter()
-                                    .withName("R")));
+                                    .withName("R"))
+                            .withTypeBinding(aTypeParameter()
+                                    .withName("T")));
             returnType = returnTypeDecl.getType();
 
             TypeParameterDeclBuilder matchedTypeDecl = aTypeParameterDecl().withName("T")
@@ -147,12 +149,12 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
         clazz.withVariables(generateMatcherVariables(sourceClassProperties))
                 .withMethod(generateConstructor(sourceClassProperties, matchedType));
 
-        if (generatorProperties.getConcreteSubclassName() != null) {
+        if (generatorProperties.isExtensible()) {
             clazz.withNestedClass(generateNestedClass());
         }
 
         clazz.withMethod(generateStaticFactoryMethod());
-        clazz.withMethod(generateLikeStaticFactoryMethod(matchedType));
+        clazz.withMethod(generateLikeStaticFactoryMethod());
 
         if (generatorProperties.isExtensible()) {
             clazz.withMethod(generateSelfMethod(returnType));
@@ -240,19 +242,17 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
     }
 
     private NestedClassBuilder generateNestedClass() {
-        String nestedClassName = generatorProperties.getConcreteSubclassName();
-
         NestedClassBuilder nestedClass = aNestedClass()
                 .withAccessModifier("public")
                 .withStaticFlag(true)
-                .withName(nestedClassName)
+                .withName(nestedClassName())
                 .withSuperclass(aType()
                         .withName(generatorProperties.getClassName())
-                        .withTypeBinding(nestedClassName)
+                        .withTypeBinding(nestedClassName())
                         .withTypeBinding(getSourceClassFQName()))
                 .withMethod(aMethod()
-                        .withAccessModifier("public")
-                        .withName(nestedClassName)
+                        .withAccessModifier("protected")
+                        .withName(nestedClassName())
                         .withParameter(aParameter()
                                 .withFinalFlag(true)
                                 .withType(aType()
@@ -262,47 +262,47 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
                                 .withFinalFlag(true)
                                 .withType(aType()
                                         .withName(getSourceClassFQName()))
-                                .withName("template")));
+                                .withName("template"))
+                        .withStatement(anExpressionStatement().withExpression(aMethodCall()
+                                .withName("super")
+                                .withParameter("matchedObjectDescription")
+                                .withParameter("template")))
+                );
 
         return nestedClass;
     }
 
     private MethodBuilder generateStaticFactoryMethod() {
-        String innerClassName = generatorProperties.getConcreteSubclassName();
-        String targetClassName = innerClassName != null ? innerClassName : generatorProperties.getClassName();
-
         return aMethod()
                 .withAccessModifier("public")
                 .withStaticFlag(true)
                 .withReturnType(aType()
-                        .withName(targetClassName))
+                        .withName(nestedClassName()))
                 .withName(generatorProperties.getFactoryMethodPrefix() + getSourceClassName() + "That")
                 .withStatement(aReturnStatement()
                         .withExpression(aNewInstance()
                                 .withType(aType()
-                                        .withName(targetClassName))
+                                        .withName(nestedClassName()))
                                 .withParameter("MATCHED_OBJECT_DESCRIPTION")
                                 .withParameter("null")));
     }
 
-    private MethodBuilder generateLikeStaticFactoryMethod(TypeBuilder matchedType) {
-        String innerClassName = generatorProperties.getConcreteSubclassName();
-        String targetClassName = innerClassName != null ? innerClassName : generatorProperties.getClassName();
-
+    private MethodBuilder generateLikeStaticFactoryMethod() {
         return aMethod()
                 .withAccessModifier("public")
                 .withStaticFlag(true)
                 .withReturnType(aType()
-                        .withName(targetClassName))
+                        .withName(nestedClassName()))
                 .withName(generatorProperties.getFactoryMethodPrefix() + getSourceClassName() + "Like")
                 .withParameter(aParameter()
                         .withFinalFlag(true)
-                        .withType(matchedType)
+                        .withType(aType()
+                                .withName(getSourceClassFQName()))
                         .withName("template"))
                 .withStatement(aReturnStatement()
                         .withExpression(aNewInstance()
                                 .withType(aType()
-                                        .withName(targetClassName))
+                                        .withName(nestedClassName()))
                                 .withParameter("MATCHED_OBJECT_DESCRIPTION")
                                 .withParameter("template")));
     }
@@ -347,8 +347,8 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
                         .withName(property.getFieldName()))
                 .withStatement(aReturnStatement()
                         .withExpression(aMethodCall()
-                                        .withName(setterMethodName(property))
-                                        .withParameter(equalToCall))));
+                                .withName(setterMethodName(property))
+                                .withParameter(equalToCall))));
 
         ExpressionBuilder returnExpression = generatorProperties.isExtensible()
                 ? anExpression().withTerm(aMethodCall().withName("self"))
@@ -374,6 +374,10 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
                 .withStatement(aReturnStatement()
                         .withExpression(returnExpression)));
         return methods;
+    }
+
+    private String nestedClassName() {
+        return generatorProperties.isExtensible() ? generatorProperties.getClassName() + "Type" : generatorProperties.getClassName();
     }
 
     private String matcherAttributeName(@NotNull Property property) {
