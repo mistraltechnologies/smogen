@@ -3,6 +3,7 @@ package com.mistraltech.smogen.codegenerator.matchergenerator;
 import com.intellij.psi.JavaDirectoryService;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiPackage;
+import com.intellij.psi.PsiTypeParameter;
 import com.mistraltech.smogen.codegenerator.CodeWriter;
 import com.mistraltech.smogen.codegenerator.PsiTypeConverter;
 import com.mistraltech.smogen.codegenerator.javabuilder.AbstractClassBuilder;
@@ -21,7 +22,9 @@ import com.mistraltech.smogen.property.PropertyLocator;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.mistraltech.smogen.codegenerator.javabuilder.AnnotationBuilder.anAnnotation;
 import static com.mistraltech.smogen.codegenerator.javabuilder.BlockStatementBuilder.aBlockStatement;
@@ -68,18 +71,44 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
         return document.build();
     }
 
+    private String getTypeParameter(int n) {
+        return "P" + (n + 1);
+    }
+
+    private int getTypeParameterIndex(String name) {
+        PsiTypeParameter[] typeParameters = generatorProperties.getSourceClass().getTypeParameters();
+        for (int i = 0; i < typeParameters.length; i++) {
+            if (typeParameters[i].getText().equals(name)) {
+                return i;
+            }
+        }
+        throw new IllegalArgumentException("No type parameter with name [" + name + "]");
+    }
+
+    private List<TypeParameterDeclBuilder> typeParameters() {
+        int typeParameterCount = generatorProperties.getSourceClass().getTypeParameters().length;
+        List<TypeParameterDeclBuilder> typeParameters = new ArrayList<TypeParameterDeclBuilder>(typeParameterCount);
+
+        for (int i = 0; i < typeParameterCount; i++) {
+            typeParameters.add(aTypeParameterDecl()
+                    .withName(getTypeParameter(i)));
+        }
+
+        return typeParameters;
+    }
+
     private AbstractClassBuilder generateMatcherClass(PsiPackage targetPackage) {
         final String generatedClassFQN = createFQN(targetPackage.getQualifiedName(), generatorProperties.getClassName());
 
         AbstractClassBuilder clazz = aJavaClass()
                 .withAccessModifier("public")
                 .withName(generatorProperties.getClassName())
+                .withTypeParameters(typeParameters())
                 .withAnnotation(anAnnotation()
                         .withType(aType()
                                 .withName("com.mistraltech.smog.core.annotation.Matches"))
                         .withParameter(anExpression()
                                 .withText(getSourceClassFQName() + ".class")));
-
 
         TypeBuilder returnType;
         TypeBuilder matchedType;
@@ -105,8 +134,12 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
                     .withTypeParameter(matchedTypeDecl);
         } else {
             clazz.withFinalFlag(true);
-            returnType = aType().withName(generatedClassFQN);
-            matchedType = aType().withName(getSourceClassFQName());
+            returnType = aType()
+                    .withName(generatedClassFQN)
+                    .withTypeBindings(typeParameters());
+            matchedType = aType()
+                    .withName(getSourceClassFQName())
+                    .withTypeBindings(typeParameters());
         }
 
         applySuperClass(clazz, returnType, matchedType);
@@ -153,8 +186,8 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
             clazz.withNestedClass(generateNestedClass());
         }
 
-        clazz.withMethod(generateStaticFactoryMethod());
-        clazz.withMethod(generateLikeStaticFactoryMethod());
+        clazz.withMethod(generateStaticFactoryMethod(returnType));
+        clazz.withMethod(generateLikeStaticFactoryMethod(returnType, matchedType));
 
         if (generatorProperties.isExtensible()) {
             clazz.withMethod(generateSelfMethod(returnType));
@@ -192,11 +225,20 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
     }
 
     private TypeBuilder getPropertyType(@NotNull Property property, boolean boxed) {
-        PsiTypeConverter typeConverter = new PsiTypeConverter(boxed);
+        PsiTypeConverter typeConverter = new PsiTypeConverter(boxed, typeParameterMap());
 
         property.accept(typeConverter);
 
         return typeConverter.getTypeBuilder();
+    }
+
+    private Map<String, String> typeParameterMap() {
+        PsiTypeParameter[] typeParameters = generatorProperties.getSourceClass().getTypeParameters();
+        Map<String, String> typeParameterMap = new HashMap<String, String>();
+        for (int i = 0; i < typeParameters.length; i++) {
+            typeParameterMap.put(typeParameters[i].getName(), getTypeParameter(i));
+        }
+        return typeParameterMap;
     }
 
     private MethodBuilder generateConstructor(@NotNull List<Property> sourceClassProperties, TypeBuilder matchedType) {
@@ -251,58 +293,55 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
                         .withTypeBinding(nestedClassName())
                         .withTypeBinding(getSourceClassFQName()))
                 .withMethod(aMethod()
-                        .withAccessModifier("protected")
-                        .withName(nestedClassName())
-                        .withParameter(aParameter()
-                                .withFinalFlag(true)
-                                .withType(aType()
-                                        .withName("java.lang.String"))
-                                .withName("matchedObjectDescription"))
-                        .withParameter(aParameter()
-                                .withFinalFlag(true)
-                                .withType(aType()
-                                        .withName(getSourceClassFQName()))
-                                .withName("template"))
-                        .withStatement(anExpressionStatement().withExpression(aMethodCall()
-                                .withName("super")
-                                .withParameter("matchedObjectDescription")
-                                .withParameter("template")))
+                                .withAccessModifier("protected")
+                                .withName(nestedClassName())
+                                .withParameter(aParameter()
+                                        .withFinalFlag(true)
+                                        .withType(aType()
+                                                .withName("java.lang.String"))
+                                        .withName("matchedObjectDescription"))
+                                .withParameter(aParameter()
+                                        .withFinalFlag(true)
+                                        .withType(aType()
+                                                .withName(getSourceClassFQName()))
+                                        .withName("template"))
+                                .withStatement(anExpressionStatement().withExpression(aMethodCall()
+                                        .withName("super")
+                                        .withParameter("matchedObjectDescription")
+                                        .withParameter("template")))
                 );
 
         return nestedClass;
     }
 
-    private MethodBuilder generateStaticFactoryMethod() {
+    private MethodBuilder generateStaticFactoryMethod(TypeBuilder returnType) {
         return aMethod()
                 .withAccessModifier("public")
                 .withStaticFlag(true)
-                .withReturnType(aType()
-                        .withName(nestedClassName()))
+                .withReturnType(returnType)
+                .withTypeParameters(typeParameters())
                 .withName(generatorProperties.getFactoryMethodPrefix() + getSourceClassName() + "That")
                 .withStatement(aReturnStatement()
                         .withExpression(aNewInstance()
-                                .withType(aType()
-                                        .withName(nestedClassName()))
+                                .withType(returnType)
                                 .withParameter("MATCHED_OBJECT_DESCRIPTION")
                                 .withParameter("null")));
     }
 
-    private MethodBuilder generateLikeStaticFactoryMethod() {
+    private MethodBuilder generateLikeStaticFactoryMethod(TypeBuilder returnType, TypeBuilder matchedType) {
         return aMethod()
                 .withAccessModifier("public")
                 .withStaticFlag(true)
-                .withReturnType(aType()
-                        .withName(nestedClassName()))
+                .withReturnType(returnType)
+                .withTypeParameters(typeParameters())
                 .withName(generatorProperties.getFactoryMethodPrefix() + getSourceClassName() + "Like")
                 .withParameter(aParameter()
                         .withFinalFlag(true)
-                        .withType(aType()
-                                .withName(getSourceClassFQName()))
+                        .withType(matchedType)
                         .withName("template"))
                 .withStatement(aReturnStatement()
                         .withExpression(aNewInstance()
-                                .withType(aType()
-                                        .withName(nestedClassName()))
+                                .withType(returnType)
                                 .withParameter("MATCHED_OBJECT_DESCRIPTION")
                                 .withParameter("template")));
     }

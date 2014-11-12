@@ -7,18 +7,23 @@ import com.intellij.psi.PsiType;
 import com.intellij.psi.PsiTypeVisitor;
 import com.intellij.psi.impl.source.PsiClassReferenceType;
 import com.mistraltech.smogen.codegenerator.javabuilder.TypeBuilder;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Map;
+
 public class PsiTypeConverter extends PsiTypeVisitor<Object> {
+    private final Map<String, String> typeParameterMap;
     private boolean boxed;
     private TypeBuilder typeBuilder = TypeBuilder.aType();
 
-    public PsiTypeConverter() {
-        this(true);
+    public PsiTypeConverter(@NotNull Map<String, String> typeParameterMap) {
+        this(true, typeParameterMap);
     }
 
-    public PsiTypeConverter(boolean boxed) {
+    public PsiTypeConverter(boolean boxed, @NotNull Map<String, String> typeParameterMap) {
         this.boxed = boxed;
+        this.typeParameterMap = typeParameterMap;
     }
 
     @Nullable
@@ -43,10 +48,13 @@ public class PsiTypeConverter extends PsiTypeVisitor<Object> {
         String name = (classType instanceof PsiClassReferenceType) ?
                 ((PsiClassReferenceType) classType).getReference().getQualifiedName() :
                 classType.getClassName();
-        typeBuilder.withName(name);
+
+        String mappedName = typeParameterMap.containsKey(name) ? typeParameterMap.get(name) : name;
+
+        typeBuilder.withName(mappedName);
 
         for (PsiType param : classType.getParameters()) {
-            PsiTypeParameterConverter converter = new PsiTypeParameterConverter();
+            PsiTypeParameterConverter converter = new PsiTypeParameterConverter(typeParameterMap);
             param.accept(converter);
             typeBuilder.withTypeBinding(converter.getTypeParameterBuilder());
         }

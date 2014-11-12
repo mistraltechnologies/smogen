@@ -30,6 +30,18 @@ public class TypeBuilder extends AbstractBuilder<TypeBuilder> {
         return withTypeBinding(aTypeParameter().withType(type));
     }
 
+    public TypeBuilder withTypeBindings(List<TypeParameterDeclBuilder> types) {
+        for (TypeParameterDeclBuilder type : types) {
+            withTypeBinding(type);
+        }
+
+        return this;
+    }
+
+    public TypeBuilder withTypeBinding(TypeParameterDeclBuilder typeParameter) {
+        return withTypeBinding(typeParameter.getName());
+    }
+
     public TypeBuilder withTypeBinding(TypeParameterBuilder typeParameter) {
         this.typeBindings.add(typeParameter);
         return this;

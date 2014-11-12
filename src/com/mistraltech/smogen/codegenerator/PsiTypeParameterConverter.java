@@ -6,13 +6,20 @@ import com.intellij.psi.PsiWildcardType;
 import com.mistraltech.smogen.codegenerator.javabuilder.TypeParameterBuilder;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Map;
+
 public class PsiTypeParameterConverter extends PsiTypeVisitor<Object> {
+    private final Map<String, String> typeParameterMap;
     private TypeParameterBuilder typeParameterBuilder = TypeParameterBuilder.aTypeParameter();
+
+    public PsiTypeParameterConverter(Map<String, String> typeParameterMap) {
+        this.typeParameterMap = typeParameterMap;
+    }
 
     @Nullable
     @Override
     public Object visitClassType(PsiClassType classType) {
-        PsiTypeConverter typeConverter = new PsiTypeConverter();
+        PsiTypeConverter typeConverter = new PsiTypeConverter(typeParameterMap);
         classType.accept(typeConverter);
         typeParameterBuilder.withType(typeConverter.getTypeBuilder());
         return super.visitClassType(classType);

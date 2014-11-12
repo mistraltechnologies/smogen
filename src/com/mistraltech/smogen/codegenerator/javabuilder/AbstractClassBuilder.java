@@ -45,6 +45,11 @@ public abstract class AbstractClassBuilder<T extends AbstractClassBuilder<T>> ex
         return self();
     }
 
+    public T withTypeParameters(List<TypeParameterDeclBuilder> params) {
+        this.typeParameters.addAll(params);
+        return self();
+    }
+
     public T withTypeParameter(TypeParameterDeclBuilder param) {
         this.typeParameters.add(param);
         return self();

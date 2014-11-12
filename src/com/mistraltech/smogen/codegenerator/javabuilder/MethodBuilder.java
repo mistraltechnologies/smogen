@@ -1,6 +1,7 @@
 package com.mistraltech.smogen.codegenerator.javabuilder;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import static com.mistraltech.smogen.codegenerator.javabuilder.BuilderUtils.buildList;
 import static com.mistraltech.smogen.codegenerator.javabuilder.BuilderUtils.buildMandatoryList;
@@ -16,6 +17,7 @@ public class MethodBuilder extends AbstractBuilder<MethodBuilder> {
     private ArrayList<ParameterBuilder> parameters = new ArrayList<ParameterBuilder>();
     private ArrayList<StatementBuilder> statements = new ArrayList<StatementBuilder>();
     private ArrayList<AnnotationBuilder> annotations = new ArrayList<AnnotationBuilder>();
+    private List<TypeParameterDeclBuilder> typeParameters = new ArrayList<TypeParameterDeclBuilder>();
 
     private MethodBuilder() {
     }
@@ -70,6 +72,18 @@ public class MethodBuilder extends AbstractBuilder<MethodBuilder> {
         return this;
     }
 
+    public MethodBuilder withTypeParameters(List<TypeParameterDeclBuilder> typeParameters) {
+        for (TypeParameterDeclBuilder typeParameter : typeParameters) {
+            withTypeParameter(typeParameter);
+        }
+        return this;
+    }
+
+    private MethodBuilder withTypeParameter(TypeParameterDeclBuilder typeParameter) {
+        this.typeParameters.add(typeParameter);
+        return this;
+    }
+
     public MethodBuilder withAnnotation(AnnotationBuilder annotation) {
         annotations.add(annotation);
         return this;
@@ -92,6 +106,8 @@ public class MethodBuilder extends AbstractBuilder<MethodBuilder> {
         } else if (abstractFlag) {
             sb.append("abstract ");
         }
+
+        sb.append(buildList(context, "<", typeParameters, ">", " "));
 
         if (returnType != null) {
             sb.append(returnType.build(context)).append(" ");

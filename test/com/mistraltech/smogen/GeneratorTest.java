@@ -34,4 +34,8 @@ public class GeneratorTest extends AbstractGeneratorTest {
     public void testGetterThrowsException() {
         doTest("getter_throws", generatorProperties());
     }
+
+    public void testBasicGeneric() {
+        doTest("basic_generic", generatorProperties());
+    }
 }

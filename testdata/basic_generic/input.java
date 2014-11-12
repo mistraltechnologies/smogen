@@ -1,7 +1,7 @@
-public class Box<T> {
+public class Widget<T> {
     private T contents;
 
-    public Box(T contents) {
+    public Widget(T contents) {
         this.contents = contents;
     }
 
