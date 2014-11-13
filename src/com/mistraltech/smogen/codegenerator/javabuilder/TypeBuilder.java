@@ -6,6 +6,8 @@ import java.util.List;
 import static com.mistraltech.smogen.codegenerator.javabuilder.TypeParameterBuilder.aTypeParameter;
 
 public class TypeBuilder extends AbstractBuilder<TypeBuilder> {
+    public static TypeBuilder VOID = new TypeBuilder().withName("void");
+
     private List<TypeParameterBuilder> typeBindings = new ArrayList<TypeParameterBuilder>();
     private String typeFQN;
     private int arrayDimensions;
