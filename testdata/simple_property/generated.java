@@ -1,4 +1,5 @@
 import com.mistraltech.smog.core.CompositePropertyMatcher;
+import com.mistraltech.smog.core.MatchAccumulator;
 import com.mistraltech.smog.core.PropertyMatcher;
 import com.mistraltech.smog.core.ReflectingPropertyMatcher;
 import com.mistraltech.smog.core.annotation.Matches;
@@ -33,5 +34,10 @@ public final class WidgetMatcher extends CompositePropertyMatcher<Widget> {
     public WidgetMatcher hasProp(final Matcher<? super String> propMatcher) {
         this.propMatcher.setMatcher(propMatcher);
         return this;
+    }
+
+    @Override
+    protected void matchesSafely(final Widget item, final MatchAccumulator matchAccumulator) {
+        super.matchesSafely(item, matchAccumulator);
     }
 }

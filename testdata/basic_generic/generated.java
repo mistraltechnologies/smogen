@@ -36,9 +36,8 @@ public final class WidgetMatcher<P1> extends CompositePropertyMatcher<Widget<P1>
         return this;
     }
 
-    // TODO is this required in other matchers?
     @Override
-    protected void matchesSafely(Widget<P1> item, MatchAccumulator matchAccumulator) {
+    protected void matchesSafely(final Widget<P1> item, final MatchAccumulator matchAccumulator) {
         super.matchesSafely(item, matchAccumulator);
     }
 }

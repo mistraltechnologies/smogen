@@ -41,6 +41,7 @@ import static com.mistraltech.smogen.codegenerator.javabuilder.NewInstanceBuilde
 import static com.mistraltech.smogen.codegenerator.javabuilder.ParameterBuilder.aParameter;
 import static com.mistraltech.smogen.codegenerator.javabuilder.ReturnStatementBuilder.aReturnStatement;
 import static com.mistraltech.smogen.codegenerator.javabuilder.StaticMethodCallBuilder.aStaticMethodCall;
+import static com.mistraltech.smogen.codegenerator.javabuilder.TypeBuilder.VOID;
 import static com.mistraltech.smogen.codegenerator.javabuilder.TypeBuilder.aType;
 import static com.mistraltech.smogen.codegenerator.javabuilder.TypeParameterBuilder.aTypeParameter;
 import static com.mistraltech.smogen.codegenerator.javabuilder.TypeParameterDeclBuilder.aTypeParameterDecl;
@@ -110,8 +111,10 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
                         .withParameter(anExpression()
                                 .withText(getSourceClassFQName() + ".class")));
 
-        TypeBuilder returnType;
-        TypeBuilder matchedType;
+        final TypeBuilder matchedType = aType().withName(getSourceClassFQName());
+        final TypeBuilder returnType;
+        final TypeBuilder matchedTypeParam;
+        final TypeBuilder matcherType;
 
         if (generatorProperties.isExtensible()) {
             TypeParameterDeclBuilder returnTypeDecl = aTypeParameterDecl()
@@ -125,10 +128,11 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
             returnType = returnTypeDecl.getType();
 
             TypeParameterDeclBuilder matchedTypeDecl = aTypeParameterDecl().withName("T")
-                    .withExtends(aType()
-                            .withName(getSourceClassFQName()));
+                    .withExtends(matchedType);
 
-            matchedType = matchedTypeDecl.getType();
+            matchedTypeParam = matchedTypeDecl.getType();
+
+            matcherType = aType().withName(nestedClassName());
 
             clazz.withTypeParameter(returnTypeDecl)
                     .withTypeParameter(matchedTypeDecl);
@@ -137,36 +141,37 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
             returnType = aType()
                     .withName(generatedClassFQN)
                     .withTypeBindings(typeParameters());
-            matchedType = aType()
-                    .withName(getSourceClassFQName())
+            matchedTypeParam = matchedType
                     .withTypeBindings(typeParameters());
+            matcherType = returnType;
         }
 
-        applySuperClass(clazz, returnType, matchedType);
+        applySuperClass(clazz, returnType, matchedTypeParam);
 
-        applyClassBody(clazz, returnType, matchedType);
+        applyClassBody(clazz, returnType, matchedType, matchedTypeParam, matcherType);
 
         return clazz;
     }
 
-    private void applySuperClass(AbstractClassBuilder clazz, TypeBuilder returnType, TypeBuilder matchedType) {
+    private void applySuperClass(AbstractClassBuilder clazz, TypeBuilder returnType, TypeBuilder matchedTypeParam) {
         TypeBuilder superType;
 
         if (generatorProperties.getSuperClassName() != null) {
             superType = aType()
                     .withName(generatorProperties.getSuperClassName())
                     .withTypeBinding(returnType)
-                    .withTypeBinding(matchedType);
+                    .withTypeBinding(matchedTypeParam);
         } else {
             superType = aType()
                     .withName("com.mistraltech.smog.core.CompositePropertyMatcher")
-                    .withTypeBinding(matchedType);
+                    .withTypeBinding(matchedTypeParam);
         }
 
         clazz.withSuperclass(superType);
     }
 
-    private void applyClassBody(AbstractClassBuilder clazz, TypeBuilder returnType, TypeBuilder matchedType) {
+    private void applyClassBody(AbstractClassBuilder clazz, TypeBuilder returnType, TypeBuilder matchedType,
+                                TypeBuilder matchedTypeParam, TypeBuilder matcherType) {
         boolean includeSuperClassProperties = generatorProperties.getSuperClassName() == null;
         List<Property> sourceClassProperties = PropertyLocator.locateProperties(getSourceClass(), includeSuperClassProperties);
 
@@ -180,14 +185,14 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
                         .withText(String.format("\"%s %s\"", generatorProperties.getFactoryMethodPrefix(), getSourceClassName()))));
 
         clazz.withVariables(generateMatcherVariables(sourceClassProperties))
-                .withMethod(generateConstructor(sourceClassProperties, matchedType));
+                .withMethod(generateConstructor(sourceClassProperties, matchedTypeParam));
 
         if (generatorProperties.isExtensible()) {
-            clazz.withNestedClass(generateNestedClass());
+            clazz.withNestedClass(generateNestedClass(matchedType));
         }
 
-        clazz.withMethod(generateStaticFactoryMethod(returnType));
-        clazz.withMethod(generateLikeStaticFactoryMethod(returnType, matchedType));
+        clazz.withMethod(generateStaticFactoryMethod(matcherType));
+        clazz.withMethod(generateLikeStaticFactoryMethod(matcherType, matchedType));
 
         if (generatorProperties.isExtensible()) {
             clazz.withMethod(generateSelfMethod(returnType));
@@ -196,6 +201,30 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
         for (Property property : sourceClassProperties) {
             clazz.withMethods(generateMatcherSetters(property, returnType));
         }
+
+        clazz.withMethod(generateMatchesSafely(matchedType));
+    }
+
+    private MethodBuilder generateMatchesSafely(TypeBuilder matchedType) {
+        return aMethod()
+                .withAnnotation(anAnnotation()
+                        .withType(aType()
+                                .withName("java.lang.Override")))
+                .withAccessModifier("protected")
+                .withReturnType(VOID)
+                .withName("matchesSafely")
+                .withParameter(aParameter()
+                        .withFinalFlag(true)
+                        .withType(matchedType)
+                        .withName("item"))
+                .withParameter(aParameter()
+                        .withFinalFlag(true)
+                        .withType(aType()
+                                .withName("com.mistraltech.smog.core.MatchAccumulator"))
+                        .withName("matchAccumulator"))
+                .withStatement(anExpressionStatement()
+                        .withExpression(anExpression()
+                                .withText("super.matchesSafely(item, matchAccumulator)")));
     }
 
     private List<VariableBuilder> generateMatcherVariables(@NotNull List<Property> properties) {
@@ -283,7 +312,7 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
         return constructor;
     }
 
-    private NestedClassBuilder generateNestedClass() {
+    private NestedClassBuilder generateNestedClass(TypeBuilder matchedType) {
         NestedClassBuilder nestedClass = aNestedClass()
                 .withAccessModifier("public")
                 .withStaticFlag(true)
@@ -291,7 +320,7 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
                 .withSuperclass(aType()
                         .withName(generatorProperties.getClassName())
                         .withTypeBinding(nestedClassName())
-                        .withTypeBinding(getSourceClassFQName()))
+                        .withTypeBinding(matchedType))
                 .withMethod(aMethod()
                                 .withAccessModifier("protected")
                                 .withName(nestedClassName())
@@ -302,8 +331,7 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
                                         .withName("matchedObjectDescription"))
                                 .withParameter(aParameter()
                                         .withFinalFlag(true)
-                                        .withType(aType()
-                                                .withName(getSourceClassFQName()))
+                                        .withType(matchedType)
                                         .withName("template"))
                                 .withStatement(anExpressionStatement().withExpression(aMethodCall()
                                         .withName("super")
@@ -314,25 +342,25 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
         return nestedClass;
     }
 
-    private MethodBuilder generateStaticFactoryMethod(TypeBuilder returnType) {
+    private MethodBuilder generateStaticFactoryMethod(TypeBuilder matcherType) {
         return aMethod()
                 .withAccessModifier("public")
                 .withStaticFlag(true)
-                .withReturnType(returnType)
+                .withReturnType(matcherType)
                 .withTypeParameters(typeParameters())
                 .withName(generatorProperties.getFactoryMethodPrefix() + getSourceClassName() + "That")
                 .withStatement(aReturnStatement()
                         .withExpression(aNewInstance()
-                                .withType(returnType)
+                                .withType(matcherType)
                                 .withParameter("MATCHED_OBJECT_DESCRIPTION")
                                 .withParameter("null")));
     }
 
-    private MethodBuilder generateLikeStaticFactoryMethod(TypeBuilder returnType, TypeBuilder matchedType) {
+    private MethodBuilder generateLikeStaticFactoryMethod(TypeBuilder matcherType, TypeBuilder matchedType) {
         return aMethod()
                 .withAccessModifier("public")
                 .withStaticFlag(true)
-                .withReturnType(returnType)
+                .withReturnType(matcherType)
                 .withTypeParameters(typeParameters())
                 .withName(generatorProperties.getFactoryMethodPrefix() + getSourceClassName() + "Like")
                 .withParameter(aParameter()
@@ -341,7 +369,7 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
                         .withName("template"))
                 .withStatement(aReturnStatement()
                         .withExpression(aNewInstance()
-                                .withType(returnType)
+                                .withType(matcherType)
                                 .withParameter("MATCHED_OBJECT_DESCRIPTION")
                                 .withParameter("template")));
     }

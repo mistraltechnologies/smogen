@@ -2,6 +2,7 @@ import Widget.Box;
 import Widget.Final;
 import Widget.X;
 import com.mistraltech.smog.core.CompositePropertyMatcher;
+import com.mistraltech.smog.core.MatchAccumulator;
 import com.mistraltech.smog.core.PropertyMatcher;
 import com.mistraltech.smog.core.ReflectingPropertyMatcher;
 import com.mistraltech.smog.core.annotation.Matches;
@@ -114,5 +115,10 @@ public final class WidgetMatcher extends CompositePropertyMatcher<Widget> {
     public WidgetMatcher hasPrimitive(final Matcher<? super Boolean> primitiveMatcher) {
         this.primitiveMatcher.setMatcher(primitiveMatcher);
         return this;
+    }
+
+    @Override
+    protected void matchesSafely(final Widget item, final MatchAccumulator matchAccumulator) {
+        super.matchesSafely(item, matchAccumulator);
     }
 }
