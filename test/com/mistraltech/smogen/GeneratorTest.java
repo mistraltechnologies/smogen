@@ -38,4 +38,8 @@ public class GeneratorTest extends AbstractGeneratorTest {
     public void testBasicGeneric() {
         doTest("basic_generic", generatorProperties());
     }
+
+    public void testGenericExtensible() {
+        doTest("generic_extensible", generatorProperties().setExtensible(true));
+    }
 }

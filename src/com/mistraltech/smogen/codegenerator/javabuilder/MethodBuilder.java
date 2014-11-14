@@ -107,7 +107,7 @@ public class MethodBuilder extends AbstractBuilder<MethodBuilder> {
             sb.append("abstract ");
         }
 
-        sb.append(buildList(context, "<", typeParameters, ">", " "));
+        sb.append(buildList(context, "<", typeParameters, ">", ", "));
 
         if (returnType != null) {
             sb.append(returnType.build(context)).append(" ");

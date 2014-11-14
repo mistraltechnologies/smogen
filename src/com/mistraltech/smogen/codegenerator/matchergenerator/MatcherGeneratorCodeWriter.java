@@ -111,7 +111,10 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
                         .withParameter(anExpression()
                                 .withText(getSourceClassFQName() + ".class")));
 
-        final TypeBuilder matchedType = aType().withName(getSourceClassFQName());
+        final TypeBuilder matchedType = aType()
+                .withName(getSourceClassFQName())
+                .withTypeBindings(typeParameters());
+
         final TypeBuilder returnType;
         final TypeBuilder matchedTypeParam;
         final TypeBuilder matcherType;
@@ -121,6 +124,7 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
                     .withName("R")
                     .withExtends(aType()
                             .withName(generatedClassFQN)
+                            .withTypeBindings(typeParameters())
                             .withTypeBinding(aTypeParameter()
                                     .withName("R"))
                             .withTypeBinding(aTypeParameter()
@@ -132,7 +136,7 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
 
             matchedTypeParam = matchedTypeDecl.getType();
 
-            matcherType = aType().withName(nestedClassName());
+            matcherType = aType().withName(nestedClassName()).withTypeBindings(typeParameters());
 
             clazz.withTypeParameter(returnTypeDecl)
                     .withTypeParameter(matchedTypeDecl);
@@ -141,8 +145,7 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
             returnType = aType()
                     .withName(generatedClassFQN)
                     .withTypeBindings(typeParameters());
-            matchedTypeParam = matchedType
-                    .withTypeBindings(typeParameters());
+            matchedTypeParam = matchedType;
             matcherType = returnType;
         }
 
@@ -188,7 +191,7 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
                 .withMethod(generateConstructor(sourceClassProperties, matchedTypeParam));
 
         if (generatorProperties.isExtensible()) {
-            clazz.withNestedClass(generateNestedClass(matchedType));
+            clazz.withNestedClass(generateNestedClass(matcherType, matchedType));
         }
 
         clazz.withMethod(generateStaticFactoryMethod(matcherType));
@@ -312,14 +315,16 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
         return constructor;
     }
 
-    private NestedClassBuilder generateNestedClass(TypeBuilder matchedType) {
+    private NestedClassBuilder generateNestedClass(TypeBuilder matcherType, TypeBuilder matchedType) {
         NestedClassBuilder nestedClass = aNestedClass()
                 .withAccessModifier("public")
                 .withStaticFlag(true)
                 .withName(nestedClassName())
+                .withTypeParameters(typeParameters())
                 .withSuperclass(aType()
                         .withName(generatorProperties.getClassName())
-                        .withTypeBinding(nestedClassName())
+                        .withTypeBindings(typeParameters())
+                        .withTypeBinding(matcherType)
                         .withTypeBinding(matchedType))
                 .withMethod(aMethod()
                                 .withAccessModifier("protected")
