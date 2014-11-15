@@ -42,4 +42,8 @@ public class GeneratorTest extends AbstractGeneratorTest {
     public void testGenericExtensible() {
         doTest("generic_extensible", generatorProperties().setExtensible(true));
     }
+
+    public void testLeafInClassHierarchy() {
+        doTest("leaf_in_class_hierarchy", generatorProperties());
+    }
 }
