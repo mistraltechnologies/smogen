@@ -190,10 +190,6 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
         clazz.withVariables(generateMatcherVariables(sourceClassProperties))
                 .withMethod(generateConstructor(sourceClassProperties, matchedTypeParam));
 
-        if (generatorProperties.isExtensible()) {
-            clazz.withNestedClass(generateNestedClass(matcherType, matchedType));
-        }
-
         clazz.withMethod(generateStaticFactoryMethod(matcherType));
         clazz.withMethod(generateLikeStaticFactoryMethod(matcherType, matchedType));
 
@@ -205,7 +201,12 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
             clazz.withMethods(generateMatcherSetters(property, returnType));
         }
 
-        clazz.withMethod(generateMatchesSafely(matchedType));
+        if (generatorProperties.isExtensible()) {
+            clazz.withNestedClass(generateNestedClass(matcherType, matchedType));
+        }
+        else {
+            clazz.withMethod(generateMatchesSafely(matchedType));
+        }
     }
 
     private MethodBuilder generateMatchesSafely(TypeBuilder matchedType) {
@@ -341,8 +342,8 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
                                 .withStatement(anExpressionStatement().withExpression(aMethodCall()
                                         .withName("super")
                                         .withParameter("matchedObjectDescription")
-                                        .withParameter("template")))
-                );
+                                        .withParameter("template"))))
+                .withMethod(generateMatchesSafely(matchedType));
 
         return nestedClass;
     }

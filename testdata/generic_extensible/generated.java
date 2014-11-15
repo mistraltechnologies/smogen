@@ -52,14 +52,14 @@ public class WidgetMatcher<P1, P2, R extends WidgetMatcher<P1, P2, R, T>, T exte
         return self();
     }
 
-    @Override
-    protected void matchesSafely(final Widget<P1, P2> item, final MatchAccumulator matchAccumulator) {
-        super.matchesSafely(item, matchAccumulator);
-    }
-
     public static class WidgetMatcherType<P1, P2> extends WidgetMatcher<P1, P2, WidgetMatcherType<P1, P2>, Widget<P1, P2>> {
         protected WidgetMatcherType(final String matchedObjectDescription, final Widget<P1, P2> template) {
             super(matchedObjectDescription, template);
+        }
+
+        @Override
+        protected void matchesSafely(final Widget<P1, P2> item, final MatchAccumulator matchAccumulator) {
+            super.matchesSafely(item, matchAccumulator);
         }
     }
 }
