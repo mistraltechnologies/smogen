@@ -34,6 +34,7 @@ import static com.mistraltech.smogen.codegenerator.javabuilder.ClassBuilder.aJav
 import static com.mistraltech.smogen.codegenerator.javabuilder.ExpressionBuilder.anExpression;
 import static com.mistraltech.smogen.codegenerator.javabuilder.ExpressionStatementBuilder.anExpressionStatement;
 import static com.mistraltech.smogen.codegenerator.javabuilder.ExpressionTextBuilder.expressionText;
+import static com.mistraltech.smogen.codegenerator.javabuilder.FieldTermBuilder.aField;
 import static com.mistraltech.smogen.codegenerator.javabuilder.JavaDocumentBuilder.aJavaDocument;
 import static com.mistraltech.smogen.codegenerator.javabuilder.MethodBuilder.aMethod;
 import static com.mistraltech.smogen.codegenerator.javabuilder.MethodCallBuilder.aMethodCall;
@@ -111,8 +112,9 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
                 .withAnnotation(anAnnotation()
                         .withType(aType()
                                 .withName("com.mistraltech.smog.core.annotation.Matches"))
-                        .withParameter(anExpression()
-                                .withText(getSourceClassFQName() + ".class")));
+                        .withParameter(aField()
+                                .withType(getSourceClassFQName())
+                                    .withField("class")));
 
         final TypeBuilder matchedType = aType()
                 .withName(getSourceClassFQName())

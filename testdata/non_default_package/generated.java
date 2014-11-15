@@ -1,5 +1,6 @@
 package com.acme;
 
+import com.acme.widget.Widget;
 import com.mistraltech.smog.core.CompositePropertyMatcher;
 import com.mistraltech.smog.core.MatchAccumulator;
 import com.mistraltech.smog.core.annotation.Matches;
