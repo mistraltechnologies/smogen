@@ -46,4 +46,12 @@ public class GeneratorTest extends AbstractGeneratorTest {
     public void testLeafInClassHierarchy() {
         doTest("leaf_in_class_hierarchy", generatorProperties());
     }
+
+    public void testBasicMatcherSubclass() {
+        doTest("basic_subclass", generatorProperties().setSuperClassName("BaseWidgetMatcher"));
+    }
+
+    public void testExtensibleSubclass() {
+        doTest("extensible_subclass", generatorProperties().setSuperClassName("BaseWidgetMatcher").setExtensible(true));
+    }
 }
