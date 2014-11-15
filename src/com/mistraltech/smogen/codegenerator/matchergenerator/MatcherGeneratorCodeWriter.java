@@ -15,6 +15,7 @@ import com.mistraltech.smogen.codegenerator.javabuilder.MethodCallBuilder;
 import com.mistraltech.smogen.codegenerator.javabuilder.NestedClassBuilder;
 import com.mistraltech.smogen.codegenerator.javabuilder.StaticMethodCallBuilder;
 import com.mistraltech.smogen.codegenerator.javabuilder.TypeBuilder;
+import com.mistraltech.smogen.codegenerator.javabuilder.TypeParameterBuilder;
 import com.mistraltech.smogen.codegenerator.javabuilder.TypeParameterDeclBuilder;
 import com.mistraltech.smogen.codegenerator.javabuilder.VariableBuilder;
 import com.mistraltech.smogen.property.Property;
@@ -76,17 +77,19 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
         return "P" + (n + 1);
     }
 
-    private int getTypeParameterIndex(String name) {
-        PsiTypeParameter[] typeParameters = generatorProperties.getSourceClass().getTypeParameters();
-        for (int i = 0; i < typeParameters.length; i++) {
-            if (typeParameters[i].getText().equals(name)) {
-                return i;
-            }
+    private List<TypeParameterBuilder> typeParameters() {
+        int typeParameterCount = generatorProperties.getSourceClass().getTypeParameters().length;
+        List<TypeParameterBuilder> typeParameters = new ArrayList<TypeParameterBuilder>(typeParameterCount);
+
+        for (int i = 0; i < typeParameterCount; i++) {
+            typeParameters.add(aTypeParameter()
+                    .withName(getTypeParameter(i)));
         }
-        throw new IllegalArgumentException("No type parameter with name [" + name + "]");
+
+        return typeParameters;
     }
 
-    private List<TypeParameterDeclBuilder> typeParameters() {
+    private List<TypeParameterDeclBuilder> typeParameterDecls() {
         int typeParameterCount = generatorProperties.getSourceClass().getTypeParameters().length;
         List<TypeParameterDeclBuilder> typeParameters = new ArrayList<TypeParameterDeclBuilder>(typeParameterCount);
 
@@ -104,7 +107,7 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
         AbstractClassBuilder clazz = aJavaClass()
                 .withAccessModifier("public")
                 .withName(generatorProperties.getClassName())
-                .withTypeParameters(typeParameters())
+                .withTypeParameters(typeParameterDecls())
                 .withAnnotation(anAnnotation()
                         .withType(aType()
                                 .withName("com.mistraltech.smog.core.annotation.Matches"))
@@ -159,9 +162,10 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
     private void applySuperClass(AbstractClassBuilder clazz, TypeBuilder returnType, TypeBuilder matchedTypeParam) {
         TypeBuilder superType;
 
-        if (generatorProperties.getSuperClassName() != null) {
+        if (generatorProperties.getMatcherSuperClassName() != null) {
             superType = aType()
-                    .withName(generatorProperties.getSuperClassName())
+                    .withName(generatorProperties.getMatcherSuperClassName())
+                    .withTypeBindings(getSourceSuperClassParameters())
                     .withTypeBinding(returnType)
                     .withTypeBinding(matchedTypeParam);
         } else {
@@ -173,9 +177,21 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
         clazz.withSuperclass(superType);
     }
 
+    private List<TypeParameterBuilder> getSourceSuperClassParameters() {
+        return getSourceSuperClassType().getTypeBindings();
+    }
+
+    private TypeBuilder getSourceSuperClassType() {
+        PsiTypeConverter typeConverter = new PsiTypeConverter(true, typeParameterMap());
+
+        generatorProperties.getSourceSuperClassType().accept(typeConverter);
+
+        return typeConverter.getTypeBuilder();
+    }
+
     private void applyClassBody(AbstractClassBuilder clazz, TypeBuilder returnType, TypeBuilder matchedType,
                                 TypeBuilder matchedTypeParam, TypeBuilder matcherType) {
-        boolean includeSuperClassProperties = generatorProperties.getSuperClassName() == null;
+        boolean includeSuperClassProperties = generatorProperties.getMatcherSuperClassName() == null;
         List<Property> sourceClassProperties = PropertyLocator.locateProperties(getSourceClass(), includeSuperClassProperties);
 
         clazz.withVariable(aVariable()
@@ -279,7 +295,7 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
                 .withName("super")
                 .withParameter("matchedObjectDescription");
 
-        if (generatorProperties.getSuperClassName() != null) {
+        if (generatorProperties.getMatcherSuperClassName() != null) {
             superMethodCall.withParameter("template");
         }
 
@@ -321,7 +337,7 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
                 .withAccessModifier("public")
                 .withStaticFlag(true)
                 .withName(nestedClassName())
-                .withTypeParameters(typeParameters())
+                .withTypeParameters(typeParameterDecls())
                 .withSuperclass(aType()
                         .withName(generatorProperties.getClassName())
                         .withTypeBindings(typeParameters())
@@ -353,7 +369,7 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
                 .withAccessModifier("public")
                 .withStaticFlag(true)
                 .withReturnType(matcherType)
-                .withTypeParameters(typeParameters())
+                .withTypeParameters(typeParameterDecls())
                 .withName(generatorProperties.getFactoryMethodPrefix() + getSourceClassName() + "That")
                 .withStatement(aReturnStatement()
                         .withExpression(aNewInstance()
@@ -367,7 +383,7 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
                 .withAccessModifier("public")
                 .withStaticFlag(true)
                 .withReturnType(matcherType)
-                .withTypeParameters(typeParameters())
+                .withTypeParameters(typeParameterDecls())
                 .withName(generatorProperties.getFactoryMethodPrefix() + getSourceClassName() + "Like")
                 .withParameter(aParameter()
                         .withFinalFlag(true)

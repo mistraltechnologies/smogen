@@ -49,7 +49,7 @@ public class MatcherGeneratorOptionsDialog extends DialogWrapper implements Matc
         generatorProperties.setClassName(matcherGeneratorOptionsPanel.getSelectedClassName())
                 .setFactoryMethodPrefix(matcherGeneratorOptionsPanel.isAn() ? "an" : "a")
                 .setExtensible(matcherGeneratorOptionsPanel.isMakeExtensible())
-                .setSuperClassName(matcherGeneratorOptionsPanel.getSuperClassName())
+                .setMatcherSuperClassName(matcherGeneratorOptionsPanel.getSuperClassName())
                 .setPackageName(matcherGeneratorOptionsPanel.getSelectedPackageName())
                 .setSourceRoot(sourceRoot);
     }

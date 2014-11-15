@@ -32,16 +32,12 @@ public class TypeBuilder extends AbstractBuilder<TypeBuilder> {
         return withTypeBinding(aTypeParameter().withType(type));
     }
 
-    public TypeBuilder withTypeBindings(List<TypeParameterDeclBuilder> types) {
-        for (TypeParameterDeclBuilder type : types) {
+    public TypeBuilder withTypeBindings(List<TypeParameterBuilder> typeParameters) {
+        for (TypeParameterBuilder type : typeParameters) {
             withTypeBinding(type);
         }
 
         return this;
-    }
-
-    public TypeBuilder withTypeBinding(TypeParameterDeclBuilder typeParameter) {
-        return withTypeBinding(typeParameter.getName());
     }
 
     public TypeBuilder withTypeBinding(TypeParameterBuilder typeParameter) {
@@ -56,6 +52,10 @@ public class TypeBuilder extends AbstractBuilder<TypeBuilder> {
 
     public String getTypeFQN() {
         return typeFQN;
+    }
+
+    public List<TypeParameterBuilder> getTypeBindings() {
+        return typeBindings;
     }
 
     public boolean containsWildcard() {

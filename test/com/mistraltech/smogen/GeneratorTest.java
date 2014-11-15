@@ -48,10 +48,14 @@ public class GeneratorTest extends AbstractGeneratorTest {
     }
 
     public void testBasicMatcherSubclass() {
-        doTest("basic_subclass", generatorProperties().setSuperClassName("BaseWidgetMatcher"));
+        doTest("basic_subclass", generatorProperties().setMatcherSuperClassName("BaseWidgetMatcher"));
     }
 
     public void testExtensibleSubclass() {
-        doTest("extensible_subclass", generatorProperties().setSuperClassName("BaseWidgetMatcher").setExtensible(true));
+        doTest("extensible_subclass", generatorProperties().setMatcherSuperClassName("BaseWidgetMatcher").setExtensible(true));
+    }
+
+    public void testGenericSubclass() {
+        doTest("generic_subclass", generatorProperties().setMatcherSuperClassName("BaseWidgetMatcher"));
     }
 }
