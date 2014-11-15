@@ -7,7 +7,6 @@ import com.mistraltech.smogen.codegenerator.JavaGeneratorProperties;
 public class MatcherGeneratorProperties extends JavaGeneratorProperties<MatcherGeneratorProperties> {
     private String factoryMethodPrefix;
     private boolean extensible;
-    private String concreteSubclassName;
     private String superClassName;
     private CodeWriter matcherGeneratorCodeWriter;
     private PsiClass sourceClass;
@@ -27,15 +26,6 @@ public class MatcherGeneratorProperties extends JavaGeneratorProperties<MatcherG
 
     public MatcherGeneratorProperties setExtensible(boolean extensible) {
         this.extensible = extensible;
-        return self();
-    }
-
-    public String getConcreteSubclassName() {
-        return concreteSubclassName;
-    }
-
-    public MatcherGeneratorProperties setConcreteSubclassName(String concreteSubclassName) {
-        this.concreteSubclassName = concreteSubclassName;
         return self();
     }
 

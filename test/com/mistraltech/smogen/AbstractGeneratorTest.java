@@ -42,7 +42,6 @@ public abstract class AbstractGeneratorTest extends LightCodeInsightFixtureTestC
                 .setPackageName("")
                 .setClassName("WidgetMatcher")
                 .setExtensible(false)
-                .setConcreteSubclassName(null)
                 .setFactoryMethodPrefix("a");
     }
 

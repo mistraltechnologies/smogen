@@ -37,8 +37,6 @@ public class MatcherGeneratorOptionsPanel {
     private JComboBox destinationSourceRootComboBox;
     private JRadioButton aRadioButton;
     private JRadioButton anRadioButton;
-    private JCheckBox concreteSubclassCheckBox;
-    private JTextField concreteSubclassTextField;
     private JLabel matchesLabel;
     private JCheckBox extendsCheckBox;
     private ReferenceEditorWithBrowseButton superClassChooser;
@@ -47,7 +45,6 @@ public class MatcherGeneratorOptionsPanel {
         this.dataSource = dataSource;
 
         initialiseClassNameField();
-        initialiseConcreteSubclassFields();
         initialiseMakeExtensibleCheckBox();
         initialiseExtendsFields();
         initialiseFactoryMethodPrefixRadioButtons();
@@ -56,21 +53,6 @@ public class MatcherGeneratorOptionsPanel {
 
     private void initialiseClassNameField() {
         classNameTextField.setText(dataSource.getDefaultClassName());
-    }
-
-    private void initialiseConcreteSubclassFields() {
-        concreteSubclassCheckBox.setSelected(false);
-        concreteSubclassCheckBox.setEnabled(dataSource.getDefaultIsExtensible());
-        concreteSubclassTextField.setEnabled(dataSource.getDefaultIsExtensible());
-
-        if (!PsiUtils.isAbstract(dataSource.getMatchedClass())) {
-            concreteSubclassCheckBox.addChangeListener(new ChangeListener() {
-                @Override
-                public void stateChanged(ChangeEvent e) {
-                    onConcreteSubclassCheckBoxStateChange();
-                }
-            });
-        }
     }
 
     private void initialiseExtendsFields() {
@@ -85,20 +67,13 @@ public class MatcherGeneratorOptionsPanel {
     }
 
     private void initialiseMakeExtensibleCheckBox() {
+        // If we are matching an abstract class, likelihood is we want the matcher to be extensible
         if (PsiUtils.isAbstract(dataSource.getMatchedClass())) {
-            // If our matcher abstract, it is required to be extensible
             makeExtensibleCheckBox.setSelected(true);
-            makeExtensibleCheckBox.setEnabled(false);
         } else {
-            makeExtensibleCheckBox.setEnabled(true);
             makeExtensibleCheckBox.setSelected(dataSource.getDefaultIsExtensible());
-            makeExtensibleCheckBox.addChangeListener(new ChangeListener() {
-                @Override
-                public void stateChanged(ChangeEvent e) {
-                    onMakeExtensibleCheckBoxStateChange();
-                }
-            });
         }
+        makeExtensibleCheckBox.setEnabled(true);
     }
 
     private void initialiseFactoryMethodPrefixRadioButtons() {
@@ -141,33 +116,8 @@ public class MatcherGeneratorOptionsPanel {
         });
     }
 
-    private void onConcreteSubclassCheckBoxStateChange() {
-        concreteSubclassTextField.setEnabled(concreteSubclassCheckBox.isSelected());
-    }
-
     private void onExtendsCheckBoxStateChange() {
         superClassChooser.setEnabled(extendsCheckBox.isSelected());
-    }
-
-    private void onMakeExtensibleCheckBoxStateChange() {
-        boolean isExtensible = makeExtensibleCheckBox.isSelected();
-        concreteSubclassCheckBox.setEnabled(isExtensible);
-
-        if (isExtensible) {
-            // Transitioning to extensible, make sure the matcher class name is prefixed with Abstract
-            // and the concrete class name, if not already set, is the same without the Abstract prefix.
-            if (!classNameTextField.getText().startsWith("Abstract")) {
-                classNameTextField.setText(NameUtils.addPrefix(classNameTextField.getText(), "Abstract"));
-            }
-            if (concreteSubclassTextField.getText().isEmpty()) {
-                concreteSubclassTextField.setText(NameUtils.removePrefix(classNameTextField.getText(), "Abstract"));
-            }
-        } else {
-            // Transitioning to non-extensible, make sure the matcher class name is not prefixed with Abstract.
-            if (classNameTextField.getText().startsWith("Abstract")) {
-                classNameTextField.setText(NameUtils.removePrefix(classNameTextField.getText(), "Abstract"));
-            }
-        }
     }
 
     @NotNull
@@ -192,16 +142,6 @@ public class MatcherGeneratorOptionsPanel {
 
     public boolean isAn() {
         return anRadioButton.isSelected();
-    }
-
-    @Nullable
-    public String getConcreteSubclassName() {
-        // Don't return a subclass name if subclass is not applicable
-        if (concreteSubclassCheckBox.isEnabled() && concreteSubclassCheckBox.isSelected()) {
-            return concreteSubclassTextField.getText();
-        } else {
-            return null;
-        }
     }
 
     @Nullable

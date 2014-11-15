@@ -49,7 +49,6 @@ public class MatcherGeneratorOptionsDialog extends DialogWrapper implements Matc
         generatorProperties.setClassName(matcherGeneratorOptionsPanel.getSelectedClassName())
                 .setFactoryMethodPrefix(matcherGeneratorOptionsPanel.isAn() ? "an" : "a")
                 .setExtensible(matcherGeneratorOptionsPanel.isMakeExtensible())
-                .setConcreteSubclassName(matcherGeneratorOptionsPanel.getConcreteSubclassName())
                 .setSuperClassName(matcherGeneratorOptionsPanel.getSuperClassName())
                 .setPackageName(matcherGeneratorOptionsPanel.getSelectedPackageName())
                 .setSourceRoot(sourceRoot);
