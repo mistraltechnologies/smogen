@@ -1,7 +1,7 @@
 <idea-plugin version="2">
   <id>com.mistraltech.smogen</id>
   <name>SMOG Matcher Generator</name>
-  <version>0.2</version>
+  <version>0.3</version>
   <vendor email="support@mistraltech.co.uk">Mistral Technologies</vendor>
 
   <description><![CDATA[
@@ -12,11 +12,15 @@
     ]]></description>
 
   <change-notes><![CDATA[
-<p>Early access version.</p>
+<p><b>0.3</b></p>
+
+<p>Correction to the 'since-build' metadata. Plugin requires IntelliJ IDEA version 13.1 or later.</p>
+
+<p><b>0.2</b></p>
 
 <p>This version is compatible with smog-core library version 1.0 available from maven central.</p>
 
-<p>Many improvements have been made in this version, including:</p>
+<p>A number of improvements have been made in this version, including:</p>
 <ul>
     <li>A new code generator is used that manages imports much better and avoids the need for
         unnecessary fully qualified names in the code.</li>
@@ -26,11 +30,15 @@
     <li>Generated matchers get reformatted to use project formatting settings.</li>
     <li>Generated matcher classes are now annotated with @Matches.</li>
 </ul>
+
+<p><b>0.1</b></p>
+
+<p>First release.</p>
     ]]>
   </change-notes>
 
   <!-- please see http://confluence.jetbrains.com/display/IDEADEV/Build+Number+Ranges for description -->
-  <idea-version since-build="131"/>
+  <idea-version since-build="135"/>
 
   <depends>com.intellij.modules.java</depends>
 
