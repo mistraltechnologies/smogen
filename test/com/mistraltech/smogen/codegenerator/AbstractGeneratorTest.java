@@ -1,4 +1,4 @@
-package com.mistraltech.smogen;
+package com.mistraltech.smogen.codegenerator;
 
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiClass;
