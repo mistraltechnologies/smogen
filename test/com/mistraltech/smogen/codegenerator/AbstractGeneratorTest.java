@@ -28,15 +28,18 @@ public abstract class AbstractGeneratorTest extends LightCodeInsightFixtureTestC
 
         new Generator(generatorProperties).generate();
 
-        final String generatedFile = generatorProperties.getPackageName().replace('.','/') + "/" + generatorProperties.getClassName() + ".java";
-        myFixture.checkResultByFile(generatedFile, expectedGeneratedFilePath, false);
+        myFixture.checkResultByFile(getGeneratedFilePath(generatorProperties), expectedGeneratedFilePath, false);
     }
 
-    private VirtualFile getSourceRoot() {
+    protected String getGeneratedFilePath(MatcherGeneratorProperties generatorProperties) {
+        return generatorProperties.getPackageName().replace('.','/') + "/" + generatorProperties.getClassName() + ".java";
+    }
+
+    protected VirtualFile getSourceRoot() {
         return SourceRootUtils.getSourceAndTestSourceRoots(getProject()).get(0);
     }
 
-    protected MatcherGeneratorProperties generatorProperties() {
+    protected MatcherGeneratorProperties defaultGeneratorProperties() {
         return new MatcherGeneratorProperties()
                 .setProject(getProject())
                 .setPackageName("")

@@ -54,7 +54,7 @@ public class Generator {
         processor.run();
     }
 
-    private boolean shouldOverwriteFile(PsiFile existingFile) {
+    protected boolean shouldOverwriteFile(PsiFile existingFile) {
         String msg = "File " + existingFile.getVirtualFile().getPresentableUrl() + " already exists. Overwrite?";
         return Messages.showYesNoDialog(generatorProperties.getProject(), msg, "File Already Exists",
                 "Overwrite", "Cancel", Messages.getWarningIcon()) == Messages.YES;
