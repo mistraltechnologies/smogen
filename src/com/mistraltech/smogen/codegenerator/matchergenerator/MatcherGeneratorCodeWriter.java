@@ -172,7 +172,7 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
                     .withTypeBinding(matchedTypeParam);
         } else {
             superType = aType()
-                    .withName("com.mistraltech.smog.core.CompositePropertyMatcher")
+                    .withName(generatorProperties.getBaseClassName())
                     .withTypeBinding(matchedTypeParam);
         }
 

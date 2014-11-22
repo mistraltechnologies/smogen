@@ -1,0 +1,1 @@
+public class BaseWidgetMatcher extends com.mistraltech.smog.core.CompositePropertyMatcher {}

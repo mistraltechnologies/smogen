@@ -7,11 +7,17 @@ import com.intellij.codeInsight.actions.ReformatCodeProcessor;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import static com.mistraltech.smogen.utils.ActionUtils.runAction;
 import static com.mistraltech.smogen.utils.PsiUtils.createMissingDirectoriesForPackage;
@@ -34,9 +40,19 @@ public class Generator {
             return;
         }
 
+        List<String> warnings = new ArrayList<String>();
+        warnings.addAll(checkProperties());
+        if (! warnings.isEmpty() && !shouldContinueWithWarnings(warnings)) {
+            return;
+        }
+
         final PsiFile generatedFile = generateFile();
 
         reformat(generatedFile);
+    }
+
+    protected List<String> checkProperties() {
+        return Collections.emptyList();
     }
 
     private PsiFile generateFile() {
@@ -58,6 +74,13 @@ public class Generator {
         String msg = "File " + existingFile.getVirtualFile().getPresentableUrl() + " already exists. Overwrite?";
         return Messages.showYesNoDialog(generatorProperties.getProject(), msg, "File Already Exists",
                 "Overwrite", "Cancel", Messages.getWarningIcon()) == Messages.YES;
+    }
+
+    protected boolean shouldContinueWithWarnings(List<String> warnings)
+    {
+        String msg = "The generated source may not compile for the following reasons:\n" + StringUtils.join(warnings, '\n');
+        return Messages.showYesNoDialog(generatorProperties.getProject(), msg, "Generated Code Will Not Compile",
+                "Continue", "Cancel", Messages.getWarningIcon()) == Messages.YES;
     }
 
     @NotNull

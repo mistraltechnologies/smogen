@@ -1,11 +1,8 @@
 package com.mistraltech.smogen.codegenerator;
 
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiFile;
 import com.mistraltech.smogen.codegenerator.matchergenerator.MatcherGeneratorProperties;
-import com.mistraltech.smogen.utils.PsiUtils;
-import org.hamcrest.Matchers;
 
 import java.io.File;
 
@@ -15,15 +12,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 
 public class OverwriteTest extends AbstractGeneratorTest {
-
+    private static final String TEST_NAME = "overwrite";
     private MatcherGeneratorProperties generatorProperties;
 
     private void setupTestFixture() {
-        String testName = "overwrite";
-        String inputFilePath = testName + "/" + "input.java";
 
-        final PsiFile sourceFile = myFixture.configureByFile(inputFilePath);
-        final PsiClass sourceClass = PsiUtils.getClassFromFile(sourceFile);
+        final PsiClass sourceClass = loadTestClassFromFile(TEST_NAME, "input.java");
 
         generatorProperties = super.defaultGeneratorProperties()
                 .setSourceRoot(getSourceRoot())
@@ -88,20 +82,4 @@ public class OverwriteTest extends AbstractGeneratorTest {
 
         assertThat("Timestamp should not have changed", currentFileModificationTimestamp, is(equalTo(originalFileModificationTimestamp)));
     }
-
-    protected PsiFile getGeneratedFile(MatcherGeneratorProperties generatorProperties)
-    {
-        final String path = getGeneratedFilePath(generatorProperties);
-
-        final VirtualFile generatedVirtualFile = myFixture.findFileInTempDir(path);
-        if (generatedVirtualFile == null) {
-            throw new IllegalArgumentException("could not find results file " + path);
-        }
-
-        final PsiFile generatedPsiFile = myFixture.getPsiManager().findFile(generatedVirtualFile);
-        assert generatedPsiFile != null;
-
-        return generatedPsiFile;
-    }
-
 }

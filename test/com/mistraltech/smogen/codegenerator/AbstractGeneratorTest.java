@@ -5,7 +5,7 @@ import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiFile;
 import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase;
-import com.mistraltech.smogen.codegenerator.Generator;
+import com.mistraltech.smogen.codegenerator.matchergenerator.MatcherGenerator;
 import com.mistraltech.smogen.codegenerator.matchergenerator.MatcherGeneratorProperties;
 import com.mistraltech.smogen.utils.ActionUtils;
 import com.mistraltech.smogen.utils.PsiUtils;
@@ -19,20 +19,30 @@ public abstract class AbstractGeneratorTest extends LightCodeInsightFixtureTestC
         return new File("").getAbsolutePath().replace(File.separatorChar, '/') + "/testData";
     }
 
-    protected void doTest(String inputFilePath, String expectedGeneratedFilePath, MatcherGeneratorProperties generatorProperties) {
-        final PsiFile sourceFile = myFixture.configureByFile(inputFilePath);
-        final PsiClass sourceClass = PsiUtils.getClassFromFile(sourceFile);
+    protected void doTest(String testName, String inputFileName, String expectedGeneratedFileName, MatcherGeneratorProperties generatorProperties) {
+        preLoadClasses();
+
+        final PsiClass sourceClass = loadTestClassFromFile(testName, inputFileName);
 
         generatorProperties.setSourceRoot(getSourceRoot())
                 .setSourceClass(sourceClass);
 
-        new Generator(generatorProperties).generate();
+        new MatcherGenerator(generatorProperties).generate();
 
+        String expectedGeneratedFilePath = testName + "/" + expectedGeneratedFileName;
         myFixture.checkResultByFile(getGeneratedFilePath(generatorProperties), expectedGeneratedFilePath, false);
     }
 
+    protected void preLoadClasses() {
+        loadDefaultBaseClass();
+    }
+
+    protected void doTest(String testName, MatcherGeneratorProperties generatorProperties) {
+        doTest(testName, "input.java", "generated.java", generatorProperties);
+    }
+
     protected String getGeneratedFilePath(MatcherGeneratorProperties generatorProperties) {
-        return generatorProperties.getPackageName().replace('.','/') + "/" + generatorProperties.getClassName() + ".java";
+        return generatorProperties.getPackageName().replace('.', '/') + "/" + generatorProperties.getClassName() + ".java";
     }
 
     protected VirtualFile getSourceRoot() {
@@ -48,12 +58,6 @@ public abstract class AbstractGeneratorTest extends LightCodeInsightFixtureTestC
                 .setFactoryMethodPrefix("a");
     }
 
-    protected void doTest(String testName, MatcherGeneratorProperties generatorProperties) {
-        String inputFilePath = testName + "/" + "input.java";
-        String generatedFilePath = testName + "/" + "generated.java";
-        doTest(inputFilePath, generatedFilePath, generatorProperties);
-    }
-
     protected void createPackage(final String packageName) {
         final PsiDirectory baseDirectory = myFixture.getPsiManager().findDirectory(getSourceRoot());
         assert baseDirectory != null;
@@ -63,5 +67,34 @@ public abstract class AbstractGeneratorTest extends LightCodeInsightFixtureTestC
                 PsiUtils.createMissingDirectoriesForPackage(baseDirectory, packageName);
             }
         });
+    }
+
+    protected PsiFile getGeneratedFile(MatcherGeneratorProperties generatorProperties) {
+        final String path = getGeneratedFilePath(generatorProperties);
+
+        final VirtualFile generatedVirtualFile = myFixture.findFileInTempDir(path);
+        if (generatedVirtualFile == null) {
+            throw new IllegalArgumentException("could not find generated file " + path);
+        }
+
+        final PsiFile generatedPsiFile = myFixture.getPsiManager().findFile(generatedVirtualFile);
+        assert generatedPsiFile != null;
+
+        return generatedPsiFile;
+    }
+
+    protected PsiClass loadTestClassFromFile(String testName, String fileName) {
+        String inputFilePath = testName + "/" + fileName;
+
+        final PsiFile sourceFile = myFixture.configureByFile(inputFilePath);
+        return PsiUtils.getClassFromFile(sourceFile);
+    }
+
+    protected PsiClass loadDefaultBaseClass() {
+        final PsiFile sourceFile =  myFixture.addFileToProject("com/mistraltech/smog/core/CompositePropertyMatcher.java",
+                "package com.mistraltech.smog.core;\n" +
+                        "public class CompositePropertyMatcher<T> {}\n");
+
+        return PsiUtils.getClassFromFile(sourceFile);
     }
 }

@@ -11,6 +11,11 @@ public class MatcherGeneratorProperties extends JavaGeneratorProperties<MatcherG
     private String matcherSuperClassName;
     private CodeWriter matcherGeneratorCodeWriter;
     private PsiClass sourceClass;
+    private String baseClassName;
+
+    public MatcherGeneratorProperties() {
+        setBaseClassName("com.mistraltech.smog.core.CompositePropertyMatcher");
+    }
 
     public String getFactoryMethodPrefix() {
         return factoryMethodPrefix;
@@ -64,5 +69,14 @@ public class MatcherGeneratorProperties extends JavaGeneratorProperties<MatcherG
         }
 
         return matcherGeneratorCodeWriter;
+    }
+
+    public String getBaseClassName() {
+        return baseClassName;
+    }
+
+    public MatcherGeneratorProperties setBaseClassName(String baseClassName) {
+        this.baseClassName = baseClassName;
+        return self();
     }
 }

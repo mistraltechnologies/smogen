@@ -13,6 +13,7 @@ import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.ClassUtil;
 import com.mistraltech.smogen.codegenerator.Generator;
+import com.mistraltech.smogen.codegenerator.matchergenerator.MatcherGenerator;
 import com.mistraltech.smogen.codegenerator.matchergenerator.MatcherGeneratorProperties;
 import com.mistraltech.smogen.utils.PsiUtils;
 import com.mistraltech.smogen.utils.SourceRootUtils;
@@ -77,7 +78,7 @@ public class GenerateMatcherAction extends AnAction {
         matcherGeneratorOptionsDialog.show();
 
         if (matcherGeneratorOptionsDialog.isOK()) {
-            new Generator(generatorProperties).generate();
+            new MatcherGenerator(generatorProperties).generate();
         }
     }
 }
