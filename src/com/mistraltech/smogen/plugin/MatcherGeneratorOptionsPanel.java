@@ -16,7 +16,6 @@ import com.intellij.refactoring.ui.PackageNameReferenceEditorCombo;
 import com.intellij.ui.ListCellRendererWrapper;
 import com.intellij.ui.ReferenceEditorWithBrowseButton;
 import com.intellij.util.PlatformIcons;
-import com.mistraltech.smogen.utils.NameUtils;
 import com.mistraltech.smogen.utils.PsiUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -40,15 +39,22 @@ public class MatcherGeneratorOptionsPanel {
     private JLabel matchesLabel;
     private JCheckBox extendsCheckBox;
     private ReferenceEditorWithBrowseButton superClassChooser;
+    private JLabel sourceClassName;
 
     public MatcherGeneratorOptionsPanel(@NotNull MatcherGeneratorOptionsPanelDataSource dataSource) {
         this.dataSource = dataSource;
 
+        initialiseSourceClassNameField();
         initialiseClassNameField();
         initialiseMakeExtensibleCheckBox();
         initialiseExtendsFields();
         initialiseFactoryMethodPrefixRadioButtons();
         initialiseDestinationSourceRootComboBox();
+    }
+
+    private void initialiseSourceClassNameField() {
+        final String qualifiedName = dataSource.getMatchedClass().getQualifiedName();
+        sourceClassName.setText(qualifiedName);
     }
 
     private void initialiseClassNameField() {
@@ -199,7 +205,7 @@ public class MatcherGeneratorOptionsPanel {
             return new ValidationInfo("Class name is empty", classNameTextField);
         }
 
-        if (! PsiNameHelper.getInstance(dataSource.getProject()).isIdentifier(className)) {
+        if (!PsiNameHelper.getInstance(dataSource.getProject()).isIdentifier(className)) {
             return new ValidationInfo("Class name is not a valid identifier", classNameTextField);
         }
 
