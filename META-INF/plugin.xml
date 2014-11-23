@@ -43,7 +43,7 @@
   <depends>com.intellij.modules.java</depends>
 
   <extensions defaultExtensionNs="com.intellij">
-    <!-- Add your extensions here -->
+    <projectConfigurable instance="com.mistraltech.smogen.plugin.SmogenConfigurable" />
   </extensions>
 
   <application-components>

@@ -52,8 +52,12 @@ public class GenerateMatcherAction extends AnAction {
         // Note that module may be null if the selected class is in a library rather than the source tree
         final Module module = e.getData(LangDataKeys.MODULE);
 
+        final ConfigurationProperties configurationProperties = new ConfigurationProperties(project);
+
         // Guess what we are going to call the target matcher class and what its package will be
-        String preferredClassName = selectedClass.getName() + "Matcher";
+        String preferredClassName = configurationProperties.getMatcherClassNamePrefix() +
+                selectedClass.getName() +
+                configurationProperties.getMatcherClassNameSuffix();
         String preferredPackageName = ClassUtil.extractPackageName(selectedClass.getQualifiedName());
 
         // Get the list of available source roots
