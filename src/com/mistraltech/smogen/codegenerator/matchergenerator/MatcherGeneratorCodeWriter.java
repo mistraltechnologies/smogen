@@ -62,6 +62,12 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
         return generateDocumentContent();
     }
 
+    /*
+                    .setGenerateTemplateFactoryMethod(configurationProperties.isGenerateTemplateFactoryMethod())
+                .setMakeMethodParametersFinal(configurationProperties.isMakeMethodParametersFinal())
+                .setUseReflectingPropertyMatcher(configurationProperties.isUseReflectingPropertyMatcher());
+     */
+
     @NotNull
     private String generateDocumentContent() {
         PsiPackage targetPackage = JavaDirectoryService.getInstance().getPackage(generatorProperties.getParentDirectory());
@@ -196,6 +202,10 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
         boolean includeSuperClassProperties = generatorProperties.getMatcherSuperClassName() == null;
         List<Property> sourceClassProperties = PropertyLocator.locateProperties(getSourceClass(), includeSuperClassProperties);
 
+        final String objectDescription = generatorProperties.getFactoryMethodPrefix().isEmpty() ?
+                getSourceClassName() :
+                generatorProperties.getFactoryMethodPrefix() + " " + getSourceClassName();
+
         clazz.withVariable(aVariable()
                 .withAccessModifier("private")
                 .withFinalFlag(true)
@@ -203,7 +213,7 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
                 .withType(aType().withName("java.lang.String"))
                 .withName("MATCHED_OBJECT_DESCRIPTION")
                 .withInitialiser(anExpression()
-                        .withText(String.format("\"%s %s\"", generatorProperties.getFactoryMethodPrefix(), getSourceClassName()))));
+                        .withText("\"" + objectDescription + "\"")));
 
         clazz.withVariables(generateMatcherVariables(sourceClassProperties))
                 .withMethod(generateConstructor(sourceClassProperties, matchedTypeParam));
@@ -220,15 +230,15 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
         }
 
         if (generatorProperties.isExtensible()) {
-            clazz.withNestedClass(generateNestedClass(matcherType, matchedType));
+            clazz.withNestedClass(generateNestedClass(matcherType, matchedType, sourceClassProperties));
         }
         else {
-            clazz.withMethod(generateMatchesSafely(matchedType));
+            clazz.withMethod(generateMatchesSafely(matchedType, sourceClassProperties));
         }
     }
 
-    private MethodBuilder generateMatchesSafely(TypeBuilder matchedType) {
-        return aMethod()
+    private MethodBuilder generateMatchesSafely(TypeBuilder matchedType, List<Property> properties) {
+        final MethodBuilder matchesSafelyMethod = aMethod()
                 .withAnnotation(anAnnotation()
                         .withType(aType()
                                 .withName("java.lang.Override")))
@@ -247,6 +257,22 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
                 .withStatement(anExpressionStatement()
                         .withExpression(anExpression()
                                 .withText("super.matchesSafely(item, matchAccumulator)")));
+
+        if (! generatorProperties.isUseReflectingPropertyMatcher()) {
+            for (Property property : properties) {
+                matchesSafelyMethod
+                        .withStatement(anExpressionStatement()
+                                .withExpression(aMethodCall()
+                                        .withObject("matchAccumulator")
+                                        .withName("matches")
+                                        .withParameter(matcherAttributeName(property))
+                                        .withParameter(aMethodCall()
+                                                .withObject("item")
+                                                .withName(property.getAccessorName()))));
+            }
+        }
+
+        return matchesSafelyMethod;
     }
 
     private List<VariableBuilder> generateMatcherVariables(@NotNull List<Property> properties) {
@@ -260,6 +286,10 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
     }
 
     private VariableBuilder generateMatcherVariable(@NotNull Property property) {
+        String concretePropertyMatcher = generatorProperties.isUseReflectingPropertyMatcher() ?
+                "com.mistraltech.smog.core.ReflectingPropertyMatcher" :
+                "com.mistraltech.smog.core.PropertyMatcher";
+
         return aVariable()
                 .withAccessModifier("private")
                 .withFinalFlag(true)
@@ -269,7 +299,7 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
                 .withName(matcherAttributeName(property))
                 .withInitialiser(aNewInstance()
                         .withType(aType()
-                                .withName("com.mistraltech.smog.core.ReflectingPropertyMatcher")
+                                .withName(concretePropertyMatcher)
                                 .withTypeBinding(getPropertyType(property, true)))
                         .withParameter("\"" + property.getName() + "\"")
                         .withParameter("this"));
@@ -334,7 +364,7 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
         return constructor;
     }
 
-    private NestedClassBuilder generateNestedClass(TypeBuilder matcherType, TypeBuilder matchedType) {
+    private NestedClassBuilder generateNestedClass(TypeBuilder matcherType, TypeBuilder matchedType, List<Property> properties) {
         NestedClassBuilder nestedClass = aNestedClass()
                 .withAccessModifier("public")
                 .withStaticFlag(true)
@@ -361,7 +391,7 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
                                         .withName("super")
                                         .withParameter("matchedObjectDescription")
                                         .withParameter("template"))))
-                .withMethod(generateMatchesSafely(matchedType));
+                .withMethod(generateMatchesSafely(matchedType, properties));
 
         return nestedClass;
     }
@@ -372,7 +402,7 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
                 .withStaticFlag(true)
                 .withReturnType(matcherType)
                 .withTypeParameters(typeParameterDecls())
-                .withName(generatorProperties.getFactoryMethodPrefix() + getSourceClassName() + "That")
+                .withName(generatorProperties.getFactoryMethodPrefix() + getSourceClassName() + generatorProperties.getFactoryMethodSuffix())
                 .withStatement(aReturnStatement()
                         .withExpression(aNewInstance()
                                 .withType(matcherType)
@@ -386,7 +416,7 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
                 .withStaticFlag(true)
                 .withReturnType(matcherType)
                 .withTypeParameters(typeParameterDecls())
-                .withName(generatorProperties.getFactoryMethodPrefix() + getSourceClassName() + "Like")
+                .withName(generatorProperties.getFactoryMethodPrefix() + getSourceClassName() + generatorProperties.getTemplateFactoryMethodSuffix())
                 .withParameter(aParameter()
                         .withFinalFlag(true)
                         .withType(matchedType)
@@ -476,7 +506,11 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
     }
 
     private String setterMethodName(@NotNull Property property) {
-        return " has" + property.getCapitalisedName();
+        final String propertyName = generatorProperties.getSetterPrefix().equals("") ?
+                property.getName() :
+                property.getCapitalisedName();
+
+        return generatorProperties.getSetterPrefix() + propertyName + generatorProperties.getSetterSuffix();
     }
 
     private PsiClass getSourceClass() {

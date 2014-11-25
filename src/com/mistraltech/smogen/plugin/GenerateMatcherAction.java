@@ -12,7 +12,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.ClassUtil;
-import com.mistraltech.smogen.codegenerator.Generator;
 import com.mistraltech.smogen.codegenerator.matchergenerator.MatcherGenerator;
 import com.mistraltech.smogen.codegenerator.matchergenerator.MatcherGeneratorProperties;
 import com.mistraltech.smogen.utils.PsiUtils;
@@ -76,7 +75,16 @@ public class GenerateMatcherAction extends AnAction {
                 .setClassName(preferredClassName)
                 .setPackageName(preferredPackageName)
                 .setSourceRoot(preferredSourceRoot)
-                .setSourceClass(selectedClass);
+                .setSourceClass(selectedClass)
+                .setFactoryMethodSuffix(configurationProperties.getFactoryMethodSuffix())
+                .setTemplateFactoryMethodSuffix(configurationProperties.getTemplateFactoryMethodSuffix())
+                .setSetterPrefix(configurationProperties.getSetterPrefix())
+                .setSetterSuffix(configurationProperties.getSetterSuffix())
+                .setExtensible(configurationProperties.isMakeExtensible())
+                .setBaseClassName(configurationProperties.getBaseClass())
+                .setGenerateTemplateFactoryMethod(configurationProperties.isGenerateTemplateFactoryMethod())
+                .setMakeMethodParametersFinal(configurationProperties.isMakeMethodParametersFinal())
+                .setUseReflectingPropertyMatcher(configurationProperties.isUseReflectingPropertyMatcher());
 
         MatcherGeneratorOptionsDialog matcherGeneratorOptionsDialog = new MatcherGeneratorOptionsDialog(project, selectedClass, candidateSourceRoots, generatorProperties);
         matcherGeneratorOptionsDialog.show();

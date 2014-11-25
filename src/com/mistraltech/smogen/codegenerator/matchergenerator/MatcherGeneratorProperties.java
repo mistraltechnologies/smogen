@@ -12,9 +12,15 @@ public class MatcherGeneratorProperties extends JavaGeneratorProperties<MatcherG
     private CodeWriter matcherGeneratorCodeWriter;
     private PsiClass sourceClass;
     private String baseClassName;
+    private String factoryMethodSuffix;
+    private String templateFactoryMethodSuffix;
+    private String setterPrefix;
+    private String setterSuffix;
+    private boolean useReflectingPropertyMatcher;
+    private boolean generateTemplateFactoryMethod;
+    private boolean makeMethodParametersFinal;
 
     public MatcherGeneratorProperties() {
-        setBaseClassName("com.mistraltech.smog.core.CompositePropertyMatcher");
     }
 
     public String getFactoryMethodPrefix() {
@@ -77,6 +83,69 @@ public class MatcherGeneratorProperties extends JavaGeneratorProperties<MatcherG
 
     public MatcherGeneratorProperties setBaseClassName(String baseClassName) {
         this.baseClassName = baseClassName;
+        return self();
+    }
+
+    public String getFactoryMethodSuffix() {
+        return factoryMethodSuffix;
+    }
+
+    public MatcherGeneratorProperties setFactoryMethodSuffix(String factoryMethodSuffix) {
+        this.factoryMethodSuffix = factoryMethodSuffix;
+        return self();
+    }
+
+    public String getTemplateFactoryMethodSuffix() {
+        return templateFactoryMethodSuffix;
+    }
+
+    public MatcherGeneratorProperties setTemplateFactoryMethodSuffix(String templateFactoryMethodSuffix) {
+        this.templateFactoryMethodSuffix = templateFactoryMethodSuffix;
+        return self();
+    }
+
+    public String getSetterPrefix() {
+        return setterPrefix;
+    }
+
+    public MatcherGeneratorProperties setSetterPrefix(String setterPrefix) {
+        this.setterPrefix = setterPrefix;
+        return self();
+    }
+
+    public String getSetterSuffix() {
+        return setterSuffix;
+    }
+
+    public MatcherGeneratorProperties setSetterSuffix(String setterSuffix) {
+        this.setterSuffix = setterSuffix;
+        return self();
+    }
+
+    public boolean isUseReflectingPropertyMatcher() {
+        return useReflectingPropertyMatcher;
+    }
+
+    public MatcherGeneratorProperties setUseReflectingPropertyMatcher(boolean useReflectingPropertyMatcher) {
+        this.useReflectingPropertyMatcher = useReflectingPropertyMatcher;
+        return self();
+    }
+
+    public boolean isGenerateTemplateFactoryMethod() {
+        return generateTemplateFactoryMethod;
+    }
+
+    public MatcherGeneratorProperties setGenerateTemplateFactoryMethod(boolean generateTemplateFactoryMethod) {
+        this.generateTemplateFactoryMethod = generateTemplateFactoryMethod;
+        return self();
+    }
+
+    public boolean isMakeMethodParametersFinal() {
+        return makeMethodParametersFinal;
+    }
+
+    public MatcherGeneratorProperties setMakeMethodParametersFinal(boolean makeMethodParametersFinal) {
+        this.makeMethodParametersFinal = makeMethodParametersFinal;
         return self();
     }
 }

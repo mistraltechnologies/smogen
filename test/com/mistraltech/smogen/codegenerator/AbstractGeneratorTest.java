@@ -55,7 +55,14 @@ public abstract class AbstractGeneratorTest extends LightCodeInsightFixtureTestC
                 .setPackageName("")
                 .setClassName("WidgetMatcher")
                 .setExtensible(false)
-                .setFactoryMethodPrefix("a");
+                .setFactoryMethodPrefix("a")
+                .setSetterPrefix("has")
+                .setSetterSuffix("")
+                .setBaseClassName("com.mistraltech.smog.core.CompositePropertyMatcher")
+                .setExtensible(false)
+                .setFactoryMethodSuffix("That")
+                .setTemplateFactoryMethodSuffix("Like")
+                .setUseReflectingPropertyMatcher(true);
     }
 
     protected void createPackage(final String packageName) {
@@ -91,10 +98,13 @@ public abstract class AbstractGeneratorTest extends LightCodeInsightFixtureTestC
     }
 
     protected PsiClass loadDefaultBaseClass() {
-        final PsiFile sourceFile =  myFixture.addFileToProject("com/mistraltech/smog/core/CompositePropertyMatcher.java",
+        return loadTestClassFromText("com/mistraltech/smog/core/CompositePropertyMatcher.java",
                 "package com.mistraltech.smog.core;\n" +
                         "public class CompositePropertyMatcher<T> {}\n");
+    }
 
+    protected PsiClass loadTestClassFromText(String className, String code) {
+        final PsiFile sourceFile =  myFixture.addFileToProject(className, code);
         return PsiUtils.getClassFromFile(sourceFile);
     }
 }
