@@ -3,6 +3,8 @@ package com.mistraltech.smogen.plugin;
 import com.intellij.openapi.project.Project;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 public class SmogenConfiguration {
 
@@ -72,7 +74,20 @@ public class SmogenConfiguration {
         currentBaseClass = properties.getBaseClass();
         currentMakeExtensible = properties.isMakeExtensible();
 
+        generateTemplateFactoryMethodCheckBox.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                onGenerateTemplateFactoryMethodChange();
+            }
+        });
+
+        onGenerateTemplateFactoryMethodChange();
+
         reset();
+    }
+
+    private void onGenerateTemplateFactoryMethodChange() {
+        templateFactoryMethodSuffixTextField.setEnabled(generateTemplateFactoryMethodCheckBox.isSelected());
     }
 
     public void save() {
