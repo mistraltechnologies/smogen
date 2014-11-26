@@ -71,11 +71,18 @@ public class ConfigurationTest extends AbstractGeneratorTest {
                 .setGenerateTemplateFactoryMethod(false));
     }
 
-    public void testSubclassGenerateTemplateFactoryMethod() {
+    public void testGenerateTemplateFactoryMethodSubclass() {
         loadTestClassFromFile(TEST_NAME, "superclass.java");
         doTest(TEST_NAME, "input.java", "no_template_factory_method_subclass.java", defaultGeneratorProperties()
                 .setGenerateTemplateFactoryMethod(false)
                 .setMatcherSuperClassName("BaseWidgetMatcher"));
+    }
+
+    public void testGenerateTemplateFactoryMethodExtensible() {
+        loadTestClassFromFile(TEST_NAME, "superclass.java");
+        doTest(TEST_NAME, "input.java", "no_template_factory_method_extensible.java", defaultGeneratorProperties()
+                .setGenerateTemplateFactoryMethod(false)
+                .setExtensible(true));
     }
 
     public void testMethodParametersFinal() {

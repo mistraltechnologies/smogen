@@ -383,6 +383,31 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
     }
 
     private NestedClassBuilder generateNestedClass(TypeBuilder matcherType, TypeBuilder matchedType, List<Property> properties) {
+        final MethodCallBuilder superCall = aMethodCall()
+                .withName("super")
+                .withParameter("matchedObjectDescription");
+
+        if (generatorProperties.isGenerateTemplateFactoryMethod()) {
+            superCall.withParameter("template");
+        }
+
+        final MethodBuilder constructor = aMethod()
+                .withAccessModifier("protected")
+                .withName(nestedClassName())
+                .withParameter(aParameter()
+                        .withFinalFlag(generatorProperties.isMakeMethodParametersFinal())
+                        .withType(aType()
+                                .withName("java.lang.String"))
+                        .withName("matchedObjectDescription"))
+                .withStatement(anExpressionStatement().withExpression(superCall));
+
+        if (generatorProperties.isGenerateTemplateFactoryMethod()) {
+            constructor.withParameter(aParameter()
+                    .withFinalFlag(generatorProperties.isMakeMethodParametersFinal())
+                    .withType(matchedType)
+                    .withName("template"));
+        }
+
         NestedClassBuilder nestedClass = aNestedClass()
                 .withAccessModifier("public")
                 .withStaticFlag(true)
@@ -393,22 +418,7 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
                         .withTypeBindings(typeParameters())
                         .withTypeBinding(matcherType)
                         .withTypeBinding(matchedType))
-                .withMethod(aMethod()
-                        .withAccessModifier("protected")
-                        .withName(nestedClassName())
-                        .withParameter(aParameter()
-                                .withFinalFlag(generatorProperties.isMakeMethodParametersFinal())
-                                .withType(aType()
-                                        .withName("java.lang.String"))
-                                .withName("matchedObjectDescription"))
-                        .withParameter(aParameter()
-                                .withFinalFlag(generatorProperties.isMakeMethodParametersFinal())
-                                .withType(matchedType)
-                                .withName("template"))
-                        .withStatement(anExpressionStatement().withExpression(aMethodCall()
-                                .withName("super")
-                                .withParameter("matchedObjectDescription")
-                                .withParameter("template"))))
+                .withMethod(constructor)
                 .withMethod(generateMatchesSafely(matchedType, properties));
 
         return nestedClass;
