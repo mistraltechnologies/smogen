@@ -21,7 +21,7 @@ public class ConfigurationProperties {
     private static final String GENERATE_TEMPLATE_FACTORY_METHOD = "smogen.generateTemplateFactoryMethod";
     private static final String GENERATE_TEMPLATE_FACTORY_METHOD_DEFAULT = Boolean.TRUE.toString();
     private static final String MAKE_METHOD_PARAMETERS_FINAL = "smogen.makeMethodParametersFinal";
-    private static final String MAKE_METHOD_PARAMETERS_FINAL_DEFAULT = Boolean.FALSE.toString();
+    private static final String MAKE_METHOD_PARAMETERS_FINAL_DEFAULT = Boolean.TRUE.toString();
     private static final String BASE_CLASS = "smogen.baseClass";
     private static final String BASE_CLASS_DEFAULT = "com.mistraltech.smog.core.CompositePropertyMatcher";
     private static final String MAKE_EXTENSIBLE = "smogen.makeExtensible";

@@ -65,4 +65,21 @@ public class ConfigurationTest extends AbstractGeneratorTest {
         doTest(TEST_NAME, "input.java", "no_reflecting_property_matcher.java", defaultGeneratorProperties()
                 .setUseReflectingPropertyMatcher(false));
     }
+
+    public void testGenerateTemplateFactoryMethod() {
+        doTest(TEST_NAME, "input.java", "no_template_factory_method.java", defaultGeneratorProperties()
+                .setGenerateTemplateFactoryMethod(false));
+    }
+
+    public void testSubclassGenerateTemplateFactoryMethod() {
+        loadTestClassFromFile(TEST_NAME, "superclass.java");
+        doTest(TEST_NAME, "input.java", "no_template_factory_method_subclass.java", defaultGeneratorProperties()
+                .setGenerateTemplateFactoryMethod(false)
+                .setMatcherSuperClassName("BaseWidgetMatcher"));
+    }
+
+    public void testMethodParametersFinal() {
+        doTest(TEST_NAME, "input.java", "non_final_parameters.java", defaultGeneratorProperties()
+                .setMakeMethodParametersFinal(false));
+    }
 }

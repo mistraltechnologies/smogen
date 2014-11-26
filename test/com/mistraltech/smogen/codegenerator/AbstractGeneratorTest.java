@@ -62,7 +62,9 @@ public abstract class AbstractGeneratorTest extends LightCodeInsightFixtureTestC
                 .setExtensible(false)
                 .setFactoryMethodSuffix("That")
                 .setTemplateFactoryMethodSuffix("Like")
-                .setUseReflectingPropertyMatcher(true);
+                .setUseReflectingPropertyMatcher(true)
+                .setGenerateTemplateFactoryMethod(true)
+                .setMakeMethodParametersFinal(true);
     }
 
     protected void createPackage(final String packageName) {
