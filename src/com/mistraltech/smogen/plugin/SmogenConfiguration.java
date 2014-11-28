@@ -3,8 +3,6 @@ package com.mistraltech.smogen.plugin;
 import com.intellij.openapi.project.Project;
 
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 public class SmogenConfiguration {
 
@@ -12,10 +10,6 @@ public class SmogenConfiguration {
     private JPanel mainPanel;
     private JTextField matcherClassNameSuffixTextField;
     private JTextField matcherClassNamePrefixTextField;
-    private JTextField factoryMethodSuffixTextField;
-    private JTextField templateFactoryMethodSuffixTextField;
-    private JTextField setterPrefixTextField;
-    private JTextField setterSuffixTextField;
     private JCheckBox useReflectingPropertyMatcherCheckBox;
     private JCheckBox generateTemplateFactoryMethodCheckBox;
     private JCheckBox makeMethodParametersFinalCheckBox;
@@ -47,10 +41,6 @@ public class SmogenConfiguration {
         return !(
                 matcherClassNamePrefixTextField.getText().equals(currentMatcherClassNamePrefix) &&
                         matcherClassNameSuffixTextField.getText().equals(currentMatcherClassNameSuffix) &&
-                        factoryMethodSuffixTextField.getText().equals(currentFactoryMethodSuffix) &&
-                        templateFactoryMethodSuffixTextField.getText().equals(currentTemplateFactoryMethodSuffix) &&
-                        setterPrefixTextField.getText().equals(currentSetterPrefix) &&
-                        setterSuffixTextField.getText().equals(currentSetterSuffix) &&
                         useReflectingPropertyMatcherCheckBox.isSelected() == currentUseReflectingPropertyMatcher &&
                         generateTemplateFactoryMethodCheckBox.isSelected() == currentGenerateTemplateFactoryMethod &&
                         makeMethodParametersFinalCheckBox.isSelected() == currentMakeMethodParametersFinal &&
@@ -74,20 +64,7 @@ public class SmogenConfiguration {
         currentBaseClass = properties.getBaseClass();
         currentMakeExtensible = properties.isMakeExtensible();
 
-        generateTemplateFactoryMethodCheckBox.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                onGenerateTemplateFactoryMethodChange();
-            }
-        });
-
-        onGenerateTemplateFactoryMethodChange();
-
         reset();
-    }
-
-    private void onGenerateTemplateFactoryMethodChange() {
-        templateFactoryMethodSuffixTextField.setEnabled(generateTemplateFactoryMethodCheckBox.isSelected());
     }
 
     public void save() {
@@ -95,10 +72,6 @@ public class SmogenConfiguration {
 
         currentMatcherClassNamePrefix = matcherClassNamePrefixTextField.getText();
         currentMatcherClassNameSuffix = matcherClassNameSuffixTextField.getText();
-        currentFactoryMethodSuffix = factoryMethodSuffixTextField.getText();
-        currentTemplateFactoryMethodSuffix = templateFactoryMethodSuffixTextField.getText();
-        currentSetterPrefix = setterPrefixTextField.getText();
-        currentSetterSuffix = setterSuffixTextField.getText();
         currentUseReflectingPropertyMatcher = useReflectingPropertyMatcherCheckBox.isSelected();
         currentGenerateTemplateFactoryMethod = generateTemplateFactoryMethodCheckBox.isSelected();
         currentMakeMethodParametersFinal = makeMethodParametersFinalCheckBox.isSelected();
@@ -121,10 +94,6 @@ public class SmogenConfiguration {
     public void reset() {
         matcherClassNamePrefixTextField.setText(currentMatcherClassNamePrefix);
         matcherClassNameSuffixTextField.setText(currentMatcherClassNameSuffix);
-        factoryMethodSuffixTextField.setText(currentFactoryMethodSuffix);
-        templateFactoryMethodSuffixTextField.setText(currentTemplateFactoryMethodSuffix);
-        setterPrefixTextField.setText(currentSetterPrefix);
-        setterSuffixTextField.setText(currentSetterSuffix);
         useReflectingPropertyMatcherCheckBox.setSelected(currentUseReflectingPropertyMatcher);
         generateTemplateFactoryMethodCheckBox.setSelected(currentGenerateTemplateFactoryMethod);
         makeMethodParametersFinalCheckBox.setSelected(currentMakeMethodParametersFinal);
