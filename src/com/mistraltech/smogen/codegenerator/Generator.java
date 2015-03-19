@@ -66,7 +66,7 @@ public class Generator {
     private void reformat(PsiFile targetFile) {
         AbstractLayoutCodeProcessor processor = new ReformatCodeProcessor(targetFile.getProject(), targetFile, null, false);
         processor = new OptimizeImportsProcessor(processor);
-        processor = new RearrangeCodeProcessor(processor, null);
+        processor = new RearrangeCodeProcessor(processor);
         processor.run();
     }
 

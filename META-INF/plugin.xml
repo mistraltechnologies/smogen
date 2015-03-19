@@ -1,7 +1,7 @@
 <idea-plugin version="2">
   <id>com.mistraltech.smogen</id>
   <name>SMOG Matcher Generator</name>
-  <version>0.3</version>
+  <version>0.4</version>
   <vendor email="support@mistraltech.co.uk">Mistral Technologies</vendor>
 
   <description><![CDATA[
@@ -12,6 +12,10 @@
     ]]></description>
 
   <change-notes><![CDATA[
+<p><b>0.4</b></p>
+
+<p>Updated to fix incompatibility with IDEA 14.0</p>
+
 <p><b>0.3</b></p>
 
 <p>Correction to the 'since-build' metadata. Plugin requires IntelliJ IDEA version 13.1 or later.</p>
@@ -38,7 +42,7 @@
   </change-notes>
 
   <!-- please see http://confluence.jetbrains.com/display/IDEADEV/Build+Number+Ranges for description -->
-  <idea-version since-build="135"/>
+  <idea-version since-build="139"/>
 
   <depends>com.intellij.modules.java</depends>
 
