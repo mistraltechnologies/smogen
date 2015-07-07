@@ -19,6 +19,7 @@ public class MatcherGeneratorProperties extends JavaGeneratorProperties<MatcherG
     private boolean useReflectingPropertyMatcher;
     private boolean generateTemplateFactoryMethod;
     private boolean makeMethodParametersFinal;
+    private boolean generateInterface;
 
     public MatcherGeneratorProperties() {
     }
@@ -70,11 +71,7 @@ public class MatcherGeneratorProperties extends JavaGeneratorProperties<MatcherG
 
     @Override
     public CodeWriter getCodeWriter() {
-        if (matcherGeneratorCodeWriter == null) {
-            matcherGeneratorCodeWriter = new MatcherGeneratorCodeWriter(this);
-        }
-
-        return matcherGeneratorCodeWriter;
+        return isGenerateInterface() ? new MatcherInterfaceCodeWriter(this) : new MatcherClassCodeWriter(this);
     }
 
     public String getBaseClassName() {
@@ -146,6 +143,15 @@ public class MatcherGeneratorProperties extends JavaGeneratorProperties<MatcherG
 
     public MatcherGeneratorProperties setMakeMethodParametersFinal(boolean makeMethodParametersFinal) {
         this.makeMethodParametersFinal = makeMethodParametersFinal;
+        return self();
+    }
+
+    public boolean isGenerateInterface() {
+        return generateInterface;
+    }
+
+    public MatcherGeneratorProperties setGenerateInterface(boolean generateInterface) {
+        this.generateInterface = generateInterface;
         return self();
     }
 }

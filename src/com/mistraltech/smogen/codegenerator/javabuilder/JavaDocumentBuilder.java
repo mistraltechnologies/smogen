@@ -5,7 +5,7 @@ import java.util.List;
 
 public class JavaDocumentBuilder {
     private String packageName;
-    private List<AbstractClassBuilder> classBuilderList = new ArrayList<AbstractClassBuilder>();
+    private List<AbstractTypeBuilder> typeBuilderList = new ArrayList<AbstractTypeBuilder>();
 
     private JavaDocumentBuilder() {
     }
@@ -22,7 +22,12 @@ public class JavaDocumentBuilder {
     }
 
     public JavaDocumentBuilder addClass(AbstractClassBuilder classBuilder) {
-        this.classBuilderList.add(classBuilder);
+        this.typeBuilderList.add(classBuilder);
+        return this;
+    }
+
+    public JavaDocumentBuilder addInterface(InterfaceBuilder interfaceBuilder) {
+        this.typeBuilderList.add(interfaceBuilder);
         return this;
     }
 
@@ -30,8 +35,8 @@ public class JavaDocumentBuilder {
         JavaBuilderContextImpl context = new JavaBuilderContextImpl();
         StringBuilder sbBody = new StringBuilder();
 
-        for (AbstractClassBuilder classBuilder : classBuilderList) {
-            sbBody.append(classBuilder.build(context));
+        for (AbstractTypeBuilder typeBuilder : typeBuilderList) {
+            sbBody.append(typeBuilder.build(context));
         }
 
         StringBuilder sb = new StringBuilder();

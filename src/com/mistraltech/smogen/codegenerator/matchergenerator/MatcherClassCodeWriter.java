@@ -1,13 +1,8 @@
 package com.mistraltech.smogen.codegenerator.matchergenerator;
 
-import com.intellij.psi.JavaDirectoryService;
-import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiClassType;
 import com.intellij.psi.PsiPackage;
-import com.intellij.psi.PsiTypeParameter;
-import com.mistraltech.smogen.codegenerator.CodeWriter;
-import com.mistraltech.smogen.codegenerator.PsiTypeConverter;
 import com.mistraltech.smogen.codegenerator.javabuilder.AbstractClassBuilder;
+import com.mistraltech.smogen.codegenerator.javabuilder.AbstractMatcherCodeWriter;
 import com.mistraltech.smogen.codegenerator.javabuilder.BlockStatementBuilder;
 import com.mistraltech.smogen.codegenerator.javabuilder.ExpressionBuilder;
 import com.mistraltech.smogen.codegenerator.javabuilder.JavaDocumentBuilder;
@@ -17,7 +12,6 @@ import com.mistraltech.smogen.codegenerator.javabuilder.NestedClassBuilder;
 import com.mistraltech.smogen.codegenerator.javabuilder.NewInstanceBuilder;
 import com.mistraltech.smogen.codegenerator.javabuilder.StaticMethodCallBuilder;
 import com.mistraltech.smogen.codegenerator.javabuilder.TypeBuilder;
-import com.mistraltech.smogen.codegenerator.javabuilder.TypeParameterBuilder;
 import com.mistraltech.smogen.codegenerator.javabuilder.TypeParameterDeclBuilder;
 import com.mistraltech.smogen.codegenerator.javabuilder.VariableBuilder;
 import com.mistraltech.smogen.property.Property;
@@ -25,10 +19,7 @@ import com.mistraltech.smogen.property.PropertyLocator;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static com.mistraltech.smogen.codegenerator.javabuilder.AnnotationBuilder.anAnnotation;
 import static com.mistraltech.smogen.codegenerator.javabuilder.BlockStatementBuilder.aBlockStatement;
@@ -38,7 +29,6 @@ import static com.mistraltech.smogen.codegenerator.javabuilder.ExpressionBuilder
 import static com.mistraltech.smogen.codegenerator.javabuilder.ExpressionStatementBuilder.anExpressionStatement;
 import static com.mistraltech.smogen.codegenerator.javabuilder.ExpressionTextBuilder.expressionText;
 import static com.mistraltech.smogen.codegenerator.javabuilder.FieldTermBuilder.aField;
-import static com.mistraltech.smogen.codegenerator.javabuilder.JavaDocumentBuilder.aJavaDocument;
 import static com.mistraltech.smogen.codegenerator.javabuilder.MethodBuilder.aMethod;
 import static com.mistraltech.smogen.codegenerator.javabuilder.MethodCallBuilder.aMethodCall;
 import static com.mistraltech.smogen.codegenerator.javabuilder.NestedClassBuilder.aNestedClass;
@@ -53,65 +43,19 @@ import static com.mistraltech.smogen.codegenerator.javabuilder.TypeParameterDecl
 import static com.mistraltech.smogen.codegenerator.javabuilder.VariableBuilder.aVariable;
 import static com.mistraltech.smogen.utils.NameUtils.createFQN;
 
-public class MatcherGeneratorCodeWriter implements CodeWriter {
-    private MatcherGeneratorProperties generatorProperties;
+public class MatcherClassCodeWriter extends AbstractMatcherCodeWriter {
 
-    public MatcherGeneratorCodeWriter(MatcherGeneratorProperties matcherGeneratorProperties) {
-        this.generatorProperties = matcherGeneratorProperties;
+    public MatcherClassCodeWriter(MatcherGeneratorProperties matcherGeneratorProperties) {
+        super(matcherGeneratorProperties);
     }
 
     @Override
-    public String writeCode() {
-        return generateDocumentContent();
+    protected void generateDocumentContent(JavaDocumentBuilder document) {
+        document.addClass(generateMatcherClass());
     }
 
-    /*
-                    .setGenerateTemplateFactoryMethod(configurationProperties.isGenerateTemplateFactoryMethod())
-                .setMakeMethodParametersFinal(configurationProperties.isMakeMethodParametersFinal())
-                .setUseReflectingPropertyMatcher(configurationProperties.isUseReflectingPropertyMatcher());
-     */
-
-    @NotNull
-    private String generateDocumentContent() {
-        PsiPackage targetPackage = JavaDirectoryService.getInstance().getPackage(generatorProperties.getParentDirectory());
-        assert targetPackage != null;
-
-        JavaDocumentBuilder document = aJavaDocument()
-                .setPackageName(targetPackage.getQualifiedName())
-                .addClass(generateMatcherClass(targetPackage));
-
-        return document.build();
-    }
-
-    private String getTypeParameter(int n) {
-        return "P" + (n + 1);
-    }
-
-    private List<TypeParameterBuilder> typeParameters() {
-        int typeParameterCount = generatorProperties.getSourceClass().getTypeParameters().length;
-        List<TypeParameterBuilder> typeParameters = new ArrayList<TypeParameterBuilder>(typeParameterCount);
-
-        for (int i = 0; i < typeParameterCount; i++) {
-            typeParameters.add(aTypeParameter()
-                    .withName(getTypeParameter(i)));
-        }
-
-        return typeParameters;
-    }
-
-    private List<TypeParameterDeclBuilder> typeParameterDecls() {
-        int typeParameterCount = generatorProperties.getSourceClass().getTypeParameters().length;
-        List<TypeParameterDeclBuilder> typeParameters = new ArrayList<TypeParameterDeclBuilder>(typeParameterCount);
-
-        for (int i = 0; i < typeParameterCount; i++) {
-            typeParameters.add(aTypeParameterDecl()
-                    .withName(getTypeParameter(i)));
-        }
-
-        return typeParameters;
-    }
-
-    private AbstractClassBuilder generateMatcherClass(PsiPackage targetPackage) {
+    private AbstractClassBuilder generateMatcherClass() {
+        final PsiPackage targetPackage = getPackage();
         final String generatedClassFQN = createFQN(targetPackage.getQualifiedName(), generatorProperties.getClassName());
 
         AbstractClassBuilder clazz = aJavaClass()
@@ -186,28 +130,6 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
         }
 
         clazz.withSuperclass(superType);
-    }
-
-    private List<TypeParameterBuilder> getSourceSuperClassParameters() {
-        final TypeBuilder sourceSuperClassType = getSourceSuperClassType();
-
-        return sourceSuperClassType != null ?
-                sourceSuperClassType.getTypeBindings() :
-                Collections.<TypeParameterBuilder>emptyList();
-    }
-
-    private TypeBuilder getSourceSuperClassType() {
-        PsiTypeConverter typeConverter = new PsiTypeConverter(true, typeParameterMap());
-
-        PsiClassType sourceSuperClassType = generatorProperties.getSourceSuperClassType();
-
-        if (sourceSuperClassType == null) {
-            return null;
-        }
-
-        sourceSuperClassType.accept(typeConverter);
-
-        return typeConverter.getTypeBuilder();
     }
 
     private void applyClassBody(AbstractClassBuilder clazz, TypeBuilder returnType, TypeBuilder matchedType,
@@ -318,23 +240,6 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
                                 .withTypeBinding(getPropertyType(property, true)))
                         .withParameter("\"" + property.getName() + "\"")
                         .withParameter("this"));
-    }
-
-    private TypeBuilder getPropertyType(@NotNull Property property, boolean boxed) {
-        PsiTypeConverter typeConverter = new PsiTypeConverter(boxed, typeParameterMap());
-
-        property.accept(typeConverter);
-
-        return typeConverter.getTypeBuilder();
-    }
-
-    private Map<String, String> typeParameterMap() {
-        PsiTypeParameter[] typeParameters = generatorProperties.getSourceClass().getTypeParameters();
-        Map<String, String> typeParameterMap = new HashMap<String, String>();
-        for (int i = 0; i < typeParameters.length; i++) {
-            typeParameterMap.put(typeParameters[i].getName(), getTypeParameter(i));
-        }
-        return typeParameterMap;
     }
 
     private MethodBuilder generateConstructor(@NotNull List<Property> sourceClassProperties, TypeBuilder matchedType) {
@@ -530,31 +435,4 @@ public class MatcherGeneratorCodeWriter implements CodeWriter {
         return methods;
     }
 
-    private String nestedClassName() {
-        return generatorProperties.isExtensible() ? generatorProperties.getClassName() + "Type" : generatorProperties.getClassName();
-    }
-
-    private String matcherAttributeName(@NotNull Property property) {
-        return property.getFieldName() + "Matcher";
-    }
-
-    private String setterMethodName(@NotNull Property property) {
-        final String propertyName = generatorProperties.getSetterPrefix().equals("") ?
-                property.getName() :
-                property.getCapitalisedName();
-
-        return generatorProperties.getSetterPrefix() + propertyName + generatorProperties.getSetterSuffix();
-    }
-
-    private PsiClass getSourceClass() {
-        return generatorProperties.getSourceClass();
-    }
-
-    private String getSourceClassFQName() {
-        return getSourceClass().getQualifiedName();
-    }
-
-    private String getSourceClassName() {
-        return getSourceClass().getName();
-    }
 }

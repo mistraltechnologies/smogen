@@ -51,6 +51,7 @@ public class MatcherGeneratorOptionsDialog extends DialogWrapper implements Matc
                 .setExtensible(matcherGeneratorOptionsPanel.isMakeExtensible())
                 .setMatcherSuperClassName(matcherGeneratorOptionsPanel.getSuperClassName())
                 .setPackageName(matcherGeneratorOptionsPanel.getSelectedPackageName())
+                .setGenerateInterface(matcherGeneratorOptionsPanel.isGenerateInterface())
                 .setSourceRoot(sourceRoot);
     }
 

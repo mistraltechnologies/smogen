@@ -6,18 +6,11 @@ import java.util.List;
 import static com.mistraltech.smogen.codegenerator.javabuilder.BuilderUtils.buildList;
 import static com.mistraltech.smogen.codegenerator.javabuilder.BuilderUtils.buildMandatoryList;
 
-public class MethodBuilder extends AbstractBuilder<MethodBuilder> {
-
-    private String accessModifier;
+public class MethodBuilder extends MethodSignatureBuilder<MethodBuilder> {
     private boolean staticFlag;
     private boolean finalFlag;
     private boolean abstractFlag;
-    private String methodName;
-    private TypeBuilder returnType;
-    private ArrayList<ParameterBuilder> parameters = new ArrayList<ParameterBuilder>();
-    private ArrayList<StatementBuilder> statements = new ArrayList<StatementBuilder>();
-    private ArrayList<AnnotationBuilder> annotations = new ArrayList<AnnotationBuilder>();
-    private List<TypeParameterDeclBuilder> typeParameters = new ArrayList<TypeParameterDeclBuilder>();
+    private List<StatementBuilder> statements = new ArrayList<StatementBuilder>();
 
     private MethodBuilder() {
     }
@@ -26,67 +19,30 @@ public class MethodBuilder extends AbstractBuilder<MethodBuilder> {
         return new MethodBuilder();
     }
 
-    public MethodBuilder withAccessModifier(String modifier) {
-        this.accessModifier = modifier;
-        return this;
-    }
-
     public MethodBuilder withStaticFlag(boolean staticFlag) {
         assert !finalFlag && !abstractFlag;
 
         this.staticFlag = staticFlag;
-        return this;
+        return self();
     }
 
     public MethodBuilder withAbstractFlag(boolean abstractFlag) {
         assert !finalFlag && !staticFlag;
 
         this.abstractFlag = abstractFlag;
-        return this;
+        return self();
     }
 
     public MethodBuilder withFinalFlag(boolean finalFlag) {
         assert !staticFlag && !abstractFlag;
 
         this.finalFlag = finalFlag;
-        return this;
-    }
-
-    public MethodBuilder withName(String methodName) {
-        this.methodName = methodName;
-        return this;
-    }
-
-    public MethodBuilder withReturnType(TypeBuilder type) {
-        this.returnType = type;
-        return this;
-    }
-
-    public MethodBuilder withParameter(ParameterBuilder parameter) {
-        parameters.add(parameter);
-        return this;
+        return self();
     }
 
     public MethodBuilder withStatement(StatementBuilder statement) {
         statements.add(statement);
-        return this;
-    }
-
-    public MethodBuilder withTypeParameters(List<TypeParameterDeclBuilder> typeParameters) {
-        for (TypeParameterDeclBuilder typeParameter : typeParameters) {
-            withTypeParameter(typeParameter);
-        }
-        return this;
-    }
-
-    private MethodBuilder withTypeParameter(TypeParameterDeclBuilder typeParameter) {
-        this.typeParameters.add(typeParameter);
-        return this;
-    }
-
-    public MethodBuilder withAnnotation(AnnotationBuilder annotation) {
-        annotations.add(annotation);
-        return this;
+        return self();
     }
 
     @Override

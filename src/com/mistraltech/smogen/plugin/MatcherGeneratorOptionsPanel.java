@@ -8,7 +8,10 @@ import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.JavaPsiFacade;
+import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiNameHelper;
+import com.intellij.psi.impl.JavaPsiFacadeEx;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.ProjectScope;
 import com.intellij.refactoring.ui.ClassNameReferenceEditor;
@@ -26,6 +29,7 @@ import javax.swing.event.ChangeListener;
 
 public class MatcherGeneratorOptionsPanel {
     private static final int PANEL_WIDTH_CHARS = 60;
+    private static final String SMOG_JAVASSIST_GENERATOR = "com.mistraltech.smog.proxy.javassist.JavassistMatcherGenerator";
 
     private final MatcherGeneratorOptionsPanelDataSource dataSource;
 
@@ -40,11 +44,14 @@ public class MatcherGeneratorOptionsPanel {
     private JCheckBox extendsCheckBox;
     private ReferenceEditorWithBrowseButton superClassChooser;
     private JLabel sourceClassName;
+    private JRadioButton classRadioButton;
+    private JRadioButton interfaceRadioButton;
 
     public MatcherGeneratorOptionsPanel(@NotNull MatcherGeneratorOptionsPanelDataSource dataSource) {
         this.dataSource = dataSource;
 
         initialiseSourceClassNameField();
+        initialiseGenerateTypeRadioButtons();
         initialiseClassNameField();
         initialiseMakeExtensibleCheckBox();
         initialiseExtendsFields();
@@ -55,6 +62,16 @@ public class MatcherGeneratorOptionsPanel {
     private void initialiseSourceClassNameField() {
         final String qualifiedName = dataSource.getMatchedClass().getQualifiedName();
         sourceClassName.setText(qualifiedName);
+    }
+    
+    private void initialiseGenerateTypeRadioButtons() {
+        if (isSmogJavassistOnClasspath()) {
+            interfaceRadioButton.setEnabled(true);
+            interfaceRadioButton.setSelected(true);
+        } else {
+            interfaceRadioButton.setEnabled(false);
+            classRadioButton.setSelected(true);
+        }
     }
 
     private void initialiseClassNameField() {
@@ -150,6 +167,10 @@ public class MatcherGeneratorOptionsPanel {
         return anRadioButton.isSelected();
     }
 
+    public boolean isGenerateInterface() {
+        return interfaceRadioButton.isSelected();
+    }
+
     @Nullable
     public String getSuperClassName() {
         if (extendsCheckBox.isSelected()) {
@@ -210,6 +231,13 @@ public class MatcherGeneratorOptionsPanel {
         }
 
         return null;
+    }
+
+    public boolean isSmogJavassistOnClasspath() {
+        final Project project = dataSource.getProject();
+        final JavaPsiFacade javaPsiFacade = JavaPsiFacade.getInstance(project);
+        final PsiClass generatorClass = javaPsiFacade.findClass(SMOG_JAVASSIST_GENERATOR, GlobalSearchScope.allScope(project));
+        return generatorClass != null;
     }
 
     private class ListItemWrapper<T> {
