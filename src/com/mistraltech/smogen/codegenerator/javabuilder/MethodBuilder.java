@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.mistraltech.smogen.codegenerator.javabuilder.BuilderUtils.buildList;
-import static com.mistraltech.smogen.codegenerator.javabuilder.BuilderUtils.buildMandatoryList;
 
 public class MethodBuilder extends MethodSignatureBuilder<MethodBuilder> {
+    protected String accessModifier;
     private boolean staticFlag;
     private boolean finalFlag;
     private boolean abstractFlag;
@@ -33,6 +33,11 @@ public class MethodBuilder extends MethodSignatureBuilder<MethodBuilder> {
         return self();
     }
 
+    public MethodBuilder withAccessModifier(String modifier) {
+        this.accessModifier = modifier;
+        return self();
+    }
+
     public MethodBuilder withFinalFlag(boolean finalFlag) {
         assert !staticFlag && !abstractFlag;
 
@@ -46,32 +51,32 @@ public class MethodBuilder extends MethodSignatureBuilder<MethodBuilder> {
     }
 
     @Override
+    protected boolean isStatic() {
+        return staticFlag;
+    }
+
+    @Override
+    protected boolean isFinal() {
+        return finalFlag;
+    }
+
+    @Override
+    protected boolean isAbstract() {
+        return abstractFlag;
+    }
+
+    @Override
+    protected String getAccessModifier() {
+        return accessModifier;
+    }
+
+    @Override
     public String build(JavaBuilderContext context) {
         StringBuilder sb = new StringBuilder();
 
-        sb.append(buildList(context, "", annotations, "\n", ""));
+        sb.append(super.build(context));
 
-        if (accessModifier != null) {
-            sb.append(accessModifier).append(" ");
-        }
-
-        if (staticFlag) {
-            sb.append("static ");
-        } else if (finalFlag) {
-            sb.append("final ");
-        } else if (abstractFlag) {
-            sb.append("abstract ");
-        }
-
-        sb.append(buildList(context, "<", typeParameters, ">", ", "));
-
-        if (returnType != null) {
-            sb.append(returnType.build(context)).append(" ");
-        }
-
-        sb.append(methodName);
-
-        sb.append(buildMandatoryList(context, "(", parameters, ")", ", ")).append(" {\n");
+        sb.append("{");
 
         sb.append(buildList(context, "", statements, "", ""));
 

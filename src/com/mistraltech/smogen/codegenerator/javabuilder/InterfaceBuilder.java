@@ -6,18 +6,18 @@ import java.util.List;
 import static com.mistraltech.smogen.codegenerator.javabuilder.BuilderUtils.buildList;
 
 public class InterfaceBuilder extends AbstractTypeBuilder<InterfaceBuilder> {
-    private List<MethodSignatureBuilder> methods = new ArrayList<MethodSignatureBuilder>();
+    private List<InterfaceMethodBuilder> methods = new ArrayList<InterfaceMethodBuilder>();
 
     public static InterfaceBuilder aJavaInterface() {
         return new InterfaceBuilder();
     }
 
-    public InterfaceBuilder withMethods(List<MethodSignatureBuilder> methods) {
+    public InterfaceBuilder withMethods(List<InterfaceMethodBuilder> methods) {
         this.methods.addAll(methods);
         return self();
     }
 
-    public InterfaceBuilder withMethod(MethodSignatureBuilder method) {
+    public InterfaceBuilder withMethod(InterfaceMethodBuilder method) {
         this.methods.add(method);
         return self();
     }

@@ -5,6 +5,7 @@ import com.mistraltech.smogen.codegenerator.javabuilder.AbstractMatcherCodeWrite
 import com.mistraltech.smogen.codegenerator.javabuilder.BlockStatementBuilder;
 import com.mistraltech.smogen.codegenerator.javabuilder.ExpressionBuilder;
 import com.mistraltech.smogen.codegenerator.javabuilder.InterfaceBuilder;
+import com.mistraltech.smogen.codegenerator.javabuilder.InterfaceMethodBuilder;
 import com.mistraltech.smogen.codegenerator.javabuilder.JavaDocumentBuilder;
 import com.mistraltech.smogen.codegenerator.javabuilder.MethodBuilder;
 import com.mistraltech.smogen.codegenerator.javabuilder.MethodCallBuilder;
@@ -30,6 +31,7 @@ import static com.mistraltech.smogen.codegenerator.javabuilder.ExpressionStateme
 import static com.mistraltech.smogen.codegenerator.javabuilder.ExpressionTextBuilder.expressionText;
 import static com.mistraltech.smogen.codegenerator.javabuilder.FieldTermBuilder.aField;
 import static com.mistraltech.smogen.codegenerator.javabuilder.InterfaceBuilder.aJavaInterface;
+import static com.mistraltech.smogen.codegenerator.javabuilder.InterfaceMethodBuilder.anInterfaceMethod;
 import static com.mistraltech.smogen.codegenerator.javabuilder.MethodBuilder.aMethod;
 import static com.mistraltech.smogen.codegenerator.javabuilder.MethodCallBuilder.aMethodCall;
 import static com.mistraltech.smogen.codegenerator.javabuilder.NestedClassBuilder.aNestedClass;
@@ -65,7 +67,7 @@ public class MatcherInterfaceCodeWriter extends AbstractMatcherCodeWriter {
                 .withAnnotation(anAnnotation()
                         .withType(aType()
                                 .withName("com.mistraltech.smog.core.annotation.Matches"))
-                        .withParameter(anExpression().withText("value=\"" + getSourceClassFQName() + ".class\""))
+                        .withParameter(anExpression().withText("value=" + getSourceClassFQName() + ".class"))
                         .withParameter(anExpression().withText("description=\"" + getMatchedObjectDescription() + "\"")));
 
         final TypeBuilder matchedType = aType()
@@ -74,7 +76,6 @@ public class MatcherInterfaceCodeWriter extends AbstractMatcherCodeWriter {
 
         final TypeBuilder returnType;
         final TypeBuilder matchedTypeParam;
-        final TypeBuilder matcherType;
 
         if (generatorProperties.isExtensible()) {
             TypeParameterDeclBuilder returnTypeDecl = aTypeParameterDecl()
@@ -93,8 +94,6 @@ public class MatcherInterfaceCodeWriter extends AbstractMatcherCodeWriter {
 
             matchedTypeParam = matchedTypeDecl.getType();
 
-            matcherType = aType().withName(nestedClassName()).withTypeBindings(typeParameters());
-
             clazz.withTypeParameter(returnTypeDecl)
                     .withTypeParameter(matchedTypeDecl);
         } else {
@@ -102,12 +101,11 @@ public class MatcherInterfaceCodeWriter extends AbstractMatcherCodeWriter {
                     .withName(generatedClassFQN)
                     .withTypeBindings(typeParameters());
             matchedTypeParam = matchedType;
-            matcherType = returnType;
         }
 
         applySuperInterface(clazz, returnType, matchedTypeParam);
 
-//        applyClassBody(clazz, returnType, matchedType, matchedTypeParam, matcherType);
+        applyInterfaceBody(clazz, returnType);
 
         return clazz;
     }
@@ -123,206 +121,33 @@ public class MatcherInterfaceCodeWriter extends AbstractMatcherCodeWriter {
         }
     }
 
-/*
-    private void applyClassBody(AbstractInterfaceBuilder clazz, TypeBuilder returnType, TypeBuilder matchedType,
-                                TypeBuilder matchedTypeParam, TypeBuilder matcherType) {
+    private void applyInterfaceBody(InterfaceBuilder clazz, TypeBuilder returnType) {
         final boolean includeSuperClassProperties = generatorProperties.getMatcherSuperClassName() == null;
         final List<Property> sourceClassProperties = PropertyLocator.locateProperties(getSourceClass(), includeSuperClassProperties);
-
-        clazz.withMethod(generateStaticFactoryMethod(matcherType));
-
-        if (generatorProperties.isGenerateTemplateFactoryMethod()) {
-            clazz.withMethod(generateLikeStaticFactoryMethod(matcherType, matchedType));
-        }
-
-        if (generatorProperties.isExtensible()) {
-            clazz.withMethod(generateSelfMethod(returnType));
-        }
 
         for (Property property : sourceClassProperties) {
             clazz.withMethods(generateMatcherSetters(property, returnType));
         }
-
-        if (generatorProperties.isExtensible()) {
-            clazz.withNestedClass(generateNestedClass(matcherType, matchedType, sourceClassProperties));
-        } else {
-            clazz.withMethod(generateMatchesSafely(matchedType, sourceClassProperties));
-        }
     }
 
-    private MethodSignatureBuilder generateMatchesSafely(TypeBuilder matchedType, List<Property> properties) {
-        final MethodBuilder matchesSafelyMethod = aMethod()
-                .withAnnotation(anAnnotation()
-                        .withType(aType()
-                                .withName("java.lang.Override")))
-                .withAccessModifier("protected")
-                .withReturnType(VOID)
-                .withName("matchesSafely")
-                .withParameter(aParameter()
-                        .withFinalFlag(generatorProperties.isMakeMethodParametersFinal())
-                        .withType(matchedType)
-                        .withName("item"))
-                .withParameter(aParameter()
-                        .withFinalFlag(generatorProperties.isMakeMethodParametersFinal())
-                        .withType(aType()
-                                .withName("com.mistraltech.smog.core.MatchAccumulator"))
-                        .withName("matchAccumulator"))
-                .withStatement(anExpressionStatement()
-                        .withExpression(anExpression()
-                                .withText("super.matchesSafely(item, matchAccumulator)")));
-
-        if (!generatorProperties.isUseReflectingPropertyMatcher()) {
-            for (Property property : properties) {
-                matchesSafelyMethod
-                        .withStatement(anExpressionStatement()
-                                .withExpression(aMethodCall()
-                                        .withObject("matchAccumulator")
-                                        .withName("matches")
-                                        .withParameter(matcherAttributeName(property))
-                                        .withParameter(aMethodCall()
-                                                .withObject("item")
-                                                .withName(property.getAccessorName()))));
-            }
-        }
-
-        return matchesSafelyMethod;
-    }
-
-    private List<VariableBuilder> generateMatcherVariables(@NotNull List<Property> properties) {
-        List<VariableBuilder> variables = new ArrayList<VariableBuilder>();
-
-        for (Property property : properties) {
-            variables.add(generateMatcherVariable(property));
-        }
-
-        return variables;
-    }
-
-    private VariableBuilder generateMatcherVariable(@NotNull Property property) {
-        String concretePropertyMatcher = generatorProperties.isUseReflectingPropertyMatcher() ?
-                "com.mistraltech.smog.core.ReflectingPropertyMatcher" :
-                "com.mistraltech.smog.core.PropertyMatcher";
-
-        return aVariable()
-                .withAccessModifier("private")
-                .withFinalFlag(true)
-                .withType(aType()
-                        .withName("com.mistraltech.smog.core.PropertyMatcher")
-                        .withTypeBinding(getPropertyType(property, true)))
-                .withName(matcherAttributeName(property))
-                .withInitialiser(aNewInstance()
-                        .withType(aType()
-                                .withName(concretePropertyMatcher)
-                                .withTypeBinding(getPropertyType(property, true)))
-                        .withParameter("\"" + property.getName() + "\"")
-                        .withParameter("this"));
-    }
-
-    private MethodSignatureBuilder generateConstructor(@NotNull List<Property> sourceClassProperties, TypeBuilder matchedType) {
-        MethodCallBuilder superMethodCall = aMethodCall()
-                .withName("super")
-                .withParameter("matchedObjectDescription");
-
-        if (generatorProperties.getMatcherSuperClassName() != null && generatorProperties.isGenerateTemplateFactoryMethod()) {
-            superMethodCall.withParameter("template");
-        }
-
-        final MethodBuilder constructor = aMethod()
-                .withAccessModifier(generatorProperties.isExtensible() ? "protected" : "private")
-                .withName(generatorProperties.getClassName())
-                .withParameter(aParameter()
-                        .withFinalFlag(generatorProperties.isMakeMethodParametersFinal())
-                        .withType(aType()
-                                .withName("java.lang.String"))
-                        .withName("matchedObjectDescription"))
-                .withStatement(anExpressionStatement()
-                        .withExpression(superMethodCall));
-
-        if (generatorProperties.isGenerateTemplateFactoryMethod()) {
-            constructor.withParameter(aParameter()
-                    .withFinalFlag(generatorProperties.isMakeMethodParametersFinal())
-                    .withType(matchedType)
-                    .withName("template"));
-
-            if (sourceClassProperties.size() > 0) {
-                BlockStatementBuilder setFromTemplate = aBlockStatement()
-                        .withHeader("if (template != null)");
-
-                for (Property property : sourceClassProperties) {
-                    setFromTemplate.withStatement(aMethodCall()
-                            .withName(setterMethodName(property))
-                            .withParameter(aMethodCall()
-                                    .withObject("template")
-                                    .withName(property.getAccessorName())));
-                }
-
-                constructor.withStatement(setFromTemplate);
-            }
-        }
-
-        return constructor;
-    }
-
-    private NestedClassBuilder generateNestedClass(TypeBuilder matcherType, TypeBuilder matchedType, List<Property> properties) {
-        final MethodCallBuilder superCall = aMethodCall()
-                .withName("super")
-                .withParameter("matchedObjectDescription");
-
-        if (generatorProperties.isGenerateTemplateFactoryMethod()) {
-            superCall.withParameter("template");
-        }
-
-        final MethodBuilder constructor = aMethod()
-                .withAccessModifier("protected")
-                .withName(nestedClassName())
-                .withParameter(aParameter()
-                        .withFinalFlag(generatorProperties.isMakeMethodParametersFinal())
-                        .withType(aType()
-                                .withName("java.lang.String"))
-                        .withName("matchedObjectDescription"))
-                .withStatement(anExpressionStatement().withExpression(superCall));
-
-        if (generatorProperties.isGenerateTemplateFactoryMethod()) {
-            constructor.withParameter(aParameter()
-                    .withFinalFlag(generatorProperties.isMakeMethodParametersFinal())
-                    .withType(matchedType)
-                    .withName("template"));
-        }
-
-        NestedClassBuilder nestedClass = aNestedClass()
-                .withAccessModifier("public")
-                .withStaticFlag(true)
-                .withName(nestedClassName())
-                .withTypeParameters(typeParameterDecls())
-                .withSuperclass(aType()
-                        .withName(generatorProperties.getClassName())
-                        .withTypeBindings(typeParameters())
-                        .withTypeBinding(matcherType)
-                        .withTypeBinding(matchedType))
-                .withMethod(constructor)
-                .withMethod(generateMatchesSafely(matchedType, properties));
-
-        return nestedClass;
-    }
-
-    private MethodSignatureBuilder generateStaticFactoryMethod(TypeBuilder matcherType) {
-        final NewInstanceBuilder newInstance = aNewInstance()
-                .withType(matcherType)
-                .withParameter("MATCHED_OBJECT_DESCRIPTION");
-
-        if (generatorProperties.isGenerateTemplateFactoryMethod()) {
-            newInstance.withParameter("null");
-        }
-
-        return aMethod()
-                .withAccessModifier("public")
-                .withStaticFlag(true)
-                .withReturnType(matcherType)
-                .withTypeParameters(typeParameterDecls())
-                .withName(generatorProperties.getFactoryMethodPrefix() + getSourceClassName() + generatorProperties.getFactoryMethodSuffix())
-                .withStatement(aReturnStatement()
-                        .withExpression(newInstance));
-    }
+//    private MethodSignatureBuilder generateStaticFactoryMethod(TypeBuilder matcherType) {
+//        final NewInstanceBuilder newInstance = aNewInstance()
+//                .withType(matcherType)
+//                .withParameter("MATCHED_OBJECT_DESCRIPTION");
+//
+//        if (generatorProperties.isGenerateTemplateFactoryMethod()) {
+//            newInstance.withParameter("null");
+//        }
+//
+//        return aMethod()
+//                .withAccessModifier("public")
+//                .withStaticFlag(true)
+//                .withReturnType(matcherType)
+//                .withTypeParameters(typeParameterDecls())
+//                .withName(generatorProperties.getFactoryMethodPrefix() + getSourceClassName() + generatorProperties.getFactoryMethodSuffix())
+//                .withStatement(aReturnStatement()
+//                        .withExpression(newInstance));
+//    }
 
     private MethodSignatureBuilder generateLikeStaticFactoryMethod(TypeBuilder matcherType, TypeBuilder matchedType) {
         return aMethod()
@@ -342,55 +167,20 @@ public class MatcherInterfaceCodeWriter extends AbstractMatcherCodeWriter {
                                 .withParameter("template")));
     }
 
-    private MethodSignatureBuilder generateSelfMethod(TypeBuilder typeParameterR) {
-        return aMethod()
-                .withAnnotation(anAnnotation()
-                        .withType(aType()
-                                .withName("java.lang.SuppressWarnings"))
-                        .withParameter(expressionText("\"unchecked\"")))
-                .withAccessModifier("private")
-                .withReturnType(typeParameterR)
-                .withName("self")
-                .withStatement(aReturnStatement()
-                        .withExpression(anExpression()
-                                .withTerm(aCast().withType(typeParameterR))
-                                .withText("this")));
-    }
-
-    private List<MethodSignatureBuilder> generateMatcherSetters(@NotNull Property property, TypeBuilder returnType) {
-        List<MethodSignatureBuilder> methods = new ArrayList<MethodSignatureBuilder>();
-
-        final StaticMethodCallBuilder equalToCall = aStaticMethodCall()
-                .withType(aType()
-                        .withName("org.hamcrest.CoreMatchers"))
-                .withName("equalTo")
-                .withParameter(property.getFieldName());
+    private List<InterfaceMethodBuilder> generateMatcherSetters(@NotNull Property property, TypeBuilder returnType) {
+        List<InterfaceMethodBuilder> methods = new ArrayList<InterfaceMethodBuilder>();
 
         final TypeBuilder boxedPropertyType = getPropertyType(property, true);
 
-        if (boxedPropertyType.containsWildcard()) {
-            equalToCall.withTypeBinding(boxedPropertyType);
-        }
-
-        methods.add(aMethod()
-                .withAccessModifier("public")
+        methods.add(anInterfaceMethod()
                 .withReturnType(returnType)
                 .withName(setterMethodName(property))
                 .withParameter(aParameter()
                         .withFinalFlag(generatorProperties.isMakeMethodParametersFinal())
                         .withType(getPropertyType(property, false))
-                        .withName(property.getFieldName()))
-                .withStatement(aReturnStatement()
-                        .withExpression(aMethodCall()
-                                .withName(setterMethodName(property))
-                                .withParameter(equalToCall))));
+                        .withName(property.getFieldName())));
 
-        ExpressionBuilder returnExpression = generatorProperties.isExtensible()
-                ? anExpression().withTerm(aMethodCall().withName("self"))
-                : anExpression().withText("this");
-
-        methods.add(aMethod()
-                .withAccessModifier("public")
+        methods.add(anInterfaceMethod()
                 .withReturnType(returnType)
                 .withName(setterMethodName(property))
                 .withParameter(aParameter()
@@ -400,15 +190,8 @@ public class MatcherInterfaceCodeWriter extends AbstractMatcherCodeWriter {
                                 .withTypeBinding(aTypeParameter()
                                         .withType(boxedPropertyType)
                                         .withSuperTypes(true)))
-                        .withName(matcherAttributeName(property)))
-                .withStatement(anExpressionStatement()
-                        .withExpression(aMethodCall()
-                                .withObject("this." + matcherAttributeName(property))
-                                .withName("setMatcher")
-                                .withParameter(anExpression().withText(matcherAttributeName(property)))))
-                .withStatement(aReturnStatement()
-                        .withExpression(returnExpression)));
+                        .withName(matcherAttributeName(property))));
+
         return methods;
     }
-*/
 }
