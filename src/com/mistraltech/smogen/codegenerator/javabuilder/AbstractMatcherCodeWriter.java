@@ -22,6 +22,9 @@ import static com.mistraltech.smogen.codegenerator.javabuilder.TypeParameterBuil
 import static com.mistraltech.smogen.codegenerator.javabuilder.TypeParameterDeclBuilder.aTypeParameterDecl;
 
 public abstract class AbstractMatcherCodeWriter implements CodeWriter {
+    public static final String MATCHES_PROPERTY_ANNOTATION_CLASSNAME = "com.mistraltech.smog.core.annotation.MatchesProperty";
+    public static final String DEFAULT_SETTER_METHOD_PREFIX = "has";
+    public static final String DEFAULT_SETTER_METHOD_SUFFIX = "";
     protected MatcherGeneratorProperties generatorProperties;
 
     public AbstractMatcherCodeWriter(MatcherGeneratorProperties matcherGeneratorProperties) {

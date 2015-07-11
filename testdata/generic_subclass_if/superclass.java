@@ -1,0 +1,1 @@
+public interface BaseWidgetMatcher extends org.hamcrest.Matcher<BaseWidget> {}

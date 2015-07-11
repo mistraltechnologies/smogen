@@ -2,21 +2,15 @@ package com.mistraltech.smogen.codegenerator.matchergenerator;
 
 import com.intellij.psi.PsiPackage;
 import com.mistraltech.smogen.codegenerator.javabuilder.AbstractMatcherCodeWriter;
-import com.mistraltech.smogen.codegenerator.javabuilder.BlockStatementBuilder;
-import com.mistraltech.smogen.codegenerator.javabuilder.ExpressionBuilder;
+import com.mistraltech.smogen.codegenerator.javabuilder.AnnotationBuilder;
 import com.mistraltech.smogen.codegenerator.javabuilder.InterfaceBuilder;
 import com.mistraltech.smogen.codegenerator.javabuilder.InterfaceMethodBuilder;
 import com.mistraltech.smogen.codegenerator.javabuilder.JavaDocumentBuilder;
 import com.mistraltech.smogen.codegenerator.javabuilder.MethodBuilder;
-import com.mistraltech.smogen.codegenerator.javabuilder.MethodCallBuilder;
 import com.mistraltech.smogen.codegenerator.javabuilder.MethodSignatureBuilder;
-import com.mistraltech.smogen.codegenerator.javabuilder.NestedClassBuilder;
 import com.mistraltech.smogen.codegenerator.javabuilder.NewInstanceBuilder;
-import com.mistraltech.smogen.codegenerator.javabuilder.StaticMethodCallBuilder;
-import com.mistraltech.smogen.codegenerator.javabuilder.StaticVariableReaderBuilder;
 import com.mistraltech.smogen.codegenerator.javabuilder.TypeBuilder;
 import com.mistraltech.smogen.codegenerator.javabuilder.TypeParameterDeclBuilder;
-import com.mistraltech.smogen.codegenerator.javabuilder.VariableBuilder;
 import com.mistraltech.smogen.property.Property;
 import com.mistraltech.smogen.property.PropertyLocator;
 import org.jetbrains.annotations.NotNull;
@@ -25,30 +19,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.mistraltech.smogen.codegenerator.javabuilder.AnnotationBuilder.anAnnotation;
-import static com.mistraltech.smogen.codegenerator.javabuilder.BlockStatementBuilder.aBlockStatement;
-import static com.mistraltech.smogen.codegenerator.javabuilder.CastBuilder.aCast;
 import static com.mistraltech.smogen.codegenerator.javabuilder.ExpressionBuilder.anExpression;
-import static com.mistraltech.smogen.codegenerator.javabuilder.ExpressionStatementBuilder.anExpressionStatement;
 import static com.mistraltech.smogen.codegenerator.javabuilder.ExpressionTextBuilder.expressionText;
-import static com.mistraltech.smogen.codegenerator.javabuilder.FieldTermBuilder.aField;
 import static com.mistraltech.smogen.codegenerator.javabuilder.InterfaceBuilder.aJavaInterface;
 import static com.mistraltech.smogen.codegenerator.javabuilder.InterfaceMethodBuilder.anInterfaceMethod;
 import static com.mistraltech.smogen.codegenerator.javabuilder.MethodBuilder.aMethod;
 import static com.mistraltech.smogen.codegenerator.javabuilder.MethodCallBuilder.aMethodCall;
-import static com.mistraltech.smogen.codegenerator.javabuilder.NestedClassBuilder.aNestedClass;
 import static com.mistraltech.smogen.codegenerator.javabuilder.NewInstanceBuilder.aNewInstance;
 import static com.mistraltech.smogen.codegenerator.javabuilder.ParameterBuilder.aParameter;
 import static com.mistraltech.smogen.codegenerator.javabuilder.ReturnStatementBuilder.aReturnStatement;
 import static com.mistraltech.smogen.codegenerator.javabuilder.StaticMethodCallBuilder.aStaticMethodCall;
 import static com.mistraltech.smogen.codegenerator.javabuilder.StaticVariableReaderBuilder.aStaticVariable;
-import static com.mistraltech.smogen.codegenerator.javabuilder.TypeBuilder.VOID;
 import static com.mistraltech.smogen.codegenerator.javabuilder.TypeBuilder.aType;
 import static com.mistraltech.smogen.codegenerator.javabuilder.TypeParameterBuilder.aTypeParameter;
 import static com.mistraltech.smogen.codegenerator.javabuilder.TypeParameterDeclBuilder.aTypeParameterDecl;
-import static com.mistraltech.smogen.codegenerator.javabuilder.VariableBuilder.aVariable;
 import static com.mistraltech.smogen.utils.NameUtils.createFQN;
 
 public class MatcherInterfaceCodeWriter extends AbstractMatcherCodeWriter {
+
     public MatcherInterfaceCodeWriter(MatcherGeneratorProperties matcherGeneratorProperties) {
         super(matcherGeneratorProperties);
     }
@@ -163,11 +151,7 @@ public class MatcherInterfaceCodeWriter extends AbstractMatcherCodeWriter {
             newInstance.withParameter("null");
         }
 
-        return aMethod()
-                .withAnnotation(anAnnotation()
-                        .withType(aType()
-                                .withName("java.lang.SuppressWarnings"))
-                        .withParameter(expressionText("\"unchecked\"")))
+        MethodBuilder method = aMethod()
                 .withStaticFlag(true)
                 .withReturnType(matcherType)
                 .withTypeParameters(typeParameterDecls())
@@ -179,14 +163,19 @@ public class MatcherInterfaceCodeWriter extends AbstractMatcherCodeWriter {
                                 .withParameter(aStaticVariable()
                                         .withType(matcherType)
                                         .withName("class"))));
+
+        if (generatorProperties.isExtensible()) {
+            method.withAnnotation(anAnnotation()
+                    .withType(aType()
+                            .withName("java.lang.SuppressWarnings"))
+                    .withParameter(expressionText("\"unchecked\"")));
+        }
+
+        return method;
     }
 
     private MethodSignatureBuilder generateLikeStaticFactoryMethod(TypeBuilder matcherType, TypeBuilder matchedType) {
-        return aMethod()
-                .withAnnotation(anAnnotation()
-                        .withType(aType()
-                                .withName("java.lang.SuppressWarnings"))
-                        .withParameter(expressionText("\"unchecked\"")))
+        MethodBuilder method = aMethod()
                 .withStaticFlag(true)
                 .withReturnType(matcherType)
                 .withTypeParameters(typeParameterDecls())
@@ -198,13 +187,22 @@ public class MatcherInterfaceCodeWriter extends AbstractMatcherCodeWriter {
                 .withStatement(aReturnStatement()
                         .withExpression(aMethodCall()
                                 .withObject(aStaticMethodCall()
-                                    .withType(aType().withName("com.mistraltech.smog.proxy.javassist.JavassistMatcherGenerator"))
-                                    .withName("matcherOf")
-                                    .withParameter(aStaticVariable()
-                                            .withType(matcherType)
-                                            .withName("class")))
-                        .withName("like")
-                        .withParameter("template")));
+                                        .withType(aType().withName("com.mistraltech.smog.proxy.javassist.JavassistMatcherGenerator"))
+                                        .withName("matcherOf")
+                                        .withParameter(aStaticVariable()
+                                                .withType(matcherType)
+                                                .withName("class")))
+                                .withName("like")
+                                .withParameter("template")));
+
+        if (generatorProperties.isExtensible()) {
+            method.withAnnotation(anAnnotation()
+                    .withType(aType()
+                            .withName("java.lang.SuppressWarnings"))
+                    .withParameter(expressionText("\"unchecked\"")));
+        }
+
+        return method;
     }
 
     private MethodSignatureBuilder generateLikeMethod(TypeBuilder returnType, TypeBuilder matchedType) {
@@ -222,15 +220,15 @@ public class MatcherInterfaceCodeWriter extends AbstractMatcherCodeWriter {
 
         final TypeBuilder boxedPropertyType = getPropertyType(property, true);
 
-        methods.add(anInterfaceMethod()
+        final InterfaceMethodBuilder valueSetter = anInterfaceMethod()
                 .withReturnType(returnType)
                 .withName(setterMethodName(property))
                 .withParameter(aParameter()
                         .withFinalFlag(generatorProperties.isMakeMethodParametersFinal())
                         .withType(getPropertyType(property, false))
-                        .withName(property.getFieldName())));
+                        .withName(property.getFieldName()));
 
-        methods.add(anInterfaceMethod()
+        final InterfaceMethodBuilder matcherSetter = anInterfaceMethod()
                 .withReturnType(returnType)
                 .withName(setterMethodName(property))
                 .withParameter(aParameter()
@@ -240,8 +238,26 @@ public class MatcherInterfaceCodeWriter extends AbstractMatcherCodeWriter {
                                 .withTypeBinding(aTypeParameter()
                                         .withType(boxedPropertyType)
                                         .withSuperTypes(true)))
-                        .withName(matcherAttributeName(property))));
+                        .withName(matcherAttributeName(property)));
+
+        if (isCustomSetterName()) {
+            final TypeBuilder matchesPropertyAnnotationType = aType().withName(MATCHES_PROPERTY_ANNOTATION_CLASSNAME);
+            final AnnotationBuilder matchesPropertyAnnotation = anAnnotation()
+                    .withType(matchesPropertyAnnotationType)
+                    .withParameter(anExpression()
+                            .withText("\"" + property.getFieldName() + "\""));
+            valueSetter.withAnnotation(matchesPropertyAnnotation);
+            matcherSetter.withAnnotation(matchesPropertyAnnotation);
+        }
+
+        methods.add(valueSetter);
+        methods.add(matcherSetter);
 
         return methods;
+    }
+
+    private boolean isCustomSetterName() {
+        return ! (generatorProperties.getSetterPrefix().equals(DEFAULT_SETTER_METHOD_PREFIX) &&
+                generatorProperties.getSetterSuffix().equals(DEFAULT_SETTER_METHOD_SUFFIX));
     }
 }

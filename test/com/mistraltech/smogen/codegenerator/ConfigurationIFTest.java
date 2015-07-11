@@ -1,7 +1,7 @@
 package com.mistraltech.smogen.codegenerator;
 
-public class ConfigurationTest extends AbstractGeneratorTest {
-    private static final String TEST_NAME = "configuration";
+public class ConfigurationIFTest extends AbstractInterfaceGeneratorTest {
+    private static final String TEST_NAME = "configuration_if";
 
     public void testBaseClass() {
         loadTestClassFromText("com/mistraltech/smog/core/LoggingCompositePropertyMatcher.java",
