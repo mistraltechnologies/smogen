@@ -41,20 +41,49 @@ public class JavaBuilderContextImpl implements JavaBuilderContext {
     public String normaliseClassMemberReference(String memberFQN, String typeParams) {
         String unqualifiedName = getUnqualifiedName(memberFQN);
         boolean hasTypeParams = typeParams != null && !typeParams.isEmpty();
+        boolean keyword = isKeyword(unqualifiedName);
+        boolean canUseUnqualifiedName = !hasTypeParams && !keyword;
 
-        if (!hasTypeParams) {
-            if (!classMemberReferences.containsKey(unqualifiedName)) {
+        if (canUseUnqualifiedName) {
+            boolean unqualifiedNameAlreadyRegistered = classMemberReferences.containsKey(unqualifiedName);
+
+            if (unqualifiedNameAlreadyRegistered) {
+                String registeredFullyQualifiedName = classMemberReferences.get(unqualifiedName);
+                boolean unqualifiedNameIsUnique = memberFQN.equals(registeredFullyQualifiedName);
+
+                if (unqualifiedNameIsUnique) {
+                    return unqualifiedName;
+                } else {
+                    return getQualifiedMemberReference(memberFQN, unqualifiedName, typeParams);
+                }
+            } else {
                 classMemberReferences.put(unqualifiedName, memberFQN);
                 return unqualifiedName;
             }
+        } else {
+            return getQualifiedMemberReference(memberFQN, unqualifiedName, typeParams);
+        }
+    }
 
-            if (classMemberReferences.get(unqualifiedName).equals(memberFQN)) {
-                return unqualifiedName;
-            }
+    private boolean isKeyword(String name) {
+        return name.equals("class");
+    }
+
+    private String getQualifiedMemberReference(String memberFQN, String unqualifiedName, String typeParams) {
+        String classFQN = dropUnqualifiedName(memberFQN);
+        boolean hasTypeParams = typeParams != null && !typeParams.isEmpty();
+
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(normaliseClassReference(classFQN))
+            .append('.');
+
+        if (hasTypeParams) {
+            sb.append('<').append(typeParams).append('>');
         }
 
-        String classFQN = dropUnqualifiedName(memberFQN);
+        sb.append(unqualifiedName);
 
-        return normaliseClassReference(classFQN) + ".<" + typeParams + ">" + unqualifiedName;
+        return sb.toString();
     }
 }

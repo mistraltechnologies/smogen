@@ -7,7 +7,7 @@ import static com.mistraltech.smogen.codegenerator.javabuilder.ExpressionBuilder
 public class MethodCallBuilder extends ExpressionTermBuilder<MethodCallBuilder> {
     private String name;
     private ArrayList<ExpressionTermBuilder> parameters = new ArrayList<ExpressionTermBuilder>();
-    private String targetObject;
+    private ExpressionTermBuilder targetObject;
 
     private MethodCallBuilder() {
     }
@@ -31,7 +31,11 @@ public class MethodCallBuilder extends ExpressionTermBuilder<MethodCallBuilder> 
     }
 
     public MethodCallBuilder withObject(String target) {
-        this.targetObject = target;
+        return withObject(anExpression().withText(target));
+    }
+
+    public MethodCallBuilder withObject(ExpressionTermBuilder expression) {
+        this.targetObject = expression;
         return this;
     }
 
@@ -40,7 +44,7 @@ public class MethodCallBuilder extends ExpressionTermBuilder<MethodCallBuilder> 
         StringBuilder sb = new StringBuilder();
 
         if (targetObject != null) {
-            sb.append(targetObject).append(".");
+            sb.append(targetObject.build(context)).append(".");
         }
 
         sb.append(name).append(BuilderUtils.buildMandatoryList(context, "(", parameters, ")", ", "));

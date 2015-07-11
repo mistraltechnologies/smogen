@@ -27,25 +27,27 @@ public class MatcherGenerator extends Generator {
 
         warnings.addAll(super.checkProperties());
 
-        checkSuperClass(warnings);
+        checkSuperType(warnings);
 
         return warnings;
     }
 
-    private void checkSuperClass(List<String> warnings) {
+    private void checkSuperType(List<String> warnings) {
         final Project project = generatorProperties.getProject();
-        final String superClassName = generatorProperties.getMatcherSuperClassName() != null ?
-                generatorProperties.getMatcherSuperClassName() :
-                generatorProperties.getBaseClassName();
+        final String defaultSuperClassName = generatorProperties.isGenerateInterface() ?
+                "org.hamcrest.Matcher" : generatorProperties.getBaseClassName();
+
+        String superClassName = generatorProperties.getMatcherSuperClassName() != null ?
+                generatorProperties.getMatcherSuperClassName() : defaultSuperClassName;
 
         if (superClassName != null) {
             final PsiClass superClass = findPsiClass(project, superClassName);
 
             if (superClass == null) {
-                warnings.add("Superclass " + superClassName + " was not found in the project.");
+                warnings.add("Supertype '" + superClassName + "' was not found in the project.");
             } else {
                 checkSuperClassModifiers(superClass, warnings);
-                checkSuperClassInheritance(superClass, generatorProperties.getBaseClassName(), warnings);
+                checkSuperClassInheritance(superClass, defaultSuperClassName, warnings);
             }
         }
     }
@@ -57,7 +59,7 @@ public class MatcherGenerator extends Generator {
     private void checkSuperClassModifiers(PsiClass superClass, List<String> warnings) {
         final PsiModifierList modifierList = superClass.getModifierList();
         if (modifierList != null && modifierList.hasExplicitModifier(PsiModifier.FINAL)) {
-            warnings.add("Superclass " + superClass.getQualifiedName() + " is final.");
+            warnings.add("Supertype '" + superClass.getQualifiedName() + "' is final.");
         }
     }
 
@@ -66,7 +68,7 @@ public class MatcherGenerator extends Generator {
 
         PsiClass baseClass = findPsiClass(project, baseClassName);
         if (baseClass == null) {
-            warnings.add("Could not find base class " + baseClassName + " in the project.");
+            warnings.add("Could not find base type '" + baseClassName + "' in the project.");
         } else if (!baseClass.equals(superClass)) {
             final PsiClassType[] superTypes = superClass.getSuperTypes();
 
@@ -80,7 +82,7 @@ public class MatcherGenerator extends Generator {
             }
 
             if (!foundBaseClass) {
-                warnings.add("Superclass " + superClass.getQualifiedName() + " does not extend " + baseClass.getQualifiedName() + ".");
+                warnings.add("Supertype '" + superClass.getQualifiedName() + "' does not extend '" + baseClass.getQualifiedName() + "'.");
             }
         }
     }

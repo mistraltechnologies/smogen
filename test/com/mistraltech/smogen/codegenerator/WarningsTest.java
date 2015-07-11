@@ -38,7 +38,7 @@ public class WarningsTest extends AbstractGeneratorTest {
             fail("Expected runtime exception caused by a call to show a dialog");
         } catch (RuntimeException r) {
             assertThat(r.getMessage(), is(equalTo(
-                    expectedWarningMessage("Superclass " + generatorProperties.getMatcherSuperClassName() + " was not found in the project."))));
+                    expectedWarningMessage("Supertype '" + generatorProperties.getMatcherSuperClassName() + "' was not found in the project."))));
         }
     }
 
@@ -55,7 +55,7 @@ public class WarningsTest extends AbstractGeneratorTest {
             fail("Expected runtime exception caused by a call to show a dialog");
         } catch (RuntimeException r) {
             assertThat(r.getMessage(), is(equalTo(
-                    expectedWarningMessage("Superclass " + generatorProperties.getMatcherSuperClassName() + " is final."))));
+                    expectedWarningMessage("Supertype '" + generatorProperties.getMatcherSuperClassName() + "' is final."))));
         }
     }
 
@@ -72,7 +72,7 @@ public class WarningsTest extends AbstractGeneratorTest {
             generator.generate();
             fail("Expected runtime exception caused by a call to show a dialog");
         } catch (RuntimeException r) {
-            assertThat(r.getMessage(), is(equalTo(expectedWarningMessage("Superclass SuperClass does not extend BaseClass."))));
+            assertThat(r.getMessage(), is(equalTo(expectedWarningMessage("Supertype 'SuperClass' does not extend 'BaseClass'."))));
         }
     }
 
@@ -88,7 +88,7 @@ public class WarningsTest extends AbstractGeneratorTest {
             generator.generate();
             fail("Expected runtime exception caused by a call to show a dialog");
         } catch (RuntimeException r) {
-            assertThat(r.getMessage(), is(equalTo(expectedWarningMessage("Could not find base class BaseClass in the project."))));
+            assertThat(r.getMessage(), is(equalTo(expectedWarningMessage("Could not find base type 'BaseClass' in the project."))));
         }
     }
 
@@ -106,7 +106,7 @@ public class WarningsTest extends AbstractGeneratorTest {
             fail("Expected runtime exception caused by a call to show a dialog");
         } catch (RuntimeException r) {
             assertThat(r.getMessage(), is(equalTo(
-                    expectedWarningMessage("Superclass SuperClass is final.", "Superclass SuperClass does not extend BaseClass."))));
+                    expectedWarningMessage("Supertype 'SuperClass' is final.", "Supertype 'SuperClass' does not extend 'BaseClass'."))));
         }
     }
 

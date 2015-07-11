@@ -2,15 +2,21 @@ package com.mistraltech.smogen.plugin;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectUtil;
+import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.roots.FileIndex;
 import com.intellij.openapi.roots.JavaProjectRootsUtil;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.JavaCodeFragment;
+import com.intellij.psi.JavaCodeFragmentFactory;
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiDocumentManager;
+import com.intellij.psi.PsiJavaCodeReferenceCodeFragment;
 import com.intellij.psi.PsiNameHelper;
+import com.intellij.psi.PsiPackage;
 import com.intellij.psi.impl.JavaPsiFacadeEx;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.ProjectScope;
@@ -26,6 +32,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import java.math.BigDecimal;
 
 public class MatcherGeneratorOptionsPanel {
     private static final int PANEL_WIDTH_CHARS = 60;
@@ -46,6 +53,8 @@ public class MatcherGeneratorOptionsPanel {
     private JLabel sourceClassName;
     private JRadioButton classRadioButton;
     private JRadioButton interfaceRadioButton;
+    private JRadioButton interfaceWithFactoryRadioButton;
+    private boolean generateFactoryMethods;
 
     public MatcherGeneratorOptionsPanel(@NotNull MatcherGeneratorOptionsPanelDataSource dataSource) {
         this.dataSource = dataSource;
@@ -65,11 +74,18 @@ public class MatcherGeneratorOptionsPanel {
     }
     
     private void initialiseGenerateTypeRadioButtons() {
-        if (isSmogJavassistOnClasspath()) {
-            interfaceRadioButton.setEnabled(true);
+        boolean smogJavassist = isSmogJavassistOnClasspath();
+        boolean java8 = isProjectJava8();
+
+        classRadioButton.setEnabled(true);
+        interfaceRadioButton.setEnabled(smogJavassist);
+        interfaceWithFactoryRadioButton.setEnabled(smogJavassist && java8);
+
+        if (interfaceWithFactoryRadioButton.isEnabled()) {
+            interfaceWithFactoryRadioButton.setSelected(true);
+        } else if (interfaceRadioButton.isEnabled()) {
             interfaceRadioButton.setSelected(true);
         } else {
-            interfaceRadioButton.setEnabled(false);
             classRadioButton.setSelected(true);
         }
     }
@@ -107,17 +123,10 @@ public class MatcherGeneratorOptionsPanel {
         aRadioButton.setText("a " + matchedClassName);
         anRadioButton.setText("an " + matchedClassName);
 
-        boolean isMatchedClassAbstract = PsiUtils.isAbstract(dataSource.getMatchedClass());
-        matchesLabel.setEnabled(!isMatchedClassAbstract);
-        aRadioButton.setEnabled(!isMatchedClassAbstract);
-        anRadioButton.setEnabled(!isMatchedClassAbstract);
-
-        if (!isMatchedClassAbstract) {
-            if (hasVowelSound(matchedClassName)) {
-                anRadioButton.setSelected(true);
-            } else {
-                aRadioButton.setSelected(true);
-            }
+        if (hasVowelSound(matchedClassName)) {
+            anRadioButton.setSelected(true);
+        } else {
+            aRadioButton.setSelected(true);
         }
     }
 
@@ -168,7 +177,11 @@ public class MatcherGeneratorOptionsPanel {
     }
 
     public boolean isGenerateInterface() {
-        return interfaceRadioButton.isSelected();
+        return interfaceRadioButton.isSelected() || interfaceWithFactoryRadioButton.isSelected();
+    }
+
+    public boolean isGenerateFactoryMethods() {
+        return classRadioButton.isSelected() || interfaceWithFactoryRadioButton.isSelected();
     }
 
     @Nullable
@@ -233,11 +246,22 @@ public class MatcherGeneratorOptionsPanel {
         return null;
     }
 
-    public boolean isSmogJavassistOnClasspath() {
+    private boolean isSmogJavassistOnClasspath() {
         final Project project = dataSource.getProject();
         final JavaPsiFacade javaPsiFacade = JavaPsiFacade.getInstance(project);
         final PsiClass generatorClass = javaPsiFacade.findClass(SMOG_JAVASSIST_GENERATOR, GlobalSearchScope.allScope(project));
         return generatorClass != null;
+    }
+
+    private boolean isProjectJava8() {
+        final Project project = dataSource.getProject();
+        final Sdk projectSdk = ProjectRootManager.getInstance(project).getProjectSdk();
+        try {
+            final float ver = Float.parseFloat(projectSdk.getName());
+            return ver >= 1.8f;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     private class ListItemWrapper<T> {

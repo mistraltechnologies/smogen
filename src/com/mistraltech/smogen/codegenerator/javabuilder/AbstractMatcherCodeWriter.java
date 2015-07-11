@@ -126,10 +126,6 @@ public abstract class AbstractMatcherCodeWriter implements CodeWriter {
         return typeParameterMap;
     }
 
-    protected String nestedClassName() {
-        return generatorProperties.isExtensible() ? generatorProperties.getClassName() + "Type" : generatorProperties.getClassName();
-    }
-
     protected String matcherAttributeName(@NotNull Property property) {
         return property.getFieldName() + "Matcher";
     }

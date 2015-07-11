@@ -153,10 +153,12 @@ public class MatcherClassCodeWriter extends AbstractMatcherCodeWriter {
         clazz.withVariables(generateMatcherVariables(sourceClassProperties))
                 .withMethod(generateConstructor(sourceClassProperties, matchedTypeParam));
 
-        clazz.withMethod(generateStaticFactoryMethod(matcherType));
+        if (generatorProperties.isGenerateFactoryMethods()) {
+            clazz.withMethod(generateStaticFactoryMethod(matcherType));
 
-        if (generatorProperties.isGenerateTemplateFactoryMethod()) {
-            clazz.withMethod(generateLikeStaticFactoryMethod(matcherType, matchedType));
+            if (generatorProperties.isGenerateTemplateFactoryMethod()) {
+                clazz.withMethod(generateLikeStaticFactoryMethod(matcherType, matchedType));
+            }
         }
 
         if (generatorProperties.isExtensible()) {
@@ -435,4 +437,7 @@ public class MatcherClassCodeWriter extends AbstractMatcherCodeWriter {
         return methods;
     }
 
+    private String nestedClassName() {
+        return generatorProperties.isExtensible() ? generatorProperties.getClassName() + "Type" : generatorProperties.getClassName();
+    }
 }

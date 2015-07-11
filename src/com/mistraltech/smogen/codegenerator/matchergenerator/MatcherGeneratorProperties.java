@@ -20,6 +20,7 @@ public class MatcherGeneratorProperties extends JavaGeneratorProperties<MatcherG
     private boolean generateTemplateFactoryMethod;
     private boolean makeMethodParametersFinal;
     private boolean generateInterface;
+    private boolean generateFactoryMethods;
 
     public MatcherGeneratorProperties() {
     }
@@ -152,6 +153,15 @@ public class MatcherGeneratorProperties extends JavaGeneratorProperties<MatcherG
 
     public MatcherGeneratorProperties setGenerateInterface(boolean generateInterface) {
         this.generateInterface = generateInterface;
+        return self();
+    }
+
+    public boolean isGenerateFactoryMethods() {
+        return generateFactoryMethods;
+    }
+
+    public MatcherGeneratorProperties setGenerateFactoryMethods(boolean generateFactoryMethods) {
+        this.generateFactoryMethods = generateFactoryMethods;
         return self();
     }
 }
