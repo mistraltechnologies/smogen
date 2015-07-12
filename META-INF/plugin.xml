@@ -1,7 +1,7 @@
 <idea-plugin version="2">
   <id>com.mistraltech.smogen</id>
   <name>SMOG Matcher Generator</name>
-  <version>0.4</version>
+  <version>0.5</version>
   <vendor email="support@mistraltech.co.uk">Mistral Technologies</vendor>
 
   <description><![CDATA[
@@ -12,6 +12,13 @@
     ]]></description>
 
   <change-notes><![CDATA[
+<p><b>0.5</b></p>
+
+<p>Updated to support generating interface-only matchers. Interface-only matchers can be used with the SMOG-Javassist
+ library, which generates the matcher implementation at runtime, significantly cutting down on the amount of
+ boiler-plate code maintained within a project.</p>
+<p>SMOG-Javassist is hosted at <a href="https://github.com/mistraltechnologies/smog-javassist">GitHub</a>.</p>
+
 <p><b>0.4</b></p>
 
 <p>Updated to fix incompatibility with IDEA 14.0</p>
@@ -42,7 +49,7 @@
   </change-notes>
 
   <!-- please see http://confluence.jetbrains.com/display/IDEADEV/Build+Number+Ranges for description -->
-  <idea-version since-build="139"/>
+  <idea-version since-build="141"/>
 
   <depends>com.intellij.modules.java</depends>
 
