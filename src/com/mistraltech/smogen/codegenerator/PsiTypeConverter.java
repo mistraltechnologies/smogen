@@ -12,10 +12,10 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 
-public class PsiTypeConverter extends PsiTypeVisitor<Object> {
+public class PsiTypeConverter extends PsiTypeVisitor<TypeBuilder> {
     private final Map<String, String> typeParameterMap;
+    private final TypeBuilder typeBuilder = TypeBuilder.aType();
     private boolean boxed;
-    private TypeBuilder typeBuilder = TypeBuilder.aType();
 
     public PsiTypeConverter(@NotNull Map<String, String> typeParameterMap) {
         this(true, typeParameterMap);
@@ -28,14 +28,14 @@ public class PsiTypeConverter extends PsiTypeVisitor<Object> {
 
     @Nullable
     @Override
-    public Object visitPrimitiveType(PsiPrimitiveType primitiveType) {
+    public TypeBuilder visitPrimitiveType(PsiPrimitiveType primitiveType) {
         typeBuilder.withName(boxed ? primitiveType.getBoxedTypeName() : primitiveType.getCanonicalText());
         return super.visitPrimitiveType(primitiveType);
     }
 
     @Nullable
     @Override
-    public Object visitArrayType(PsiArrayType arrayType) {
+    public TypeBuilder visitArrayType(PsiArrayType arrayType) {
         boxed = false; // don't need to (or want to) box array types
         arrayType.getComponentType().accept(this);
         typeBuilder.withArrayDimensions(arrayType.getArrayDimensions());
@@ -44,7 +44,7 @@ public class PsiTypeConverter extends PsiTypeVisitor<Object> {
 
     @Nullable
     @Override
-    public Object visitClassType(PsiClassType classType) {
+    public TypeBuilder visitClassType(PsiClassType classType) {
         String name = (classType instanceof PsiClassReferenceType) ?
                 ((PsiClassReferenceType) classType).getReference().getQualifiedName() :
                 classType.getClassName();
@@ -62,7 +62,7 @@ public class PsiTypeConverter extends PsiTypeVisitor<Object> {
         return super.visitClassType(classType);
     }
 
-    public TypeBuilder getTypeBuilder() {
+    public TypeBuilder visitType(PsiType type) {
         return typeBuilder;
     }
 }

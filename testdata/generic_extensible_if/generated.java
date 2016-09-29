@@ -17,11 +17,11 @@ public interface WidgetMatcher<P1, P2, R extends WidgetMatcher<P1, P2, R, T>, T 
 
     R like(final Widget<P1, P2> template);
 
-    R hasQ(final P2 q);
-
-    R hasQ(final Matcher<? super P2> qMatcher);
-
     R hasP(final P1 p);
 
     R hasP(final Matcher<? super P1> pMatcher);
+
+    R hasQ(final P2 q);
+
+    R hasQ(final Matcher<? super P2> qMatcher);
 }

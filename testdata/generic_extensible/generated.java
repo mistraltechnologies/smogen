@@ -10,14 +10,14 @@ import static org.hamcrest.CoreMatchers.equalTo;
 @Matches(Widget.class)
 public class WidgetMatcher<P1, P2, R extends WidgetMatcher<P1, P2, R, T>, T extends Widget<P1, P2>> extends CompositePropertyMatcher<T> {
     private static final String MATCHED_OBJECT_DESCRIPTION = "a Widget";
-    private final PropertyMatcher<P2> qMatcher = new ReflectingPropertyMatcher<P2>("q", this);
     private final PropertyMatcher<P1> pMatcher = new ReflectingPropertyMatcher<P1>("p", this);
+    private final PropertyMatcher<P2> qMatcher = new ReflectingPropertyMatcher<P2>("q", this);
 
     protected WidgetMatcher(final String matchedObjectDescription, final T template) {
         super(matchedObjectDescription);
         if (template != null) {
-            hasQ(template.getQ());
             hasP(template.getP());
+            hasQ(template.getQ());
         }
     }
 
@@ -34,21 +34,21 @@ public class WidgetMatcher<P1, P2, R extends WidgetMatcher<P1, P2, R, T>, T exte
         return (R) this;
     }
 
-    public R hasQ(final P2 q) {
-        return hasQ(equalTo(q));
-    }
-
-    public R hasQ(final Matcher<? super P2> qMatcher) {
-        this.qMatcher.setMatcher(qMatcher);
-        return self();
-    }
-
     public R hasP(final P1 p) {
         return hasP(equalTo(p));
     }
 
     public R hasP(final Matcher<? super P1> pMatcher) {
         this.pMatcher.setMatcher(pMatcher);
+        return self();
+    }
+
+    public R hasQ(final P2 q) {
+        return hasQ(equalTo(q));
+    }
+
+    public R hasQ(final Matcher<? super P2> qMatcher) {
+        this.qMatcher.setMatcher(qMatcher);
         return self();
     }
 

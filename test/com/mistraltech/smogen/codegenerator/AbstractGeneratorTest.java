@@ -16,7 +16,7 @@ import java.io.File;
 public abstract class AbstractGeneratorTest extends LightCodeInsightFixtureTestCase {
     @Override
     protected String getTestDataPath() {
-        return new File("").getAbsolutePath().replace(File.separatorChar, '/') + "/testData";
+        return new File("").getAbsolutePath().replace(File.separatorChar, '/') + "/testdata";
     }
 
     protected void doTest(String testName, String inputFileName, String expectedGeneratedFileName, MatcherGeneratorProperties generatorProperties) {

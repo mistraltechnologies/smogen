@@ -15,13 +15,13 @@ public interface WidgetMatcher extends Matcher<Widget> {
 
     WidgetMatcher like(final Widget template);
 
-    WidgetMatcher has_prop(final String _prop);
-
-    WidgetMatcher has_prop(final Matcher<? super String> _propMatcher);
-
     WidgetMatcher hasURL(final String uRL);
 
     WidgetMatcher hasURL(final Matcher<? super String> uRLMatcher);
+
+    WidgetMatcher has_prop(final String _prop);
+
+    WidgetMatcher has_prop(final Matcher<? super String> _propMatcher);
 
     WidgetMatcher hasI(final String i);
 

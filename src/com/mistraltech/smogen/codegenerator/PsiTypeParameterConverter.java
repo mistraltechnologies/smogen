@@ -3,6 +3,7 @@ package com.mistraltech.smogen.codegenerator;
 import com.intellij.psi.PsiClassType;
 import com.intellij.psi.PsiTypeVisitor;
 import com.intellij.psi.PsiWildcardType;
+import com.mistraltech.smogen.codegenerator.javabuilder.TypeBuilder;
 import com.mistraltech.smogen.codegenerator.javabuilder.TypeParameterBuilder;
 import org.jetbrains.annotations.Nullable;
 
@@ -20,8 +21,8 @@ public class PsiTypeParameterConverter extends PsiTypeVisitor<Object> {
     @Override
     public Object visitClassType(PsiClassType classType) {
         PsiTypeConverter typeConverter = new PsiTypeConverter(typeParameterMap);
-        classType.accept(typeConverter);
-        typeParameterBuilder.withType(typeConverter.getTypeBuilder());
+        TypeBuilder typeBuilder = classType.accept(typeConverter);
+        typeParameterBuilder.withType(typeBuilder);
         return super.visitClassType(classType);
     }
 

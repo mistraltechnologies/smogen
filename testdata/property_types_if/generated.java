@@ -18,35 +18,35 @@ public interface WidgetMatcher extends Matcher<Widget> {
 
     WidgetMatcher like(final Widget template);
 
-    WidgetMatcher hasUnboundedGenerics(final Box<?> unboundedGenerics);
-
-    WidgetMatcher hasUnboundedGenerics(final Matcher<? super Box<?>> unboundedGenericsMatcher);
-
-    WidgetMatcher hasRecursiveType(final Widget recursiveType);
-
-    WidgetMatcher hasRecursiveType(final Matcher<? super Widget> recursiveTypeMatcher);
-
     WidgetMatcher hasFinalType(final Final finalType);
 
     WidgetMatcher hasFinalType(final Matcher<? super Final> finalTypeMatcher);
-
-    WidgetMatcher hasNestedWildcardGenerics(final Box<Box<? super X>> nestedWildcardGenerics);
-
-    WidgetMatcher hasNestedWildcardGenerics(final Matcher<? super Box<Box<? super X>>> nestedWildcardGenericsMatcher);
 
     WidgetMatcher hasGenerics(final Box<X> generics);
 
     WidgetMatcher hasGenerics(final Matcher<? super Box<X>> genericsMatcher);
 
-    WidgetMatcher hasWildcardGenerics(final Box<? extends X> wildcardGenerics);
-
-    WidgetMatcher hasWildcardGenerics(final Matcher<? super Box<? extends X>> wildcardGenericsMatcher);
-
     WidgetMatcher hasMultiDimensionalArray(final int[][] multiDimensionalArray);
 
     WidgetMatcher hasMultiDimensionalArray(final Matcher<? super int[][]> multiDimensionalArrayMatcher);
 
+    WidgetMatcher hasNestedWildcardGenerics(final Box<Box<? super X>> nestedWildcardGenerics);
+
+    WidgetMatcher hasNestedWildcardGenerics(final Matcher<? super Box<Box<? super X>>> nestedWildcardGenericsMatcher);
+
     WidgetMatcher hasPrimitive(final boolean primitive);
 
     WidgetMatcher hasPrimitive(final Matcher<? super Boolean> primitiveMatcher);
+
+    WidgetMatcher hasRecursiveType(final Widget recursiveType);
+
+    WidgetMatcher hasRecursiveType(final Matcher<? super Widget> recursiveTypeMatcher);
+
+    WidgetMatcher hasUnboundedGenerics(final Box<?> unboundedGenerics);
+
+    WidgetMatcher hasUnboundedGenerics(final Matcher<? super Box<?>> unboundedGenericsMatcher);
+
+    WidgetMatcher hasWildcardGenerics(final Box<? extends X> wildcardGenerics);
+
+    WidgetMatcher hasWildcardGenerics(final Matcher<? super Box<? extends X>> wildcardGenericsMatcher);
 }

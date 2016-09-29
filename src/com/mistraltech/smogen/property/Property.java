@@ -12,7 +12,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class Property {
     private final PsiMethod accessorMethod;
-    private final PsiType returnType;
+    private final PsiType type;
     private String name;
 
     /**
@@ -23,7 +23,7 @@ public class Property {
     public Property(@NotNull PsiMethod accessorMethod) {
         assert accessorMethod.getReturnType() != null;
 
-        this.returnType = accessorMethod.getReturnType();
+        this.type = accessorMethod.getReturnType();
         this.accessorMethod = accessorMethod;
         this.name = PropertyUtil.getPropertyName(accessorMethod);
     }
@@ -79,17 +79,17 @@ public class Property {
      */
     @NotNull
     public String getType() {
-        return returnType.getCanonicalText();
+        return type.getCanonicalText();
     }
 
     /**
-     * Gets the name of the property type (the return type of the accessor method).
+     * Accept a visitor on the property type.
      *
-     * @return the name of the property type
+     * @return the result returned by the visitor
      */
     @Nullable
-    public Object accept(PsiTypeVisitor<Object> visitor) {
-        return returnType.accept(visitor);
+    public <T> T accept(PsiTypeVisitor<T> visitor) {
+        return type.accept(visitor);
     }
 
     /**
@@ -102,7 +102,7 @@ public class Property {
         if (accessorMethod.getReturnType() instanceof PsiPrimitiveType) {
             return ((PsiPrimitiveType) accessorMethod.getReturnType()).getBoxedTypeName();
         } else {
-            return returnType.getCanonicalText();
+            return type.getCanonicalText();
         }
     }
 }

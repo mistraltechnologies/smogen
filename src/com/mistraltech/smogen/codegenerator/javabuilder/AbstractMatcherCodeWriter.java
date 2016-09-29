@@ -99,7 +99,6 @@ public abstract class AbstractMatcherCodeWriter implements CodeWriter {
     }
 
     private TypeBuilder getSourceSuperClassType() {
-        PsiTypeConverter typeConverter = new PsiTypeConverter(true, typeParameterMap());
 
         PsiClassType sourceSuperClassType = generatorProperties.getSourceSuperClassType();
 
@@ -107,17 +106,11 @@ public abstract class AbstractMatcherCodeWriter implements CodeWriter {
             return null;
         }
 
-        sourceSuperClassType.accept(typeConverter);
-
-        return typeConverter.getTypeBuilder();
+        return sourceSuperClassType.accept(new PsiTypeConverter(true, typeParameterMap()));
     }
 
     protected TypeBuilder getPropertyType(@NotNull Property property, boolean boxed) {
-        PsiTypeConverter typeConverter = new PsiTypeConverter(boxed, typeParameterMap());
-
-        property.accept(typeConverter);
-
-        return typeConverter.getTypeBuilder();
+        return property.accept(new PsiTypeConverter(boxed, typeParameterMap()));
     }
 
     private Map<String, String> typeParameterMap() {
