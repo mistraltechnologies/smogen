@@ -7,6 +7,7 @@ import com.intellij.codeInsight.actions.ReformatCodeProcessor;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiDocumentManager;
@@ -18,6 +19,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static com.mistraltech.smogen.utils.ActionUtils.runAction;
 import static com.mistraltech.smogen.utils.PsiUtils.createMissingDirectoriesForPackage;
@@ -85,27 +87,29 @@ public class Generator {
 
     @NotNull
     private PsiDirectory findOrCreateParentDirectory() {
-        final PsiDirectory baseDir = PsiManager.getInstance(generatorProperties.getProject()).findDirectory(generatorProperties.getSourceRoot());
-        assert (baseDir != null);
+        PsiManager psiManager = PsiManager.getInstance(generatorProperties.getProject());
+
+        VirtualFile sourceRoot = generatorProperties.getSourceRoot();
+
+        final PsiDirectory baseDir = Optional.ofNullable(psiManager.findDirectory(sourceRoot))
+                .orElseThrow(() -> new IllegalStateException("Expected source root directory to exist"));
 
         // Ensure that the directory for the target package exists
-        ApplicationManager.getApplication().runWriteAction(new Runnable() {
-            public void run() {
-                createMissingDirectoriesForPackage(baseDir, generatorProperties.getPackageName());
-            }
+        ApplicationManager.getApplication().runWriteAction(() -> {
+            createMissingDirectoriesForPackage(baseDir, generatorProperties.getPackageName());
         });
 
-        PsiDirectory directory = findDirectoryForPackage(baseDir, generatorProperties.getPackageName());
-        assert (directory != null);
+        PsiDirectory directory = findDirectoryForPackage(baseDir, generatorProperties.getPackageName())
+                .orElseThrow(() -> new IllegalStateException("Expected directory for package to have been created"));
 
         return directory;
     }
 
-    static class FileContentGeneratorRunnable implements Runnable {
+    private static class FileContentGeneratorRunnable implements Runnable {
         private final GeneratorProperties generatorProperties;
         private PsiFile targetFile;
 
-        public FileContentGeneratorRunnable(final GeneratorProperties generatorProperties) {
+        FileContentGeneratorRunnable(final GeneratorProperties generatorProperties) {
             this.generatorProperties = generatorProperties;
         }
 
@@ -117,8 +121,8 @@ public class Generator {
             targetFile = existingFile != null ? existingFile : parentDirectory.createFile(targetFileName);
 
             PsiDocumentManager documentManager = PsiDocumentManager.getInstance(parentDirectory.getProject());
-            Document document = documentManager.getDocument(targetFile);
-            assert document != null;
+            Document document = Optional.ofNullable(documentManager.getDocument(targetFile))
+                    .orElseThrow(() -> new IllegalStateException("Expected document from file " + targetFile.getName()));
 
             document.setText(generatorProperties.getCodeWriter().writeCode());
 
@@ -130,7 +134,7 @@ public class Generator {
          *
          * @return the matcher class file
          */
-        public PsiFile getTargetFile() {
+        PsiFile getTargetFile() {
             return targetFile;
         }
     }

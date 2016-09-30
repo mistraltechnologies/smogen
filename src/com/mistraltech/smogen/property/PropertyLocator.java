@@ -31,7 +31,7 @@ public final class PropertyLocator {
         List<Property> matchedProperties = propertyMap
                 .entrySet()
                 .stream()
-                .sorted(comparing(Map.Entry::getKey))
+                .sorted(Map.Entry.comparingByKey())
                 .map(Map.Entry::getValue)
                 .map(Property::new)
                 .collect(toList());

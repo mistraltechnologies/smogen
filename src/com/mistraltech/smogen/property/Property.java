@@ -20,8 +20,10 @@ public class Property {
      *
      * @param accessorMethod the accessor method (e.g. getFoo or isBar)
      */
-    public Property(@NotNull PsiMethod accessorMethod) {
-        assert accessorMethod.getReturnType() != null;
+    Property(@NotNull PsiMethod accessorMethod) {
+        if (accessorMethod.getReturnType() == null) {
+            throw new IllegalArgumentException("Property accessor can't be void");
+        }
 
         this.type = accessorMethod.getReturnType();
         this.accessorMethod = accessorMethod;
@@ -90,19 +92,5 @@ public class Property {
     @Nullable
     public <T> T accept(PsiTypeVisitor<T> visitor) {
         return type.accept(visitor);
-    }
-
-    /**
-     * Gets the type of the property, in boxed form if the property type is a primitive.
-     *
-     * @return the property type
-     */
-    @NotNull
-    public String getBoxedType() {
-        if (accessorMethod.getReturnType() instanceof PsiPrimitiveType) {
-            return ((PsiPrimitiveType) accessorMethod.getReturnType()).getBoxedTypeName();
-        } else {
-            return type.getCanonicalText();
-        }
     }
 }

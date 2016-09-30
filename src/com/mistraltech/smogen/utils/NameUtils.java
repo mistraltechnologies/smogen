@@ -18,82 +18,42 @@ public final class NameUtils {
             return name;
         }
 
-        return String.valueOf(toLowerCase(name.charAt(0))) + (name.length() > 1 ? name.substring(1) : "");
+        return toLowerCase(name.charAt(0)) + name.substring(1);
     }
 
     /**
-     * Strip off any of a list of prefixes and return the result. Only the first matching prefix is removed. It may be
-     * that no prefix is stripped if none of the prefixes matches.
+     * From a fully-qualified name, get the unqualified name part.
+     * E.g. from java.lang.String returns String
      *
-     * @param name the input name
-     * @param prefixes list of prefixes to strip off
-     * @return the resulting name
+     * @param fqn the fully-qualified name
+     * @return the unqualified name
      */
-    @NotNull
-    public static String removePrefix(@NotNull String name, String... prefixes) {
-        for (String prefix : prefixes) {
-            if (name.startsWith(prefix) && name.length() > prefix.length()) {
-                return name.substring(prefix.length());
-            }
-        }
-
-        return name;
-    }
-
-    /**
-     * Prepends the prefix to the name.
-     *
-     * @param name the input name
-     * @param prefix the prefix to prepend
-     * @return the resulting name
-     */
-    @NotNull
-    public static String addPrefix(@NotNull String name, @NotNull String prefix) {
-        return prefix + name;
-    }
-
-    /**
-     * Gets the first component of a package name.
-     *
-     * @param packageName the package name
-     * @return the first component
-     */
-    @NotNull
-    public static String getFirstPackage(@NotNull String packageName) {
-        int idx = packageName.indexOf('.');
-        return idx >= 0 ? packageName.substring(0, idx) : packageName;
-    }
-
-    /**
-     * Gets the remainder of a package name after the first component has been removed.
-     *
-     * @param packageName the package name
-     * @return the remainder after dropping the first component
-     */
-    @NotNull
-    public static String dropFirstPackage(@NotNull String packageName) {
-        int idx = packageName.indexOf('.');
-        return idx >= 0 ? packageName.substring(idx + 1) : "";
-    }
-
     @NotNull
     public static String getUnqualifiedName(@NotNull String fqn) {
         int idx = fqn.lastIndexOf('.');
         return idx >= 0 ? fqn.substring(idx + 1) : fqn;
     }
 
+    /**
+     * From a fully-qualified name, get the the name of the parent element.
+     * E.g. from java.lang.String returns java.lang
+     *
+     * @param fqn the fully-qualified name
+     * @return the parent element name
+     */
     @NotNull
     public static String dropUnqualifiedName(@NotNull String fqn) {
         int idx = fqn.lastIndexOf('.');
         return idx > 0 ? fqn.substring(0, idx) : "";
     }
 
-    @NotNull
-    public static String dropParams(@NotNull String fqn) {
-        int idx = fqn.indexOf('<');
-        return idx >= 0 ? fqn.substring(0, idx) : fqn;
-    }
-
+    /**
+     * Construct a fully-qualified name from the parent element name and the unqualified name.
+     *
+     * @param path the fully-qualified name of the parent element
+     * @param name the unqualified name
+     * @return the fully-qualified name
+     */
     @NotNull
     public static String createFQN(@NotNull String path, @NotNull String name) {
         return path.isEmpty() ? name : path + "." + name;

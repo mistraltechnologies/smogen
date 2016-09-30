@@ -18,6 +18,7 @@ import com.mistraltech.smogen.utils.PsiUtils;
 import com.mistraltech.smogen.utils.SourceRootUtils;
 
 import java.util.List;
+import java.util.Optional;
 
 public class GenerateMatcherAction extends AnAction {
 
@@ -25,7 +26,7 @@ public class GenerateMatcherAction extends AnAction {
     public void update(AnActionEvent e) {
         boolean enabled = e.getData(CommonDataKeys.PROJECT) != null
                 && e.getData(CommonDataKeys.PSI_FILE) != null
-                && PsiUtils.getSelectedClass(e) != null;
+                && PsiUtils.getSelectedClass(e).isPresent();
 
         Presentation presentation = e.getPresentation();
         presentation.setEnabled(enabled);
@@ -42,8 +43,8 @@ public class GenerateMatcherAction extends AnAction {
             return;
         }
 
-        final PsiClass selectedClass = PsiUtils.getSelectedClass(e);
-        if (selectedClass == null) {
+        final Optional<PsiClass> selectedClass = PsiUtils.getSelectedClass(e);
+        if (! selectedClass.isPresent()) {
             Messages.showErrorDialog(project, "No selected class.", "Absent Data");
             return;
         }
@@ -55,9 +56,9 @@ public class GenerateMatcherAction extends AnAction {
 
         // Guess what we are going to call the target matcher class and what its package will be
         String preferredClassName = configurationProperties.getMatcherClassNamePrefix() +
-                selectedClass.getName() +
+                selectedClass.get().getName() +
                 configurationProperties.getMatcherClassNameSuffix();
-        String preferredPackageName = ClassUtil.extractPackageName(selectedClass.getQualifiedName());
+        String preferredPackageName = ClassUtil.extractPackageName(selectedClass.get().getQualifiedName());
 
         // Get the list of available source roots
         List<VirtualFile> candidateSourceRoots = SourceRootUtils.getSourceAndTestSourceRoots(project);
@@ -68,14 +69,15 @@ public class GenerateMatcherAction extends AnAction {
         }
 
         // Guess what the target source root might be
-        VirtualFile preferredSourceRoot = SourceRootUtils.getPreferredSourceRootForTestClass(project, module, selectedFile.getVirtualFile());
+        VirtualFile preferredSourceRoot = SourceRootUtils.getPreferredSourceRootForTestClass(project, module, selectedFile.getVirtualFile())
+                .orElseThrow(IllegalStateException::new);
 
         final MatcherGeneratorProperties generatorProperties = new MatcherGeneratorProperties()
                 .setProject(project)
                 .setClassName(preferredClassName)
                 .setPackageName(preferredPackageName)
                 .setSourceRoot(preferredSourceRoot)
-                .setSourceClass(selectedClass)
+                .setSourceClass(selectedClass.get())
                 .setFactoryMethodSuffix(configurationProperties.getFactoryMethodSuffix())
                 .setTemplateFactoryMethodSuffix(configurationProperties.getTemplateFactoryMethodSuffix())
                 .setSetterPrefix(configurationProperties.getSetterPrefix())
@@ -86,7 +88,8 @@ public class GenerateMatcherAction extends AnAction {
                 .setMakeMethodParametersFinal(configurationProperties.isMakeMethodParametersFinal())
                 .setUseReflectingPropertyMatcher(configurationProperties.isUseReflectingPropertyMatcher());
 
-        MatcherGeneratorOptionsDialog matcherGeneratorOptionsDialog = new MatcherGeneratorOptionsDialog(project, selectedClass, candidateSourceRoots, generatorProperties);
+        MatcherGeneratorOptionsDialog matcherGeneratorOptionsDialog = new MatcherGeneratorOptionsDialog(
+                project, selectedClass.get(), candidateSourceRoots, generatorProperties);
         matcherGeneratorOptionsDialog.show();
 
         if (matcherGeneratorOptionsDialog.isOK()) {

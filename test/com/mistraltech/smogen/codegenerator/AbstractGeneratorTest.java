@@ -12,6 +12,7 @@ import com.mistraltech.smogen.utils.PsiUtils;
 import com.mistraltech.smogen.utils.SourceRootUtils;
 
 import java.io.File;
+import java.util.Optional;
 
 public abstract class AbstractGeneratorTest extends LightCodeInsightFixtureTestCase {
     @Override
@@ -69,14 +70,13 @@ public abstract class AbstractGeneratorTest extends LightCodeInsightFixtureTestC
     }
 
     protected void createPackage(final String packageName) {
+        assert packageName != null && packageName.length() > 0;
+
         final PsiDirectory baseDirectory = myFixture.getPsiManager().findDirectory(getSourceRoot());
+
         assert baseDirectory != null;
-        ActionUtils.runAction(new Runnable() {
-            @Override
-            public void run() {
-                PsiUtils.createMissingDirectoriesForPackage(baseDirectory, packageName);
-            }
-        });
+
+        ActionUtils.runAction(() -> PsiUtils.createMissingDirectoriesForPackage(baseDirectory, packageName));
     }
 
     protected PsiFile getGeneratedFile(MatcherGeneratorProperties generatorProperties) {
@@ -97,17 +97,20 @@ public abstract class AbstractGeneratorTest extends LightCodeInsightFixtureTestC
         String inputFilePath = testName + "/" + fileName;
 
         final PsiFile sourceFile = myFixture.configureByFile(inputFilePath);
-        return PsiUtils.getClassFromFile(sourceFile);
+
+        return PsiUtils.getPublicClassFromFile(sourceFile)
+                .orElseThrow(() -> new IllegalStateException("Couldn't load test class from file "
+                        + inputFilePath + " for test " + testName));
     }
 
-    protected PsiClass loadDefaultBaseClass() {
+    protected Optional<PsiClass> loadDefaultBaseClass() {
         return loadTestClassFromText("com/mistraltech/smog/core/CompositePropertyMatcher.java",
                 "package com.mistraltech.smog.core;\n" +
                         "public class CompositePropertyMatcher<T> {}\n");
     }
 
-    protected PsiClass loadTestClassFromText(String className, String code) {
+    protected Optional<PsiClass> loadTestClassFromText(String className, String code) {
         final PsiFile sourceFile =  myFixture.addFileToProject(className, code);
-        return PsiUtils.getClassFromFile(sourceFile);
+        return PsiUtils.getPublicClassFromFile(sourceFile);
     }
 }
