@@ -47,6 +47,7 @@ public abstract class GeneratorProperties<T extends GeneratorProperties> {
         return parentDirectory;
     }
 
+    @SuppressWarnings("WeakerAccess")
     public T setParentDirectory(PsiDirectory parentDirectory) {
         this.parentDirectory = parentDirectory;
         return self();

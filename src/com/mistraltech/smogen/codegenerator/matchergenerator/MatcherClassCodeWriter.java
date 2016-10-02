@@ -2,8 +2,8 @@ package com.mistraltech.smogen.codegenerator.matchergenerator;
 
 import com.intellij.psi.PsiPackage;
 import com.mistraltech.smogen.codegenerator.javabuilder.AbstractClassBuilder;
-import com.mistraltech.smogen.codegenerator.javabuilder.AbstractMatcherCodeWriter;
 import com.mistraltech.smogen.codegenerator.javabuilder.BlockStatementBuilder;
+import com.mistraltech.smogen.codegenerator.javabuilder.ClassBuilder;
 import com.mistraltech.smogen.codegenerator.javabuilder.ExpressionBuilder;
 import com.mistraltech.smogen.codegenerator.javabuilder.JavaDocumentBuilder;
 import com.mistraltech.smogen.codegenerator.javabuilder.MethodBuilder;
@@ -42,10 +42,11 @@ import static com.mistraltech.smogen.codegenerator.javabuilder.TypeParameterBuil
 import static com.mistraltech.smogen.codegenerator.javabuilder.TypeParameterDeclBuilder.aTypeParameterDecl;
 import static com.mistraltech.smogen.codegenerator.javabuilder.VariableBuilder.aVariable;
 import static com.mistraltech.smogen.utils.NameUtils.createFQN;
+import static java.util.stream.Collectors.toList;
 
-public class MatcherClassCodeWriter extends AbstractMatcherCodeWriter {
+class MatcherClassCodeWriter extends AbstractMatcherCodeWriter {
 
-    public MatcherClassCodeWriter(MatcherGeneratorProperties matcherGeneratorProperties) {
+    MatcherClassCodeWriter(MatcherGeneratorProperties matcherGeneratorProperties) {
         super(matcherGeneratorProperties);
     }
 
@@ -54,11 +55,11 @@ public class MatcherClassCodeWriter extends AbstractMatcherCodeWriter {
         document.addClass(generateMatcherClass());
     }
 
-    private AbstractClassBuilder generateMatcherClass() {
+    private ClassBuilder generateMatcherClass() {
         final PsiPackage targetPackage = getPackage();
         final String generatedClassFQN = createFQN(targetPackage.getQualifiedName(), generatorProperties.getClassName());
 
-        AbstractClassBuilder clazz = aJavaClass()
+        ClassBuilder clazz = aJavaClass()
                 .withAccessModifier("public")
                 .withName(generatorProperties.getClassName())
                 .withTypeParameters(typeParameterDecls())
@@ -120,7 +121,7 @@ public class MatcherClassCodeWriter extends AbstractMatcherCodeWriter {
         if (generatorProperties.getMatcherSuperClassName() != null) {
             superType = aType()
                     .withName(generatorProperties.getMatcherSuperClassName())
-                    .withTypeBindings(getSourceSuperClassParameters())
+                    .withTypeBindings(getSourceSuperClassParameterBuilders())
                     .withTypeBinding(returnType)
                     .withTypeBinding(matchedTypeParam);
         } else {
@@ -133,7 +134,7 @@ public class MatcherClassCodeWriter extends AbstractMatcherCodeWriter {
     }
 
     private void applyClassBody(AbstractClassBuilder clazz, TypeBuilder returnType, TypeBuilder matchedType,
-                                TypeBuilder matchedTypeParam, TypeBuilder matcherType) {
+            TypeBuilder matchedTypeParam, TypeBuilder matcherType) {
         boolean includeSuperClassProperties = generatorProperties.getMatcherSuperClassName() == null;
         List<Property> sourceClassProperties = PropertyLocator.locateProperties(getSourceClass(), includeSuperClassProperties);
 
@@ -165,9 +166,7 @@ public class MatcherClassCodeWriter extends AbstractMatcherCodeWriter {
             clazz.withMethod(generateSelfMethod(returnType));
         }
 
-        for (Property property : sourceClassProperties) {
-            clazz.withMethods(generateMatcherSetters(property, returnType));
-        }
+        sourceClassProperties.forEach(p -> clazz.withMethods(generateMatcherSetters(p, returnType)));
 
         if (generatorProperties.isExtensible()) {
             clazz.withNestedClass(generateNestedClass(matcherType, matchedType, sourceClassProperties));
@@ -198,30 +197,25 @@ public class MatcherClassCodeWriter extends AbstractMatcherCodeWriter {
                                 .withText("super.matchesSafely(item, matchAccumulator)")));
 
         if (!generatorProperties.isUseReflectingPropertyMatcher()) {
-            for (Property property : properties) {
-                matchesSafelyMethod
-                        .withStatement(anExpressionStatement()
-                                .withExpression(aMethodCall()
-                                        .withObject("matchAccumulator")
-                                        .withName("matches")
-                                        .withParameter(matcherAttributeName(property))
-                                        .withParameter(aMethodCall()
-                                                .withObject("item")
-                                                .withName(property.getAccessorName()))));
-            }
+            properties.forEach(p ->
+                    matchesSafelyMethod
+                            .withStatement(anExpressionStatement()
+                                    .withExpression(aMethodCall()
+                                            .withObject("matchAccumulator")
+                                            .withName("matches")
+                                            .withParameter(matcherAttributeName(p))
+                                            .withParameter(aMethodCall()
+                                                    .withObject("item")
+                                                    .withName(p.getAccessorName())))));
         }
 
         return matchesSafelyMethod;
     }
 
     private List<VariableBuilder> generateMatcherVariables(@NotNull List<Property> properties) {
-        List<VariableBuilder> variables = new ArrayList<VariableBuilder>();
-
-        for (Property property : properties) {
-            variables.add(generateMatcherVariable(property));
-        }
-
-        return variables;
+        return properties.stream()
+                .map(this::generateMatcherVariable)
+                .collect(toList());
     }
 
     private VariableBuilder generateMatcherVariable(@NotNull Property property) {
@@ -234,12 +228,12 @@ public class MatcherClassCodeWriter extends AbstractMatcherCodeWriter {
                 .withFinalFlag(true)
                 .withType(aType()
                         .withName("com.mistraltech.smog.core.PropertyMatcher")
-                        .withTypeBinding(getPropertyType(property, true)))
+                        .withTypeBinding(getPropertyTypeBuilder(property, true)))
                 .withName(matcherAttributeName(property))
                 .withInitialiser(aNewInstance()
                         .withType(aType()
                                 .withName(concretePropertyMatcher)
-                                .withTypeBinding(getPropertyType(property, true)))
+                                .withTypeBinding(getPropertyTypeBuilder(property, true)))
                         .withParameter("\"" + property.getName() + "\"")
                         .withParameter("this"));
     }
@@ -274,13 +268,12 @@ public class MatcherClassCodeWriter extends AbstractMatcherCodeWriter {
                 BlockStatementBuilder setFromTemplate = aBlockStatement()
                         .withHeader("if (template != null)");
 
-                for (Property property : sourceClassProperties) {
-                    setFromTemplate.withStatement(aMethodCall()
-                            .withName(setterMethodName(property))
-                            .withParameter(aMethodCall()
-                                    .withObject("template")
-                                    .withName(property.getAccessorName())));
-                }
+                sourceClassProperties.forEach(p ->
+                        setFromTemplate.withStatement(aMethodCall()
+                                .withName(setterMethodName(p))
+                                .withParameter(aMethodCall()
+                                        .withObject("template")
+                                        .withName(p.getAccessorName()))));
 
                 constructor.withStatement(setFromTemplate);
             }
@@ -384,7 +377,7 @@ public class MatcherClassCodeWriter extends AbstractMatcherCodeWriter {
     }
 
     private List<MethodBuilder> generateMatcherSetters(@NotNull Property property, TypeBuilder returnType) {
-        List<MethodBuilder> methods = new ArrayList<MethodBuilder>();
+        List<MethodBuilder> methods = new ArrayList<>();
 
         final StaticMethodCallBuilder equalToCall = aStaticMethodCall()
                 .withType(aType()
@@ -392,7 +385,7 @@ public class MatcherClassCodeWriter extends AbstractMatcherCodeWriter {
                 .withName("equalTo")
                 .withParameter(property.getFieldName());
 
-        final TypeBuilder boxedPropertyType = getPropertyType(property, true);
+        final TypeBuilder boxedPropertyType = getPropertyTypeBuilder(property, true);
 
         if (boxedPropertyType.containsWildcard()) {
             equalToCall.withTypeBinding(boxedPropertyType);
@@ -404,7 +397,7 @@ public class MatcherClassCodeWriter extends AbstractMatcherCodeWriter {
                 .withName(setterMethodName(property))
                 .withParameter(aParameter()
                         .withFinalFlag(generatorProperties.isMakeMethodParametersFinal())
-                        .withType(getPropertyType(property, false))
+                        .withType(getPropertyTypeBuilder(property, false))
                         .withName(property.getFieldName()))
                 .withStatement(aReturnStatement()
                         .withExpression(aMethodCall()
@@ -438,6 +431,6 @@ public class MatcherClassCodeWriter extends AbstractMatcherCodeWriter {
     }
 
     private String nestedClassName() {
-        return generatorProperties.isExtensible() ? generatorProperties.getClassName() + "Type" : generatorProperties.getClassName();
+        return generatorProperties.getClassName() + "Type";
     }
 }

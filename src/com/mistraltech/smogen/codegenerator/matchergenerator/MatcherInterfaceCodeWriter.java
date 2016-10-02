@@ -1,7 +1,6 @@
 package com.mistraltech.smogen.codegenerator.matchergenerator;
 
 import com.intellij.psi.PsiPackage;
-import com.mistraltech.smogen.codegenerator.javabuilder.AbstractMatcherCodeWriter;
 import com.mistraltech.smogen.codegenerator.javabuilder.AnnotationBuilder;
 import com.mistraltech.smogen.codegenerator.javabuilder.InterfaceBuilder;
 import com.mistraltech.smogen.codegenerator.javabuilder.InterfaceMethodBuilder;
@@ -112,7 +111,7 @@ public class MatcherInterfaceCodeWriter extends AbstractMatcherCodeWriter {
         if (generatorProperties.getMatcherSuperClassName() != null) {
             superType = aType()
                     .withName(generatorProperties.getMatcherSuperClassName())
-                    .withTypeBindings(getSourceSuperClassParameters())
+                    .withTypeBindings(getSourceSuperClassParameterBuilders())
                     .withTypeBinding(returnType)
                     .withTypeBinding(matchedTypeParam);
         } else {
@@ -218,14 +217,14 @@ public class MatcherInterfaceCodeWriter extends AbstractMatcherCodeWriter {
     private List<InterfaceMethodBuilder> generateMatcherSetters(@NotNull Property property, TypeBuilder returnType) {
         List<InterfaceMethodBuilder> methods = new ArrayList<InterfaceMethodBuilder>();
 
-        final TypeBuilder boxedPropertyType = getPropertyType(property, true);
+        final TypeBuilder boxedPropertyType = getPropertyTypeBuilder(property, true);
 
         final InterfaceMethodBuilder valueSetter = anInterfaceMethod()
                 .withReturnType(returnType)
                 .withName(setterMethodName(property))
                 .withParameter(aParameter()
                         .withFinalFlag(generatorProperties.isMakeMethodParametersFinal())
-                        .withType(getPropertyType(property, false))
+                        .withType(getPropertyTypeBuilder(property, false))
                         .withName(property.getFieldName()));
 
         final InterfaceMethodBuilder matcherSetter = anInterfaceMethod()

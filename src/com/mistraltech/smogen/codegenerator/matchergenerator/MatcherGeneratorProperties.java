@@ -5,6 +5,9 @@ import com.intellij.psi.PsiClassType;
 import com.mistraltech.smogen.codegenerator.CodeWriter;
 import com.mistraltech.smogen.codegenerator.JavaGeneratorProperties;
 
+import java.util.Optional;
+import java.util.stream.Stream;
+
 public class MatcherGeneratorProperties extends JavaGeneratorProperties<MatcherGeneratorProperties> {
     private String factoryMethodPrefix;
     private boolean extensible;
@@ -61,13 +64,9 @@ public class MatcherGeneratorProperties extends JavaGeneratorProperties<MatcherG
         return self();
     }
 
-    public PsiClassType getSourceSuperClassType() {
+    public Optional<PsiClassType> getSourceSuperClassType() {
         final PsiClassType[] extendsListTypes = sourceClass.getExtendsListTypes();
-        if (extendsListTypes.length == 0) {
-            return null;
-        } else {
-            return extendsListTypes[0];
-        }
+        return Stream.of(extendsListTypes).findFirst();
     }
 
     @Override

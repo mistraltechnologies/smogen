@@ -1,30 +1,39 @@
-package com.mistraltech.smogen.codegenerator.javabuilder;
+package com.mistraltech.smogen.codegenerator.matchergenerator;
 
 import com.intellij.psi.JavaDirectoryService;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiClassType;
+import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiPackage;
 import com.intellij.psi.PsiTypeParameter;
 import com.mistraltech.smogen.codegenerator.CodeWriter;
-import com.mistraltech.smogen.codegenerator.PsiTypeConverter;
-import com.mistraltech.smogen.codegenerator.matchergenerator.MatcherGeneratorProperties;
+import com.mistraltech.smogen.codegenerator.javabuilder.JavaDocumentBuilder;
+import com.mistraltech.smogen.codegenerator.javabuilder.TypeBuilder;
+import com.mistraltech.smogen.codegenerator.javabuilder.TypeParameterBuilder;
+import com.mistraltech.smogen.codegenerator.javabuilder.TypeParameterDeclBuilder;
 import com.mistraltech.smogen.property.Property;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.IntStream;
 
 import static com.mistraltech.smogen.codegenerator.javabuilder.JavaDocumentBuilder.aJavaDocument;
 import static com.mistraltech.smogen.codegenerator.javabuilder.TypeParameterBuilder.aTypeParameter;
 import static com.mistraltech.smogen.codegenerator.javabuilder.TypeParameterDeclBuilder.aTypeParameterDecl;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 
-public abstract class AbstractMatcherCodeWriter implements CodeWriter {
+@SuppressWarnings("WeakerAccess")
+abstract class AbstractMatcherCodeWriter implements CodeWriter {
     public static final String MATCHES_PROPERTY_ANNOTATION_CLASSNAME = "com.mistraltech.smog.core.annotation.MatchesProperty";
+
     public static final String DEFAULT_SETTER_METHOD_PREFIX = "has";
+
     public static final String DEFAULT_SETTER_METHOD_SUFFIX = "";
+
     protected MatcherGeneratorProperties generatorProperties;
 
     public AbstractMatcherCodeWriter(MatcherGeneratorProperties matcherGeneratorProperties) {
@@ -33,8 +42,9 @@ public abstract class AbstractMatcherCodeWriter implements CodeWriter {
 
     @Override
     public final String writeCode() {
-        JavaDocumentBuilder document = aJavaDocument()
-                .setPackageName(getPackage().getQualifiedName());
+        JavaDocumentBuilder document = aJavaDocument();
+
+        document.setPackageName(getPackage().getQualifiedName());
 
         generateDocumentContent(document);
 
@@ -48,33 +58,28 @@ public abstract class AbstractMatcherCodeWriter implements CodeWriter {
     }
 
     protected List<TypeParameterBuilder> typeParameters() {
-        int typeParameterCount = generatorProperties.getSourceClass().getTypeParameters().length;
-        List<TypeParameterBuilder> typeParameters = new ArrayList<TypeParameterBuilder>(typeParameterCount);
+        int noOfTypeParameters = getSourceClass().getTypeParameters().length;
 
-        for (int i = 0; i < typeParameterCount; i++) {
-            typeParameters.add(aTypeParameter()
-                    .withName(getTypeParameter(i)));
-        }
-
-        return typeParameters;
+        return IntStream.range(0, noOfTypeParameters)
+                .mapToObj(i -> aTypeParameter().withName(getTypeParameter(i)))
+                .collect(toList());
     }
 
     protected List<TypeParameterDeclBuilder> typeParameterDecls() {
-        int typeParameterCount = generatorProperties.getSourceClass().getTypeParameters().length;
-        List<TypeParameterDeclBuilder> typeParameters = new ArrayList<TypeParameterDeclBuilder>(typeParameterCount);
+        int noOfTypeParameters = getSourceClass().getTypeParameters().length;
 
-        for (int i = 0; i < typeParameterCount; i++) {
-            typeParameters.add(aTypeParameterDecl()
-                    .withName(getTypeParameter(i)));
-        }
-
-        return typeParameters;
+        return IntStream.range(0, noOfTypeParameters)
+                .mapToObj(i -> aTypeParameterDecl().withName(getTypeParameter(i)))
+                .collect(toList());
     }
 
     @NotNull
     protected PsiPackage getPackage() {
-        PsiPackage targetPackage = JavaDirectoryService.getInstance().getPackage(generatorProperties.getParentDirectory());
-        assert targetPackage != null;
+        PsiDirectory parentDirectory = generatorProperties.getParentDirectory();
+
+        PsiPackage targetPackage = Optional.ofNullable(JavaDirectoryService.getInstance().getPackage(parentDirectory))
+                .orElseThrow(() -> new IllegalStateException("Can't get package for directory " + parentDirectory.getName()));
+
         return targetPackage;
     }
 
@@ -90,36 +95,29 @@ public abstract class AbstractMatcherCodeWriter implements CodeWriter {
         return getSourceClass().getName();
     }
 
-    protected List<TypeParameterBuilder> getSourceSuperClassParameters() {
-        final TypeBuilder sourceSuperClassType = getSourceSuperClassType();
-
-        return sourceSuperClassType != null ?
-                sourceSuperClassType.getTypeBindings() :
-                Collections.<TypeParameterBuilder>emptyList();
+    protected List<TypeParameterBuilder> getSourceSuperClassParameterBuilders() {
+        return getSourceSuperClassTypeBuilder().map(TypeBuilder::getTypeBindings).orElse(Collections.emptyList());
     }
 
-    private TypeBuilder getSourceSuperClassType() {
+    private Optional<TypeBuilder> getSourceSuperClassTypeBuilder() {
+        Optional<PsiClassType> sourceSuperClassType = generatorProperties.getSourceSuperClassType();
 
-        PsiClassType sourceSuperClassType = generatorProperties.getSourceSuperClassType();
-
-        if (sourceSuperClassType == null) {
-            return null;
-        }
-
-        return sourceSuperClassType.accept(new PsiTypeConverter(true, typeParameterMap()));
+        return sourceSuperClassType
+                .map(p -> p.accept(new PsiTypeConverter(true, typeParameterMap())));
     }
 
-    protected TypeBuilder getPropertyType(@NotNull Property property, boolean boxed) {
+    protected TypeBuilder getPropertyTypeBuilder(@NotNull Property property, boolean boxed) {
         return property.accept(new PsiTypeConverter(boxed, typeParameterMap()));
     }
 
     private Map<String, String> typeParameterMap() {
-        PsiTypeParameter[] typeParameters = getSourceClass().getTypeParameters();
-        Map<String, String> typeParameterMap = new HashMap<String, String>();
-        for (int i = 0; i < typeParameters.length; i++) {
-            typeParameterMap.put(typeParameters[i].getName(), getTypeParameter(i));
-        }
-        return typeParameterMap;
+        final PsiTypeParameter[] typeParameters = getSourceClass().getTypeParameters();
+
+        int noOfTypeParameters = getSourceClass().getTypeParameters().length;
+
+        return IntStream.range(0, noOfTypeParameters)
+                .boxed()
+                .collect(toMap(i -> typeParameters[i].getName(), this::getTypeParameter));
     }
 
     protected String matcherAttributeName(@NotNull Property property) {

@@ -8,15 +8,14 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
+import com.mistraltech.smogen.utils.ActionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -38,13 +37,14 @@ public class Generator {
         generatorProperties.setParentDirectory(parentDirectory);
 
         final PsiFile existingFile = parentDirectory.findFile(generatorProperties.getFileName());
+
         if (existingFile != null && !shouldOverwriteFile(existingFile)) {
             return;
         }
 
-        List<String> warnings = new ArrayList<String>();
-        warnings.addAll(checkProperties());
-        if (! warnings.isEmpty() && !shouldContinueWithWarnings(warnings)) {
+        List<String> warnings = checkProperties();
+
+        if (!warnings.isEmpty() && !shouldContinueWithWarnings(warnings)) {
             return;
         }
 
@@ -78,8 +78,7 @@ public class Generator {
                 "Overwrite", "Cancel", Messages.getWarningIcon()) == Messages.YES;
     }
 
-    protected boolean shouldContinueWithWarnings(List<String> warnings)
-    {
+    protected boolean shouldContinueWithWarnings(List<String> warnings) {
         String msg = "The generated source may not compile for the following reasons:\n" + StringUtils.join(warnings, '\n');
         return Messages.showYesNoDialog(generatorProperties.getProject(), msg, "Generated Code Will Not Compile",
                 "Continue", "Cancel", Messages.getWarningIcon()) == Messages.YES;
@@ -95,9 +94,7 @@ public class Generator {
                 .orElseThrow(() -> new IllegalStateException("Expected source root directory to exist"));
 
         // Ensure that the directory for the target package exists
-        ApplicationManager.getApplication().runWriteAction(() -> {
-            createMissingDirectoriesForPackage(baseDir, generatorProperties.getPackageName());
-        });
+        ActionUtils.runAction(() -> createMissingDirectoriesForPackage(baseDir, generatorProperties.getPackageName()));
 
         PsiDirectory directory = findDirectoryForPackage(baseDir, generatorProperties.getPackageName())
                 .orElseThrow(() -> new IllegalStateException("Expected directory for package to have been created"));
@@ -107,6 +104,7 @@ public class Generator {
 
     private static class FileContentGeneratorRunnable implements Runnable {
         private final GeneratorProperties generatorProperties;
+
         private PsiFile targetFile;
 
         FileContentGeneratorRunnable(final GeneratorProperties generatorProperties) {
