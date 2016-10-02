@@ -2,7 +2,6 @@ package com.mistraltech.smogen.plugin;
 
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.module.Module;
@@ -14,51 +13,42 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.ClassUtil;
 import com.mistraltech.smogen.codegenerator.matchergenerator.MatcherGenerator;
 import com.mistraltech.smogen.codegenerator.matchergenerator.MatcherGeneratorProperties;
+import com.mistraltech.smogen.utils.ActionEventUtils;
 import com.mistraltech.smogen.utils.PsiUtils;
 import com.mistraltech.smogen.utils.SourceRootUtils;
 
 import java.util.List;
-import java.util.Optional;
 
 public class GenerateMatcherAction extends AnAction {
 
     @Override
-    public void update(AnActionEvent e) {
-        boolean enabled = e.getData(CommonDataKeys.PROJECT) != null
-                && e.getData(CommonDataKeys.PSI_FILE) != null
-                && PsiUtils.getSelectedClass(e).isPresent();
+    public void update(AnActionEvent event) {
+        boolean enabled = ActionEventUtils.hasProject(event)
+                && ActionEventUtils.hasFile(event)
+                && ActionEventUtils.hasSelectedClass(event);
 
-        Presentation presentation = e.getPresentation();
+        Presentation presentation = event.getPresentation();
         presentation.setEnabled(enabled);
         presentation.setVisible(true);
     }
 
-    public void actionPerformed(AnActionEvent e) {
-        final Project project = e.getData(CommonDataKeys.PROJECT);
-        assert project != null;
-
-        final PsiFile selectedFile = e.getData(CommonDataKeys.PSI_FILE);
-        if (selectedFile == null) {
-            Messages.showErrorDialog(project, "No selected file.", "Absent Data");
-            return;
-        }
-
-        final Optional<PsiClass> selectedClass = PsiUtils.getSelectedClass(e);
-        if (! selectedClass.isPresent()) {
-            Messages.showErrorDialog(project, "No selected class.", "Absent Data");
-            return;
-        }
+    public void actionPerformed(AnActionEvent event) {
+        final Project project = ActionEventUtils.getTargetProject(event);
+        final PsiFile selectedFile = ActionEventUtils.getTargetFile(event);
+        final PsiClass selectedClass = PsiUtils.getSelectedClass(event)
+                .orElseThrow(() -> new IllegalStateException("Cannot perform action without a selected class"));
 
         // Note that module may be null if the selected class is in a library rather than the source tree
-        final Module module = e.getData(LangDataKeys.MODULE);
+        final Module module = event.getData(LangDataKeys.MODULE);
 
         final ConfigurationProperties configurationProperties = new ConfigurationProperties(project);
 
         // Guess what we are going to call the target matcher class and what its package will be
         String preferredClassName = configurationProperties.getMatcherClassNamePrefix() +
-                selectedClass.get().getName() +
+                selectedClass.getName() +
                 configurationProperties.getMatcherClassNameSuffix();
-        String preferredPackageName = ClassUtil.extractPackageName(selectedClass.get().getQualifiedName());
+
+        String preferredPackageName = ClassUtil.extractPackageName(selectedClass.getQualifiedName());
 
         // Get the list of available source roots
         List<VirtualFile> candidateSourceRoots = SourceRootUtils.getSourceAndTestSourceRoots(project);
@@ -77,7 +67,7 @@ public class GenerateMatcherAction extends AnAction {
                 .setClassName(preferredClassName)
                 .setPackageName(preferredPackageName)
                 .setSourceRoot(preferredSourceRoot)
-                .setSourceClass(selectedClass.get())
+                .setSourceClass(selectedClass)
                 .setFactoryMethodSuffix(configurationProperties.getFactoryMethodSuffix())
                 .setTemplateFactoryMethodSuffix(configurationProperties.getTemplateFactoryMethodSuffix())
                 .setSetterPrefix(configurationProperties.getSetterPrefix())
@@ -89,7 +79,8 @@ public class GenerateMatcherAction extends AnAction {
                 .setUseReflectingPropertyMatcher(configurationProperties.isUseReflectingPropertyMatcher());
 
         MatcherGeneratorOptionsDialog matcherGeneratorOptionsDialog = new MatcherGeneratorOptionsDialog(
-                project, selectedClass.get(), candidateSourceRoots, generatorProperties);
+                project, selectedClass, candidateSourceRoots, generatorProperties);
+
         matcherGeneratorOptionsDialog.show();
 
         if (matcherGeneratorOptionsDialog.isOK()) {

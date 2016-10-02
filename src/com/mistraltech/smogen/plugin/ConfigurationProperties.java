@@ -27,7 +27,7 @@ public class ConfigurationProperties {
     private static final String MAKE_EXTENSIBLE = "smogen.makeExtensible";
     private static final String MAKE_EXTENSIBLE_DEFAULT = Boolean.FALSE.toString();
 
-    PropertiesComponent properties;
+    private PropertiesComponent properties;
 
     public ConfigurationProperties(Project project) {
         this.properties = PropertiesComponent.getInstance(project);

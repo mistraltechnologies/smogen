@@ -46,4 +46,34 @@ public class ActionEventUtils {
     public static Optional<Editor> getOptionalTargetEditor(@NotNull AnActionEvent event) {
         return Optional.ofNullable(event.getData(CommonDataKeys.EDITOR));
     }
+
+    /**
+     * Determines whether the event has an associated project.
+     *
+     * @param event the event
+     * @return true if the event has an associated project; false otherwise
+     */
+    public static boolean hasProject(AnActionEvent event) {
+        return event.getData(CommonDataKeys.PROJECT) != null;
+    }
+
+    /**
+     * Determines whether the event has an associated file.
+     *
+     * @param event the event
+     * @return true if the event has an associated file; false otherwise
+     */
+    public static boolean hasFile(AnActionEvent event) {
+        return event.getData(CommonDataKeys.PSI_FILE) != null;
+    }
+
+    /**
+     * Determines whether the event has an associated class.
+     *
+     * @param event the event
+     * @return true if the event has an associated class; false otherwise
+     */
+    public static boolean hasSelectedClass(AnActionEvent event) {
+        return hasProject(event) && hasFile(event) && PsiUtils.getSelectedClass(event).isPresent();
+    }
 }
