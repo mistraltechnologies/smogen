@@ -1,13 +1,14 @@
 package com.mistraltech.smogen.codegenerator.javabuilder;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import static com.mistraltech.smogen.codegenerator.javabuilder.BuilderUtils.buildList;
 
 public class BlockStatementBuilder extends StatementBuilder<BlockStatementBuilder> {
 
     private String headerText;
-    private ArrayList<StatementBuilder> statements = new ArrayList<StatementBuilder>();
+    private List<StatementBuilder> statements = new ArrayList<>();
 
     private BlockStatementBuilder() {
     }
@@ -32,10 +33,6 @@ public class BlockStatementBuilder extends StatementBuilder<BlockStatementBuilde
 
     @Override
     public String build(JavaBuilderContext context) {
-        StringBuilder sb = new StringBuilder();
-
-        sb.append(headerText).append("{\n").append(buildList(context, "", statements, "", "")).append("}\n");
-
-        return sb.toString();
+        return headerText + "{\n" + buildList(context, "", statements, "", "") + "}\n";
     }
 }

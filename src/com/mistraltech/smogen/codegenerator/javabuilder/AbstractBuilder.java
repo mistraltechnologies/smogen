@@ -1,11 +1,11 @@
 package com.mistraltech.smogen.codegenerator.javabuilder;
 
-public abstract class AbstractBuilder<R extends AbstractBuilder> implements Builder {
-    protected AbstractBuilder() {
+abstract class AbstractBuilder<R extends AbstractBuilder> implements Builder {
+    AbstractBuilder() {
     }
 
     @SuppressWarnings("unchecked")
-    protected R self() {
+    R self() {
         return (R) this;
     }
 }

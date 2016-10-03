@@ -2,7 +2,6 @@ package com.mistraltech.smogen.property;
 
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiMethod;
-import com.intellij.psi.PsiPrimitiveType;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.PsiTypeVisitor;
 import com.intellij.psi.util.PropertyUtil;

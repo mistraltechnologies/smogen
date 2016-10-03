@@ -5,7 +5,7 @@ import java.util.List;
 
 public class JavaDocumentBuilder {
     private String packageName;
-    private List<AbstractTypeBuilder> typeBuilderList = new ArrayList<AbstractTypeBuilder>();
+    private List<AbstractTypeBuilder> typeBuilderList = new ArrayList<>();
 
     private JavaDocumentBuilder() {
     }
@@ -15,8 +15,6 @@ public class JavaDocumentBuilder {
     }
 
     public JavaDocumentBuilder setPackageName(String packageName) {
-        assert this.packageName == null;
-
         this.packageName = packageName;
         return this;
     }
@@ -35,9 +33,7 @@ public class JavaDocumentBuilder {
         JavaBuilderContextImpl context = new JavaBuilderContextImpl();
         StringBuilder sbBody = new StringBuilder();
 
-        for (AbstractTypeBuilder typeBuilder : typeBuilderList) {
-            sbBody.append(typeBuilder.build(context));
-        }
+        typeBuilderList.forEach(tb -> sbBody.append(tb.build(context)));
 
         StringBuilder sb = new StringBuilder();
 
@@ -45,13 +41,8 @@ public class JavaDocumentBuilder {
             sb.append(String.format("package %s;\n", packageName));
         }
 
-        for (String importPath : context.getClassReferences()) {
-            sb.append(String.format("import %s;\n", importPath));
-        }
-
-        for (String importPath : context.getClassMemberReferences()) {
-            sb.append(String.format("import static %s;\n", importPath));
-        }
+        context.getClassReferences().forEach(r -> sb.append(String.format("import %s;\n", r)));
+        context.getClassMemberReferences().forEach(r -> sb.append(String.format("import static %s;\n", r)));
 
         sb.append(sbBody);
 

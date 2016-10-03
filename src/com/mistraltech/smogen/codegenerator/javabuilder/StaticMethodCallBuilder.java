@@ -1,6 +1,7 @@
 package com.mistraltech.smogen.codegenerator.javabuilder;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import static com.mistraltech.smogen.codegenerator.javabuilder.BuilderUtils.buildList;
 import static com.mistraltech.smogen.codegenerator.javabuilder.BuilderUtils.buildMandatoryList;
@@ -8,8 +9,8 @@ import static com.mistraltech.smogen.codegenerator.javabuilder.ExpressionBuilder
 
 public class StaticMethodCallBuilder extends ExpressionTermBuilder<StaticMethodCallBuilder> {
     private String name;
-    private ArrayList<ExpressionTermBuilder> parameters = new ArrayList<ExpressionTermBuilder>();
-    private ArrayList<TypeBuilder> typeBindings = new ArrayList<TypeBuilder>();
+    private List<ExpressionTermBuilder> parameters = new ArrayList<>();
+    private List<TypeBuilder> typeBindings = new ArrayList<>();
     private TypeBuilder type;
 
     private StaticMethodCallBuilder() {

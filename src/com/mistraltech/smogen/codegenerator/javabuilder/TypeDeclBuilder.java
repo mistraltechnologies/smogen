@@ -6,7 +6,7 @@ import java.util.List;
 import static com.mistraltech.smogen.codegenerator.javabuilder.TypeParameterDeclBuilder.aTypeParameterDecl;
 
 public class TypeDeclBuilder extends AbstractBuilder<TypeDeclBuilder> {
-    private List<TypeParameterDeclBuilder> typeParams = new ArrayList<TypeParameterDeclBuilder>();
+    private List<TypeParameterDeclBuilder> typeParams = new ArrayList<>();
     private String typeFQN;
 
     private TypeDeclBuilder() {
@@ -32,11 +32,9 @@ public class TypeDeclBuilder extends AbstractBuilder<TypeDeclBuilder> {
 
     @Override
     public String build(JavaBuilderContext context) {
-        StringBuilder sb = new StringBuilder();
+        String sb = context.normaliseClassReference(typeFQN) +
+                BuilderUtils.buildList(context, "<", typeParams, ">", ", ");
 
-        sb.append(context.normaliseClassReference(typeFQN))
-                .append(BuilderUtils.buildList(context, "<", typeParams, ">", ", "));
-
-        return sb.toString();
+        return sb;
     }
 }

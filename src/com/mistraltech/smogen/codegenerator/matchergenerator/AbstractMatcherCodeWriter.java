@@ -28,7 +28,7 @@ import static java.util.stream.Collectors.toMap;
 
 @SuppressWarnings("WeakerAccess")
 abstract class AbstractMatcherCodeWriter implements CodeWriter {
-    public static final String MATCHES_PROPERTY_ANNOTATION_CLASSNAME = "com.mistraltech.smog.core.annotation.MatchesProperty";
+    public static final String MATCHES_PROPERTY_ANNOTATION_CLASS_NAME = "com.mistraltech.smog.core.annotation.MatchesProperty";
 
     public static final String DEFAULT_SETTER_METHOD_PREFIX = "has";
 

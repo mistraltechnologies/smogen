@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class AbstractTypeBuilder<T extends AbstractTypeBuilder<T>> extends AbstractBuilder<T> {
-    protected String className;
-    protected List<TypeParameterDeclBuilder> typeParameters = new ArrayList<TypeParameterDeclBuilder>();
-    protected ArrayList<TypeBuilder> interfaces = new ArrayList<TypeBuilder>();
-    protected List<AnnotationBuilder> annotations = new ArrayList<AnnotationBuilder>();
+    private String className;
+    private List<TypeParameterDeclBuilder> typeParameters = new ArrayList<>();
+    private List<TypeBuilder> interfaces = new ArrayList<>();
+    private List<AnnotationBuilder> annotations = new ArrayList<>();
     private String accessModifier;
 
     public T withAccessModifier(String modifier) {
@@ -42,6 +42,22 @@ public abstract class AbstractTypeBuilder<T extends AbstractTypeBuilder<T>> exte
 
     protected String getAccessModifier() {
         return accessModifier;
+    }
+
+    protected String getClassName() {
+        return className;
+    }
+
+    protected List<TypeParameterDeclBuilder> getTypeParameters() {
+        return typeParameters;
+    }
+
+    protected List<TypeBuilder> getInterfaces() {
+        return interfaces;
+    }
+
+    protected List<AnnotationBuilder> getAnnotations() {
+        return annotations;
     }
 
     protected abstract void writeModifiers(StringBuilder sb);

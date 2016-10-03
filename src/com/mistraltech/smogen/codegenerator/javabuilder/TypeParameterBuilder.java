@@ -6,7 +6,7 @@ import java.util.List;
 import static com.mistraltech.smogen.codegenerator.javabuilder.TypeBuilder.aType;
 
 public class TypeParameterBuilder extends AbstractBuilder<TypeParameterBuilder> {
-    private List<TypeBuilder> types = new ArrayList<TypeBuilder>();
+    private List<TypeBuilder> types = new ArrayList<>();
     private boolean subTypes;
     private boolean superTypes;
 
@@ -27,13 +27,19 @@ public class TypeParameterBuilder extends AbstractBuilder<TypeParameterBuilder> 
     }
 
     public TypeParameterBuilder withSubTypes(boolean subTypes) {
-        assert !(superTypes && subTypes);
+        if (superTypes && subTypes) {
+            throw new IllegalArgumentException("Cannot specify subtype and supertype bounds");
+        }
+
         this.subTypes = subTypes;
         return this;
     }
 
     public TypeParameterBuilder withSuperTypes(boolean superTypes) {
-        assert !(superTypes && subTypes);
+        if (superTypes && subTypes) {
+            throw new IllegalArgumentException("Cannot specify subtype and supertype bounds");
+        }
+
         this.superTypes = superTypes;
         return this;
     }
@@ -55,23 +61,6 @@ public class TypeParameterBuilder extends AbstractBuilder<TypeParameterBuilder> 
         }
 
         sb.append(BuilderUtils.buildList(context, "", types, "", " & "));
-
-        return sb.toString();
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-
-        if (subTypes) {
-            sb.append("? extends ");
-        } else if (superTypes) {
-            sb.append("? super ");
-        } else if (types.isEmpty()) {
-            sb.append("?");
-        }
-
-        sb.append(BuilderUtils.buildList("", types, "", " & "));
 
         return sb.toString();
     }

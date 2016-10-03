@@ -20,13 +20,4 @@ public class ClassBuilder extends AbstractClassBuilder<ClassBuilder> {
             sb.append("final ");
         }
     }
-
-    @Override
-    public String build(JavaBuilderContext context) {
-        StringBuilder sb = new StringBuilder();
-
-        sb.append(super.build(context));
-
-        return sb.toString();
-    }
 }

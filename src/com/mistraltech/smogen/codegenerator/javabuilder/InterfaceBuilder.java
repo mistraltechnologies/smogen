@@ -6,7 +6,7 @@ import java.util.List;
 import static com.mistraltech.smogen.codegenerator.javabuilder.BuilderUtils.buildList;
 
 public class InterfaceBuilder extends AbstractTypeBuilder<InterfaceBuilder> {
-    private List<MethodSignatureBuilder> methods = new ArrayList<MethodSignatureBuilder>();
+    private List<MethodSignatureBuilder> methods = new ArrayList<>();
 
     public static InterfaceBuilder aJavaInterface() {
         return new InterfaceBuilder();
@@ -32,15 +32,15 @@ public class InterfaceBuilder extends AbstractTypeBuilder<InterfaceBuilder> {
     public String build(JavaBuilderContext context) {
         StringBuilder sb = new StringBuilder();
 
-        sb.append(buildList(context, "", annotations, "\n", ""));
+        sb.append(buildList(context, "", getAnnotations(), "\n", ""));
 
         writeModifiers(sb);
 
         sb.append("interface ")
-                .append(className)
-                .append(buildList(context, "<", typeParameters, ">", " ,"));
+                .append(getClassName())
+                .append(buildList(context, "<", getTypeParameters(), ">", " ,"));
 
-        sb.append(buildList(context, " extends ", interfaces, "", " ,"))
+        sb.append(buildList(context, " extends ", getInterfaces(), "", " ,"))
                 .append(" {\n")
                 .append(buildList(context, "", methods, "", ""))
                 .append("}\n");

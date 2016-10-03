@@ -23,7 +23,7 @@ public class MatcherGenerator extends Generator {
 
     @Override
     protected List<String> checkProperties() {
-        List<String> warnings = new ArrayList<String>();
+        List<String> warnings = new ArrayList<>();
 
         warnings.addAll(super.checkProperties());
 

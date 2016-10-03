@@ -1,12 +1,13 @@
 package com.mistraltech.smogen.codegenerator.javabuilder;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import static com.mistraltech.smogen.codegenerator.javabuilder.BuilderUtils.buildList;
 import static com.mistraltech.smogen.codegenerator.javabuilder.ExpressionTextBuilder.expressionText;
 
 public class ExpressionBuilder extends ExpressionTermBuilder<ExpressionBuilder> {
-    private ArrayList<ExpressionTermBuilder> terms = new ArrayList<ExpressionTermBuilder>();
+    private List<ExpressionTermBuilder> terms = new ArrayList<>();
 
     private ExpressionBuilder() {
     }
@@ -33,10 +34,6 @@ public class ExpressionBuilder extends ExpressionTermBuilder<ExpressionBuilder> 
 
     @Override
     public String build(JavaBuilderContext context) {
-        StringBuilder sb = new StringBuilder();
-
-        sb.append(buildList(context, "", terms, "", ""));
-
-        return sb.toString();
+        return buildList(context, "", terms, "", "");
     }
 }

@@ -10,7 +10,7 @@ public class MethodBuilder extends MethodSignatureBuilder<MethodBuilder> {
     private boolean staticFlag;
     private boolean finalFlag;
     private boolean abstractFlag;
-    private List<StatementBuilder> statements = new ArrayList<StatementBuilder>();
+    private List<StatementBuilder> statements = new ArrayList<>();
 
     private MethodBuilder() {
     }
@@ -20,14 +20,26 @@ public class MethodBuilder extends MethodSignatureBuilder<MethodBuilder> {
     }
 
     public MethodBuilder withStaticFlag(boolean staticFlag) {
-        assert !finalFlag && !abstractFlag;
+        if (finalFlag && staticFlag) {
+            throw new IllegalStateException("Method cannot be both final and static");
+        }
+
+        if (abstractFlag && staticFlag) {
+            throw new IllegalStateException("Method cannot be both abstract and static");
+        }
 
         this.staticFlag = staticFlag;
         return self();
     }
 
     public MethodBuilder withAbstractFlag(boolean abstractFlag) {
-        assert !finalFlag && !staticFlag;
+        if (finalFlag && abstractFlag) {
+            throw new IllegalStateException("Method cannot be both final and abstract");
+        }
+
+        if (staticFlag && abstractFlag) {
+            throw new IllegalStateException("Method cannot be both static and abstract");
+        }
 
         this.abstractFlag = abstractFlag;
         return self();
@@ -39,7 +51,13 @@ public class MethodBuilder extends MethodSignatureBuilder<MethodBuilder> {
     }
 
     public MethodBuilder withFinalFlag(boolean finalFlag) {
-        assert !staticFlag && !abstractFlag;
+        if (abstractFlag && finalFlag) {
+            throw new IllegalStateException("Method cannot be both abstract and final");
+        }
+
+        if (staticFlag && finalFlag) {
+            throw new IllegalStateException("Method cannot be both static and final");
+        }
 
         this.finalFlag = finalFlag;
         return self();
@@ -72,16 +90,11 @@ public class MethodBuilder extends MethodSignatureBuilder<MethodBuilder> {
 
     @Override
     public String build(JavaBuilderContext context) {
-        StringBuilder sb = new StringBuilder();
+        String sb = super.build(context) +
+                "{" +
+                buildList(context, "", statements, "", "") +
+                "}\n";
 
-        sb.append(super.build(context));
-
-        sb.append("{");
-
-        sb.append(buildList(context, "", statements, "", ""));
-
-        sb.append("}\n");
-
-        return sb.toString();
+        return sb;
     }
 }

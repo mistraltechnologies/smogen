@@ -9,22 +9,26 @@ public abstract class AbstractClassBuilder<T extends AbstractClassBuilder<T>> ex
     private boolean abstractFlag;
     private boolean finalFlag;
     private TypeBuilder superclass;
-    private ArrayList<VariableBuilder> variables = new ArrayList<VariableBuilder>();
-    private ArrayList<MethodBuilder> methods = new ArrayList<MethodBuilder>();
-    private ArrayList<NestedClassBuilder> nestedClasses = new ArrayList<NestedClassBuilder>();
+    private List<VariableBuilder> variables = new ArrayList<>();
+    private List<MethodBuilder> methods = new ArrayList<>();
+    private List<NestedClassBuilder> nestedClasses = new ArrayList<>();
 
-    protected AbstractClassBuilder() {
+    AbstractClassBuilder() {
     }
 
     public T withAbstractFlag(boolean abstractFlag) {
-        assert !(finalFlag && abstractFlag);
+        if (finalFlag && abstractFlag) {
+            throw new IllegalArgumentException("Class cannot be both abstract and final");
+        }
 
         this.abstractFlag = abstractFlag;
         return self();
     }
 
     public T withFinalFlag(boolean finalFlag) {
-        assert !(finalFlag && abstractFlag);
+        if (finalFlag && abstractFlag) {
+            throw new IllegalArgumentException("Class cannot be both abstract and final");
+        }
 
         this.finalFlag = finalFlag;
         return self();
@@ -60,11 +64,11 @@ public abstract class AbstractClassBuilder<T extends AbstractClassBuilder<T>> ex
         return self();
     }
 
-    protected boolean isAbstract() {
+    boolean isAbstract() {
         return abstractFlag;
     }
 
-    protected boolean isFinal() {
+    boolean isFinal() {
         return finalFlag;
     }
 
@@ -72,19 +76,19 @@ public abstract class AbstractClassBuilder<T extends AbstractClassBuilder<T>> ex
     public String build(JavaBuilderContext context) {
         StringBuilder sb = new StringBuilder();
 
-        sb.append(buildList(context, "", annotations, "\n", ""));
+        sb.append(buildList(context, "", getAnnotations(), "\n", ""));
 
         writeModifiers(sb);
 
         sb.append("class ")
-                .append(className)
-                .append(buildList(context, "<", typeParameters, ">", " ,"));
+                .append(getClassName())
+                .append(buildList(context, "<", getTypeParameters(), ">", " ,"));
 
         if (superclass != null) {
             sb.append(" extends ").append(superclass.build(context));
         }
 
-        sb.append(buildList(context, " implements ", interfaces, "", " ,"))
+        sb.append(buildList(context, " implements ", getInterfaces(), "", " ,"))
                 .append(" {\n")
                 .append(buildList(context, "", variables, "", ""))
                 .append(buildList(context, "", methods, "", ""))

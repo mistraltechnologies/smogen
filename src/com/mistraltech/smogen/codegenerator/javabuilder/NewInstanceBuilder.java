@@ -1,13 +1,14 @@
 package com.mistraltech.smogen.codegenerator.javabuilder;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import static com.mistraltech.smogen.codegenerator.javabuilder.BuilderUtils.buildMandatoryList;
 import static com.mistraltech.smogen.codegenerator.javabuilder.ExpressionBuilder.anExpression;
 
 public class NewInstanceBuilder extends ExpressionTermBuilder<NewInstanceBuilder> {
     private TypeBuilder type;
-    private ArrayList<ExpressionBuilder> parameters = new ArrayList<ExpressionBuilder>();
+    private List<ExpressionBuilder> parameters = new ArrayList<>();
 
     private NewInstanceBuilder() {
     }
@@ -32,10 +33,6 @@ public class NewInstanceBuilder extends ExpressionTermBuilder<NewInstanceBuilder
 
     @Override
     public String build(JavaBuilderContext context) {
-        StringBuilder sb = new StringBuilder();
-
-        sb.append("new ").append(type.build(context)).append(buildMandatoryList(context, "(", parameters, ")", ", "));
-
-        return sb.toString();
+        return "new " + type.build(context) + buildMandatoryList(context, "(", parameters, ")", ", ");
     }
 }

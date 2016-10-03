@@ -5,11 +5,9 @@ import com.intellij.psi.PsiMethod;
 import com.intellij.psi.util.PropertyUtil;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
-import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toList;
 
 public final class PropertyLocator {

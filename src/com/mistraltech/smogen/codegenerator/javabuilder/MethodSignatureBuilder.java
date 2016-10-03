@@ -7,11 +7,11 @@ import static com.mistraltech.smogen.codegenerator.javabuilder.BuilderUtils.buil
 import static com.mistraltech.smogen.codegenerator.javabuilder.BuilderUtils.buildMandatoryList;
 
 public abstract class MethodSignatureBuilder<T extends MethodSignatureBuilder<T>> extends AbstractBuilder<T> {
-    protected String methodName;
-    protected TypeBuilder returnType;
-    protected ArrayList<ParameterBuilder> parameters = new ArrayList<ParameterBuilder>();
-    protected ArrayList<AnnotationBuilder> annotations = new ArrayList<AnnotationBuilder>();
-    protected List<TypeParameterDeclBuilder> typeParameters = new ArrayList<TypeParameterDeclBuilder>();
+    private String methodName;
+    private TypeBuilder returnType;
+    private List<ParameterBuilder> parameters = new ArrayList<>();
+    private List<AnnotationBuilder> annotations = new ArrayList<>();
+    private List<TypeParameterDeclBuilder> typeParameters = new ArrayList<>();
 
     public T withName(String methodName) {
         this.methodName = methodName;
@@ -29,9 +29,7 @@ public abstract class MethodSignatureBuilder<T extends MethodSignatureBuilder<T>
     }
 
     public T withTypeParameters(List<TypeParameterDeclBuilder> typeParameters) {
-        for (TypeParameterDeclBuilder typeParameter : typeParameters) {
-            withTypeParameter(typeParameter);
-        }
+        typeParameters.forEach(this::withTypeParameter);
         return self();
     }
 
@@ -59,6 +57,26 @@ public abstract class MethodSignatureBuilder<T extends MethodSignatureBuilder<T>
 
     protected String getAccessModifier() {
         return null;
+    }
+
+    protected String getMethodName() {
+        return methodName;
+    }
+
+    protected TypeBuilder getReturnType() {
+        return returnType;
+    }
+
+    protected List<ParameterBuilder> getParameters() {
+        return parameters;
+    }
+
+    protected List<AnnotationBuilder> getAnnotations() {
+        return annotations;
+    }
+
+    protected List<TypeParameterDeclBuilder> getTypeParameters() {
+        return typeParameters;
     }
 
     @Override

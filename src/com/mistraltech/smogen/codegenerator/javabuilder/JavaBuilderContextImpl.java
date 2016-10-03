@@ -9,15 +9,15 @@ import static com.mistraltech.smogen.utils.NameUtils.dropUnqualifiedName;
 import static com.mistraltech.smogen.utils.NameUtils.getUnqualifiedName;
 
 public class JavaBuilderContextImpl implements JavaBuilderContext {
-    private Map<String, String> classReferences = new HashMap<String, String>();
-    private Map<String, String> classMemberReferences = new HashMap<String, String>();
+    private Map<String, String> classReferences = new HashMap<>();
+    private Map<String, String> classMemberReferences = new HashMap<>();
 
     protected Set<String> getClassReferences() {
-        return new HashSet<String>(classReferences.values());
+        return new HashSet<>(classReferences.values());
     }
 
     protected Set<String> getClassMemberReferences() {
-        return new HashSet<String>(classMemberReferences.values());
+        return new HashSet<>(classMemberReferences.values());
     }
 
     @Override

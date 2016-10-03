@@ -1,6 +1,7 @@
 package com.mistraltech.smogen.codegenerator.javabuilder;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public final class BuilderUtils {
 
@@ -10,12 +11,10 @@ public final class BuilderUtils {
         if (elements.size() > 0 || mandatory) {
             sb.append(openBrace);
         }
-        for (int i = 0; i < elements.size(); i++) {
-            if (i > 0) {
-                sb.append(separator);
-            }
-            sb.append(asString(elements.get(i), context));
-        }
+
+        sb.append(elements.stream().sequential()
+                .map(e -> asString(e, context))
+                .collect(Collectors.joining(separator)));
 
         if (elements.size() > 0 || mandatory) {
             sb.append(closeBrace);

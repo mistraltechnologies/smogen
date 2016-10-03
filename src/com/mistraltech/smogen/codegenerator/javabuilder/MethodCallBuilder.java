@@ -6,7 +6,7 @@ import static com.mistraltech.smogen.codegenerator.javabuilder.ExpressionBuilder
 
 public class MethodCallBuilder extends ExpressionTermBuilder<MethodCallBuilder> {
     private String name;
-    private ArrayList<ExpressionTermBuilder> parameters = new ArrayList<ExpressionTermBuilder>();
+    private ArrayList<ExpressionTermBuilder> parameters = new ArrayList<>();
     private ExpressionTermBuilder targetObject;
 
     private MethodCallBuilder() {

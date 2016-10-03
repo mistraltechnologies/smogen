@@ -2,13 +2,14 @@ package com.mistraltech.smogen.codegenerator.javabuilder;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import static com.mistraltech.smogen.codegenerator.javabuilder.TypeParameterBuilder.aTypeParameter;
 
 public class TypeBuilder extends AbstractBuilder<TypeBuilder> {
     public static TypeBuilder VOID = new TypeBuilder().withName("void");
 
-    private List<TypeParameterBuilder> typeBindings = new ArrayList<TypeParameterBuilder>();
+    private List<TypeParameterBuilder> typeBindings = new ArrayList<>();
     private String typeFQN;
     private int arrayDimensions;
 
@@ -33,15 +34,12 @@ public class TypeBuilder extends AbstractBuilder<TypeBuilder> {
     }
 
     public TypeBuilder withTypeBindings(List<TypeParameterBuilder> typeParameters) {
-        for (TypeParameterBuilder type : typeParameters) {
-            withTypeBinding(type);
-        }
-
+        typeParameters.forEach(this::withTypeBinding);
         return this;
     }
 
     public TypeBuilder withTypeBinding(TypeParameterBuilder typeParameter) {
-        this.typeBindings.add(typeParameter);
+        typeBindings.add(typeParameter);
         return this;
     }
 
@@ -59,13 +57,7 @@ public class TypeBuilder extends AbstractBuilder<TypeBuilder> {
     }
 
     public boolean containsWildcard() {
-        for (TypeParameterBuilder typeBinding : typeBindings) {
-            if (typeBinding.containsWildcard()) {
-                return true;
-            }
-        }
-
-        return false;
+        return typeBindings.stream().anyMatch(TypeParameterBuilder::containsWildcard);
     }
 
     @Override
@@ -75,23 +67,7 @@ public class TypeBuilder extends AbstractBuilder<TypeBuilder> {
         sb.append(context.normaliseClassReference(typeFQN))
                 .append(BuilderUtils.buildList(context, "<", typeBindings, ">", ", "));
 
-        for (int i = 0; i < arrayDimensions; i++) {
-            sb.append("[]");
-        }
-
-        return sb.toString();
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-
-        sb.append(typeFQN)
-                .append(BuilderUtils.buildList("<", typeBindings, ">", ", "));
-
-        for (int i = 0; i < arrayDimensions; i++) {
-            sb.append("[]");
-        }
+        IntStream.range(0, arrayDimensions).forEach(i -> sb.append("[]"));
 
         return sb.toString();
     }

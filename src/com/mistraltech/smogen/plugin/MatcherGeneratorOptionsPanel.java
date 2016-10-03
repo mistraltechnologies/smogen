@@ -9,15 +9,9 @@ import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.JavaCodeFragment;
-import com.intellij.psi.JavaCodeFragmentFactory;
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiDocumentManager;
-import com.intellij.psi.PsiJavaCodeReferenceCodeFragment;
 import com.intellij.psi.PsiNameHelper;
-import com.intellij.psi.PsiPackage;
-import com.intellij.psi.impl.JavaPsiFacadeEx;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.ProjectScope;
 import com.intellij.refactoring.ui.ClassNameReferenceEditor;
@@ -30,9 +24,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import java.math.BigDecimal;
 
 public class MatcherGeneratorOptionsPanel {
     private static final int PANEL_WIDTH_CHARS = 60;
@@ -97,12 +88,7 @@ public class MatcherGeneratorOptionsPanel {
     private void initialiseExtendsFields() {
         superClassChooser.setEnabled(false);
         extendsCheckBox.setSelected(false);
-        extendsCheckBox.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                onExtendsCheckBoxStateChange();
-            }
-        });
+        extendsCheckBox.addChangeListener(e -> onExtendsCheckBoxStateChange());
     }
 
     private void initialiseMakeExtensibleCheckBox() {
@@ -119,6 +105,10 @@ public class MatcherGeneratorOptionsPanel {
         // The factory method prefix is either 'a' or 'an', selected by radio buttons
         // and labelled by matchesLabel.
         String matchedClassName = dataSource.getMatchedClass().getName();
+
+        if (matchedClassName == null) {
+            throw new IllegalStateException("Matched class has no name");
+        }
 
         aRadioButton.setText("a " + matchedClassName);
         anRadioButton.setText("an " + matchedClassName);
@@ -205,7 +195,7 @@ public class MatcherGeneratorOptionsPanel {
     @NotNull
     private ListItemWrapper<VirtualFile> createSourceRootItemWrapper(@NotNull VirtualFile candidateRoot) {
         String relativePath = ProjectUtil.calcRelativeToProjectPath(candidateRoot, dataSource.getProject(), true, false, true);
-        return new ListItemWrapper<VirtualFile>(candidateRoot, relativePath, getSourceRootIcon(candidateRoot));
+        return new ListItemWrapper<>(candidateRoot, relativePath, getSourceRootIcon(candidateRoot));
     }
 
     private void createUIComponents() {
@@ -256,6 +246,11 @@ public class MatcherGeneratorOptionsPanel {
     private boolean isProjectJava8() {
         final Project project = dataSource.getProject();
         final Sdk projectSdk = ProjectRootManager.getInstance(project).getProjectSdk();
+
+        if (projectSdk == null) {
+            return false;
+        }
+
         try {
             final float ver = Float.parseFloat(projectSdk.getName());
             return ver >= 1.8f;

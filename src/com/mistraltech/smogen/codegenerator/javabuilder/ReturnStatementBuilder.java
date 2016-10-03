@@ -17,10 +17,6 @@ public class ReturnStatementBuilder extends StatementBuilder<ReturnStatementBuil
 
     @Override
     public String build(JavaBuilderContext context) {
-        StringBuilder sb = new StringBuilder();
-
-        sb.append("return ").append(expression.build(context)).append(";\n");
-
-        return sb.toString();
+        return "return " + expression.build(context) + ";\n";
     }
 }

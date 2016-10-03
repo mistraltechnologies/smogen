@@ -1,12 +1,13 @@
 package com.mistraltech.smogen.codegenerator.javabuilder;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import static com.mistraltech.smogen.codegenerator.javabuilder.BuilderUtils.buildList;
 
 public class AnnotationBuilder extends AbstractBuilder<AnnotationBuilder> {
     private TypeBuilder type;
-    private ArrayList<ExpressionTermBuilder<?>> parameters = new ArrayList<ExpressionTermBuilder<?>>();
+    private List<ExpressionTermBuilder<?>> parameters = new ArrayList<>();
 
     private AnnotationBuilder() {
     }
@@ -27,12 +28,10 @@ public class AnnotationBuilder extends AbstractBuilder<AnnotationBuilder> {
 
     @Override
     public String build(JavaBuilderContext context) {
-        StringBuilder sb = new StringBuilder();
+        String sb = "@" +
+                type.build(context) +
+                buildList(context, "(", parameters, ")", ", ");
 
-        sb.append("@")
-                .append(type.build(context))
-                .append(buildList(context, "(", parameters, ")", ", "));
-
-        return sb.toString();
+        return sb;
     }
 }

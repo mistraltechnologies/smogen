@@ -14,7 +14,7 @@ import com.mistraltech.smogen.property.Property;
 import com.mistraltech.smogen.property.PropertyLocator;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static com.mistraltech.smogen.codegenerator.javabuilder.AnnotationBuilder.anAnnotation;
@@ -215,8 +215,6 @@ public class MatcherInterfaceCodeWriter extends AbstractMatcherCodeWriter {
     }
 
     private List<InterfaceMethodBuilder> generateMatcherSetters(@NotNull Property property, TypeBuilder returnType) {
-        List<InterfaceMethodBuilder> methods = new ArrayList<InterfaceMethodBuilder>();
-
         final TypeBuilder boxedPropertyType = getPropertyTypeBuilder(property, true);
 
         final InterfaceMethodBuilder valueSetter = anInterfaceMethod()
@@ -240,7 +238,7 @@ public class MatcherInterfaceCodeWriter extends AbstractMatcherCodeWriter {
                         .withName(matcherAttributeName(property)));
 
         if (isCustomSetterName()) {
-            final TypeBuilder matchesPropertyAnnotationType = aType().withName(MATCHES_PROPERTY_ANNOTATION_CLASSNAME);
+            final TypeBuilder matchesPropertyAnnotationType = aType().withName(MATCHES_PROPERTY_ANNOTATION_CLASS_NAME);
             final AnnotationBuilder matchesPropertyAnnotation = anAnnotation()
                     .withType(matchesPropertyAnnotationType)
                     .withParameter(anExpression()
@@ -249,10 +247,7 @@ public class MatcherInterfaceCodeWriter extends AbstractMatcherCodeWriter {
             matcherSetter.withAnnotation(matchesPropertyAnnotation);
         }
 
-        methods.add(valueSetter);
-        methods.add(matcherSetter);
-
-        return methods;
+        return Arrays.asList(valueSetter, matcherSetter);
     }
 
     private boolean isCustomSetterName() {
