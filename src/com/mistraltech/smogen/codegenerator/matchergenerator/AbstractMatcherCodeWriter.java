@@ -11,6 +11,7 @@ import com.mistraltech.smogen.codegenerator.javabuilder.JavaDocumentBuilder;
 import com.mistraltech.smogen.codegenerator.javabuilder.TypeBuilder;
 import com.mistraltech.smogen.codegenerator.javabuilder.TypeParameterBuilder;
 import com.mistraltech.smogen.codegenerator.javabuilder.TypeParameterDeclBuilder;
+import com.mistraltech.smogen.codegenerator.utils.PsiTypeConverter;
 import com.mistraltech.smogen.property.Property;
 import org.jetbrains.annotations.NotNull;
 

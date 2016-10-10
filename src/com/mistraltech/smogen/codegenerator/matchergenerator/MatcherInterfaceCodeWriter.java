@@ -125,7 +125,7 @@ public class MatcherInterfaceCodeWriter extends AbstractMatcherCodeWriter {
 
     private void applyInterfaceBody(InterfaceBuilder clazz, TypeBuilder returnType, TypeBuilder matchedType, TypeBuilder matcherType) {
         final boolean includeSuperClassProperties = generatorProperties.getMatcherSuperClassName() == null;
-        final List<Property> sourceClassProperties = PropertyLocator.locateProperties(getSourceClass(), includeSuperClassProperties);
+        final List<Property> sourceClassProperties = PropertyLocator.locatePropertiesFromGetters(getSourceClass(), includeSuperClassProperties);
 
         if (generatorProperties.isGenerateFactoryMethods()) {
             clazz.withMethod(generateStaticFactoryMethod(matcherType));
@@ -251,7 +251,7 @@ public class MatcherInterfaceCodeWriter extends AbstractMatcherCodeWriter {
     }
 
     private boolean isCustomSetterName() {
-        return ! (generatorProperties.getSetterPrefix().equals(DEFAULT_SETTER_METHOD_PREFIX) &&
+        return !(generatorProperties.getSetterPrefix().equals(DEFAULT_SETTER_METHOD_PREFIX) &&
                 generatorProperties.getSetterSuffix().equals(DEFAULT_SETTER_METHOD_SUFFIX));
     }
 }

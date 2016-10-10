@@ -1,4 +1,4 @@
-package com.mistraltech.smogen.codegenerator.matchergenerator;
+package com.mistraltech.smogen.codegenerator.utils;
 
 import com.intellij.psi.PsiArrayType;
 import com.intellij.psi.PsiClassType;

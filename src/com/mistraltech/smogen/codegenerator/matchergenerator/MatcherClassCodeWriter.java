@@ -1,6 +1,5 @@
 package com.mistraltech.smogen.codegenerator.matchergenerator;
 
-import com.intellij.psi.PsiPackage;
 import com.mistraltech.smogen.codegenerator.javabuilder.AbstractClassBuilder;
 import com.mistraltech.smogen.codegenerator.javabuilder.BlockStatementBuilder;
 import com.mistraltech.smogen.codegenerator.javabuilder.ClassBuilder;
@@ -56,8 +55,7 @@ class MatcherClassCodeWriter extends AbstractMatcherCodeWriter {
     }
 
     private ClassBuilder generateMatcherClass() {
-        final PsiPackage targetPackage = getPackage();
-        final String generatedClassFQN = createFQN(targetPackage.getQualifiedName(), generatorProperties.getClassName());
+        final String generatedClassFQN = createFQN(getPackage().getQualifiedName(), generatorProperties.getClassName());
 
         ClassBuilder clazz = aJavaClass()
                 .withAccessModifier("public")
@@ -136,7 +134,7 @@ class MatcherClassCodeWriter extends AbstractMatcherCodeWriter {
     private void applyClassBody(AbstractClassBuilder clazz, TypeBuilder returnType, TypeBuilder matchedType,
             TypeBuilder matchedTypeParam, TypeBuilder matcherType) {
         boolean includeSuperClassProperties = generatorProperties.getMatcherSuperClassName() == null;
-        List<Property> sourceClassProperties = PropertyLocator.locateProperties(getSourceClass(), includeSuperClassProperties);
+        List<Property> sourceClassProperties = PropertyLocator.locatePropertiesFromGetters(getSourceClass(), includeSuperClassProperties);
 
         final String objectDescription = generatorProperties.getFactoryMethodPrefix().isEmpty() ?
                 getSourceClassName() :
@@ -197,6 +195,7 @@ class MatcherClassCodeWriter extends AbstractMatcherCodeWriter {
                                 .withText("super.matchesSafely(item, matchAccumulator)")));
 
         if (!generatorProperties.isUseReflectingPropertyMatcher()) {
+            //noinspection OptionalGetWithoutIsPresent
             properties.forEach(p ->
                     matchesSafelyMethod
                             .withStatement(anExpressionStatement()
@@ -206,7 +205,7 @@ class MatcherClassCodeWriter extends AbstractMatcherCodeWriter {
                                             .withParameter(matcherAttributeName(p))
                                             .withParameter(aMethodCall()
                                                     .withObject("item")
-                                                    .withName(p.getAccessorName())))));
+                                                    .withName(p.getAccessorName().get())))));
         }
 
         return matchesSafelyMethod;
@@ -268,12 +267,13 @@ class MatcherClassCodeWriter extends AbstractMatcherCodeWriter {
                 BlockStatementBuilder setFromTemplate = aBlockStatement()
                         .withHeader("if (template != null)");
 
+                //noinspection OptionalGetWithoutIsPresent
                 sourceClassProperties.forEach(p ->
                         setFromTemplate.withStatement(aMethodCall()
                                 .withName(setterMethodName(p))
                                 .withParameter(aMethodCall()
                                         .withObject("template")
-                                        .withName(p.getAccessorName()))));
+                                        .withName(p.getAccessorName().get()))));
 
                 constructor.withStatement(setFromTemplate);
             }

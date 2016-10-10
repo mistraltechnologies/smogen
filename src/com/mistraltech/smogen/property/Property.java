@@ -4,29 +4,31 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.PsiTypeVisitor;
-import com.intellij.psi.util.PropertyUtil;
 import com.mistraltech.smogen.utils.NameUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Optional;
+
 public class Property {
-    private final PsiMethod accessorMethod;
-    private final PsiType type;
     private String name;
+    private final PsiType type;
+    private final Optional<PsiMethod> accessorMethod;
+    private final Optional<PsiMethod> mutatorMethod;
 
     /**
      * Construct a property from its accessor method.
      *
+     * @param name the property name
+     * @param type the property type
      * @param accessorMethod the accessor method (e.g. getFoo or isBar)
+     * @param mutatorMethod the mutator method (e.g. setFoo)
      */
-    Property(@NotNull PsiMethod accessorMethod) {
-        if (accessorMethod.getReturnType() == null) {
-            throw new IllegalArgumentException("Property accessor can't be void");
-        }
-
-        this.type = accessorMethod.getReturnType();
-        this.accessorMethod = accessorMethod;
-        this.name = PropertyUtil.getPropertyName(accessorMethod);
+    Property(@NotNull String name, @NotNull PsiType type, PsiMethod accessorMethod, PsiMethod mutatorMethod) {
+        this.name = name;
+        this.type = type;
+        this.accessorMethod = Optional.ofNullable(accessorMethod);
+        this.mutatorMethod = Optional.ofNullable(mutatorMethod);
     }
 
     /**
@@ -69,8 +71,18 @@ public class Property {
      * @return the accessor method name
      */
     @NotNull
-    public String getAccessorName() {
-        return accessorMethod.getName();
+    public Optional<String> getAccessorName() {
+        return accessorMethod.map(PsiMethod::getName);
+    }
+
+    /**
+     * Gets the name of the mutator method.
+     *
+     * @return the mutator method name
+     */
+    @NotNull
+    public Optional<String> getMutatorName() {
+        return mutatorMethod.map(PsiMethod::getName);
     }
 
     /**
