@@ -16,5 +16,5 @@ public interface WidgetMatcher extends Matcher<Widget> {
         return matcherOf(WidgetMatcher.class).like(template);
     }
 
-    WidgetMatcher like(final Widget template);
+    WidgetMatcher like(Widget template);
 }

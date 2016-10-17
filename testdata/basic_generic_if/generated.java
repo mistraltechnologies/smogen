@@ -13,9 +13,9 @@ public interface WidgetMatcher<P1> extends Matcher<Widget<P1>> {
         return matcherOf(WidgetMatcher.class).like(template);
     }
 
-    WidgetMatcher<P1> like(final Widget<P1> template);
+    WidgetMatcher<P1> like(Widget<P1> template);
 
-    WidgetMatcher<P1> hasContents(final P1 contents);
+    WidgetMatcher<P1> hasContents(P1 contents);
 
-    WidgetMatcher<P1> hasContents(final Matcher<? super P1> contentsMatcher);
+    WidgetMatcher<P1> hasContents(Matcher<? super P1> contentsMatcher);
 }

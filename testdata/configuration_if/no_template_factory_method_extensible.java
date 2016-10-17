@@ -10,7 +10,7 @@ public interface WidgetMatcher<R extends WidgetMatcher<R, T>, T extends Widget> 
         return matcherOf(WidgetMatcher.class);
     }
 
-    R hasProp(final String prop);
+    R hasProp(String prop);
 
-    R hasProp(final Matcher<? super String> propMatcher);
+    R hasProp(Matcher<? super String> propMatcher);
 }

@@ -13,13 +13,13 @@ public interface WidgetMatcher extends Matcher<Widget> {
         return matcherOf(WidgetMatcher.class).like(template);
     }
 
-    WidgetMatcher like(final Widget template);
+    WidgetMatcher like(Widget template);
 
-    WidgetMatcher hasProp(final String prop);
+    WidgetMatcher hasProp(String prop);
 
-    WidgetMatcher hasProp(final Matcher<? super String> propMatcher);
+    WidgetMatcher hasProp(Matcher<? super String> propMatcher);
 
-    WidgetMatcher hasSuperProp(final int superProp);
+    WidgetMatcher hasSuperProp(int superProp);
 
-    WidgetMatcher hasSuperProp(final Matcher<? super Integer> superPropMatcher);
+    WidgetMatcher hasSuperProp(Matcher<? super Integer> superPropMatcher);
 }

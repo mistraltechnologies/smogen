@@ -15,13 +15,13 @@ public interface WidgetMatcher<P1, P2, R extends WidgetMatcher<P1, P2, R, T>, T 
         return matcherOf(WidgetMatcher.class).like(template);
     }
 
-    R like(final Widget<P1, P2> template);
+    R like(Widget<P1, P2> template);
 
-    R hasP(final P1 p);
+    R hasP(P1 p);
 
-    R hasP(final Matcher<? super P1> pMatcher);
+    R hasP(Matcher<? super P1> pMatcher);
 
-    R hasQ(final P2 q);
+    R hasQ(P2 q);
 
-    R hasQ(final Matcher<? super P2> qMatcher);
+    R hasQ(Matcher<? super P2> qMatcher);
 }

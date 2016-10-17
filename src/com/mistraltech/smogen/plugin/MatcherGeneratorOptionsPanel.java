@@ -177,7 +177,7 @@ public class MatcherGeneratorOptionsPanel {
     @Nullable
     public String getSuperClassName() {
         if (extendsCheckBox.isSelected()) {
-            return StringUtil.trimLeading(StringUtil.trimTrailing(superClassChooser.getText()));
+            return superClassChooser.getText().trim();
         } else {
             return null;
         }
@@ -224,7 +224,7 @@ public class MatcherGeneratorOptionsPanel {
     }
 
     public ValidationInfo doValidate() {
-        String className = StringUtil.trimLeading(StringUtil.trimTrailing(classNameTextField.getText()));
+        String className = classNameTextField.getText().trim();
         if (StringUtil.isEmpty(className)) {
             return new ValidationInfo("Class name is empty", classNameTextField);
         }

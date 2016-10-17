@@ -209,7 +209,6 @@ public class MatcherInterfaceCodeWriter extends AbstractMatcherCodeWriter {
                 .withReturnType(returnType)
                 .withName("like")
                 .withParameter(aParameter()
-                        .withFinalFlag(generatorProperties.isMakeMethodParametersFinal())
                         .withType(matchedType)
                         .withName("template"));
     }
@@ -221,7 +220,6 @@ public class MatcherInterfaceCodeWriter extends AbstractMatcherCodeWriter {
                 .withReturnType(returnType)
                 .withName(setterMethodName(property))
                 .withParameter(aParameter()
-                        .withFinalFlag(generatorProperties.isMakeMethodParametersFinal())
                         .withType(getPropertyTypeBuilder(property, false))
                         .withName(property.getFieldName()));
 
@@ -229,7 +227,6 @@ public class MatcherInterfaceCodeWriter extends AbstractMatcherCodeWriter {
                 .withReturnType(returnType)
                 .withName(setterMethodName(property))
                 .withParameter(aParameter()
-                        .withFinalFlag(generatorProperties.isMakeMethodParametersFinal())
                         .withType(aType()
                                 .withName("org.hamcrest.Matcher")
                                 .withTypeBinding(aTypeParameter()

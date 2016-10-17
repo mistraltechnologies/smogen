@@ -16,37 +16,37 @@ public interface WidgetMatcher extends Matcher<Widget> {
         return matcherOf(WidgetMatcher.class).like(template);
     }
 
-    WidgetMatcher like(final Widget template);
+    WidgetMatcher like(Widget template);
 
-    WidgetMatcher hasFinalType(final Final finalType);
+    WidgetMatcher hasFinalType(Final finalType);
 
-    WidgetMatcher hasFinalType(final Matcher<? super Final> finalTypeMatcher);
+    WidgetMatcher hasFinalType(Matcher<? super Final> finalTypeMatcher);
 
-    WidgetMatcher hasGenerics(final Box<X> generics);
+    WidgetMatcher hasGenerics(Box<X> generics);
 
-    WidgetMatcher hasGenerics(final Matcher<? super Box<X>> genericsMatcher);
+    WidgetMatcher hasGenerics(Matcher<? super Box<X>> genericsMatcher);
 
-    WidgetMatcher hasMultiDimensionalArray(final int[][] multiDimensionalArray);
+    WidgetMatcher hasMultiDimensionalArray(int[][] multiDimensionalArray);
 
-    WidgetMatcher hasMultiDimensionalArray(final Matcher<? super int[][]> multiDimensionalArrayMatcher);
+    WidgetMatcher hasMultiDimensionalArray(Matcher<? super int[][]> multiDimensionalArrayMatcher);
 
-    WidgetMatcher hasNestedWildcardGenerics(final Box<Box<? super X>> nestedWildcardGenerics);
+    WidgetMatcher hasNestedWildcardGenerics(Box<Box<? super X>> nestedWildcardGenerics);
 
-    WidgetMatcher hasNestedWildcardGenerics(final Matcher<? super Box<Box<? super X>>> nestedWildcardGenericsMatcher);
+    WidgetMatcher hasNestedWildcardGenerics(Matcher<? super Box<Box<? super X>>> nestedWildcardGenericsMatcher);
 
-    WidgetMatcher hasPrimitive(final boolean primitive);
+    WidgetMatcher hasPrimitive(boolean primitive);
 
-    WidgetMatcher hasPrimitive(final Matcher<? super Boolean> primitiveMatcher);
+    WidgetMatcher hasPrimitive(Matcher<? super Boolean> primitiveMatcher);
 
-    WidgetMatcher hasRecursiveType(final Widget recursiveType);
+    WidgetMatcher hasRecursiveType(Widget recursiveType);
 
-    WidgetMatcher hasRecursiveType(final Matcher<? super Widget> recursiveTypeMatcher);
+    WidgetMatcher hasRecursiveType(Matcher<? super Widget> recursiveTypeMatcher);
 
-    WidgetMatcher hasUnboundedGenerics(final Box<?> unboundedGenerics);
+    WidgetMatcher hasUnboundedGenerics(Box<?> unboundedGenerics);
 
-    WidgetMatcher hasUnboundedGenerics(final Matcher<? super Box<?>> unboundedGenericsMatcher);
+    WidgetMatcher hasUnboundedGenerics(Matcher<? super Box<?>> unboundedGenericsMatcher);
 
-    WidgetMatcher hasWildcardGenerics(final Box<? extends X> wildcardGenerics);
+    WidgetMatcher hasWildcardGenerics(Box<? extends X> wildcardGenerics);
 
-    WidgetMatcher hasWildcardGenerics(final Matcher<? super Box<? extends X>> wildcardGenericsMatcher);
+    WidgetMatcher hasWildcardGenerics(Matcher<? super Box<? extends X>> wildcardGenericsMatcher);
 }

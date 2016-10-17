@@ -13,17 +13,17 @@ public interface WidgetMatcher extends Matcher<Widget> {
         return matcherOf(WidgetMatcher.class).like(template);
     }
 
-    WidgetMatcher like(final Widget template);
+    WidgetMatcher like(Widget template);
 
-    WidgetMatcher hasURL(final String uRL);
+    WidgetMatcher hasURL(String uRL);
 
-    WidgetMatcher hasURL(final Matcher<? super String> uRLMatcher);
+    WidgetMatcher hasURL(Matcher<? super String> uRLMatcher);
 
-    WidgetMatcher has_prop(final String _prop);
+    WidgetMatcher has_prop(String _prop);
 
-    WidgetMatcher has_prop(final Matcher<? super String> _propMatcher);
+    WidgetMatcher has_prop(Matcher<? super String> _propMatcher);
 
-    WidgetMatcher hasI(final String i);
+    WidgetMatcher hasI(String i);
 
-    WidgetMatcher hasI(final Matcher<? super String> iMatcher);
+    WidgetMatcher hasI(Matcher<? super String> iMatcher);
 }

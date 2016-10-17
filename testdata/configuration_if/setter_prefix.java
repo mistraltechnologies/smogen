@@ -14,11 +14,11 @@ public interface WidgetMatcher extends Matcher<Widget> {
         return matcherOf(WidgetMatcher.class).like(template);
     }
 
-    WidgetMatcher like(final Widget template);
+    WidgetMatcher like(Widget template);
 
     @MatchesProperty("prop")
-    WidgetMatcher abcProp(final String prop);
+    WidgetMatcher abcProp(String prop);
 
     @MatchesProperty("prop")
-    WidgetMatcher abcProp(final Matcher<? super String> propMatcher);
+    WidgetMatcher abcProp(Matcher<? super String> propMatcher);
 }
