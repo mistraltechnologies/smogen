@@ -23,7 +23,7 @@
     <action id="Smogen.GenerateMatcher" class="com.mistraltech.smogen.plugin.GenerateMatcherAction"
             text="Generate Matcher" description="Generate a SMOG matcher class">
       <add-to-group group-id="CodeMenu" anchor="last"/>
-      <keyboard-shortcut keymap="$default" first-keystroke="shift ctrl G" second-keystroke="shift ctrl M"/>
+      <keyboard-shortcut keymap="$default" first-keystroke="shift ctrl G" second-keystroke="M"/>
     </action>
   </actions>
 </idea-plugin>
