@@ -247,8 +247,15 @@ internal class MatcherClassCodeWriter(matcherGeneratorProperties: MatcherGenerat
             "com.mistraltech.smog.core.PropertyMatcher"
         }
 
+        val accessModifier =
+            if (generatorProperties.isUseReflectingPropertyMatcher || !generatorProperties.isExtensible) {
+                "private"
+            } else {
+                "protected"
+            }
+
         return VariableBuilder.aVariable()
-            .withAccessModifier("private")
+            .withAccessModifier(accessModifier)
             .withFinalFlag(true)
             .withType(
                 TypeBuilder.aType()
