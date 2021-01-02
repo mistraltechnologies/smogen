@@ -1,0 +1,29 @@
+<idea-plugin>
+  <id>com.mistraltech.smogen</id>
+  <name>SMOG Matcher Generator</name>
+  <vendor email="support@mistraltech.co.uk" url="https://mistraltech.co.uk">Mistral Technologies</vendor>
+
+  <!-- Product and plugin compatibility requirements -->
+  <!-- https://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html -->
+  <depends>com.intellij.modules.platform</depends>
+  <depends>com.intellij.modules.java</depends>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <projectConfigurable instance="com.mistraltech.smogen.plugin.SmogenConfigurable"/>
+    <applicationService serviceImplementation="com.mistraltech.smogen.services.MyApplicationService"/>
+    <projectService serviceImplementation="com.mistraltech.smogen.services.MyProjectService"/>
+  </extensions>
+
+  <applicationListeners>
+    <listener class="com.mistraltech.smogen.listeners.MyProjectManagerListener"
+              topic="com.intellij.openapi.project.ProjectManagerListener"/>
+  </applicationListeners>
+
+  <actions>
+    <action id="Smogen.GenerateMatcher" class="com.mistraltech.smogen.plugin.GenerateMatcherAction"
+            text="Generate Matcher" description="Generate a SMOG matcher class">
+      <add-to-group group-id="CodeMenu" anchor="last"/>
+      <keyboard-shortcut keymap="$default" first-keystroke="shift ctrl G" second-keystroke="shift ctrl M"/>
+    </action>
+  </actions>
+</idea-plugin>
