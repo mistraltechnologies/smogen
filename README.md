@@ -19,7 +19,7 @@ This plugin adds a Generate Matcher menu option to the Code menu in IntelliJ IDE
 It generates matcher classes that can be used as Hamcrest matchers.
 
 The generated class has a dependency on the supporting SMOG library, hosted at https://github.com/mistraltechnologies/smog
-and available from <a href="http://search.maven.org/#artifactdetails|com.mistraltech.smog|smog-core|1.0|jar)">Maven Central</a>.
+and available from <a href="https://search.maven.org/artifact/com.mistraltech.smog/smog-core">Maven Central</a>.
 
 The menu option is enabled when a Java class is selected.
 
