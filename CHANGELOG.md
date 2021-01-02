@@ -4,7 +4,15 @@
 
 ## [Unreleased]
 ### Added
-- Initial scaffold created from [IntelliJ Platform Plugin Template](https://github.com/JetBrains/intellij-platform-plugin-template)
+- Plugin recreated using [IntelliJ Platform Plugin Template](https://github.com/JetBrains/intellij-platform-plugin-template)
+- Refreshed plugin code base
+
+### Fixed
+- Issue where generated extensible matcher class attempts to access private member variable 
+- Redundant generic type specifier in generated property matcher initializer
+
+### Removed
+- Option for generating interface without factory methods (supporting pre- Java 8)
 
 ## 0.5.0
 ### Added
