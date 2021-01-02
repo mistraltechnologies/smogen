@@ -158,8 +158,7 @@ internal class MatcherClassCodeWriter(matcherGeneratorProperties: MatcherGenerat
 
         clazz.withVariables(generateMatcherVariables(sourceClassProperties))
             .withMethod(generateConstructor(sourceClassProperties, matchedTypeParam))
-
-        clazz.withMethod(generateStaticFactoryMethod(matcherType))
+            .withMethod(generateStaticFactoryMethod(matcherType))
 
         if (generatorProperties.isGenerateTemplateFactoryMethod) {
             clazz.withMethod(generateLikeStaticFactoryMethod(matcherType, matchedType))
@@ -268,7 +267,7 @@ internal class MatcherClassCodeWriter(matcherGeneratorProperties: MatcherGenerat
                     .withType(
                         TypeBuilder.aType()
                             .withName(concretePropertyMatcher)
-                            .withTypeBinding(getPropertyTypeBuilder(property, true))
+                            .withTypeBinding("")
                     )
                     .withParameter("\"" + property.name + "\"")
                     .withParameter("this")

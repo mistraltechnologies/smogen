@@ -9,8 +9,8 @@ import static org.hamcrest.CoreMatchers.equalTo;
 @Matches(Widget.class)
 public class WidgetMatcher<P1, P2, R extends WidgetMatcher<P1, P2, R, T>, T extends Widget<P1, P2>> extends CompositePropertyMatcher<T> {
     private static final String MATCHED_OBJECT_DESCRIPTION = "a Widget";
-    protected final PropertyMatcher<P1> pMatcher = new PropertyMatcher<P1>("p", this);
-    protected final PropertyMatcher<P2> qMatcher = new PropertyMatcher<P2>("q", this);
+    protected final PropertyMatcher<P1> pMatcher = new PropertyMatcher<>("p", this);
+    protected final PropertyMatcher<P2> qMatcher = new PropertyMatcher<>("q", this);
 
     protected WidgetMatcher(final String matchedObjectDescription, final T template) {
         super(matchedObjectDescription);

@@ -14,14 +14,14 @@ import static org.hamcrest.CoreMatchers.equalTo;
 @Matches(Widget.class)
 public final class WidgetMatcher extends CompositePropertyMatcher<Widget> {
     private static final String MATCHED_OBJECT_DESCRIPTION = "a Widget";
-    private final PropertyMatcher<Final> finalTypeMatcher = new ReflectingPropertyMatcher<Final>("finalType", this);
-    private final PropertyMatcher<Box<X>> genericsMatcher = new ReflectingPropertyMatcher<Box<X>>("generics", this);
-    private final PropertyMatcher<int[][]> multiDimensionalArrayMatcher = new ReflectingPropertyMatcher<int[][]>("multiDimensionalArray", this);
-    private final PropertyMatcher<Box<Box<? super X>>> nestedWildcardGenericsMatcher = new ReflectingPropertyMatcher<Box<Box<? super X>>>("nestedWildcardGenerics", this);
-    private final PropertyMatcher<Boolean> primitiveMatcher = new ReflectingPropertyMatcher<Boolean>("primitive", this);
-    private final PropertyMatcher<Widget> recursiveTypeMatcher = new ReflectingPropertyMatcher<Widget>("recursiveType", this);
-    private final PropertyMatcher<Box<?>> unboundedGenericsMatcher = new ReflectingPropertyMatcher<Box<?>>("unboundedGenerics", this);
-    private final PropertyMatcher<Box<? extends X>> wildcardGenericsMatcher = new ReflectingPropertyMatcher<Box<? extends X>>("wildcardGenerics", this);
+    private final PropertyMatcher<Final> finalTypeMatcher = new ReflectingPropertyMatcher<>("finalType", this);
+    private final PropertyMatcher<Box<X>> genericsMatcher = new ReflectingPropertyMatcher<>("generics", this);
+    private final PropertyMatcher<int[][]> multiDimensionalArrayMatcher = new ReflectingPropertyMatcher<>("multiDimensionalArray", this);
+    private final PropertyMatcher<Box<Box<? super X>>> nestedWildcardGenericsMatcher = new ReflectingPropertyMatcher<>("nestedWildcardGenerics", this);
+    private final PropertyMatcher<Boolean> primitiveMatcher = new ReflectingPropertyMatcher<>("primitive", this);
+    private final PropertyMatcher<Widget> recursiveTypeMatcher = new ReflectingPropertyMatcher<>("recursiveType", this);
+    private final PropertyMatcher<Box<?>> unboundedGenericsMatcher = new ReflectingPropertyMatcher<>("unboundedGenerics", this);
+    private final PropertyMatcher<Box<? extends X>> wildcardGenericsMatcher = new ReflectingPropertyMatcher<>("wildcardGenerics", this);
 
     private WidgetMatcher(final String matchedObjectDescription, final Widget template) {
         super(matchedObjectDescription);
