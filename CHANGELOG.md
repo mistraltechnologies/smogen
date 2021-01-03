@@ -14,9 +14,8 @@
 ### Fixed
 
 ### Security
-
-## [1.0.1]
-### Changed
+## [1.0.2]
+### Fixed
 - Replaced default icon with custom icon
 
 ## [1.0.0]
