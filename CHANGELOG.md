@@ -15,6 +15,10 @@
 
 ### Security
 
+## [1.0.1]
+### Changed
+- Replaced default icon with custom icon
+
 ## [1.0.0]
 ### Added
 - Plugin recreated using [IntelliJ Platform Plugin Template](https://github.com/JetBrains/intellij-platform-plugin-template)

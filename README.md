@@ -51,6 +51,12 @@ If the class already exists, you are given the option to overwrite the existing 
 - [x] Set the [Deployment Token](https://plugins.jetbrains.com/docs/marketplace/plugin-upload.html).
 - [x] Click the <kbd>Watch</kbd> button on the top of the [IntelliJ Platform Plugin Template][template] to be notified about releases containing new features and fixes.
 
+## Release Publishing
+
+``export PUBLISH_TOKEN=<jetbrains token>``
+
+``./gradlew publishPlugin``
+
 ---
 Plugin based on the [IntelliJ Platform Plugin Template][template].
 
