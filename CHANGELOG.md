@@ -3,6 +3,18 @@
 # SMOG Matcher Generator Changelog
 
 ## [Unreleased]
+### Added
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+## [1.0.3]
 ### Changed
 - Extended compatibility to include build 211.* (2021.1)
 
