@@ -3,17 +3,9 @@
 # SMOG Matcher Generator Changelog
 
 ## [Unreleased]
-### Added
-
 ### Changed
+- Extended compatibility to include build 211.* (2021.1)
 
-### Deprecated
-
-### Removed
-
-### Fixed
-
-### Security
 ## [1.0.2]
 ### Fixed
 - Replaced default icon with custom icon
